@@ -67,7 +67,7 @@
         <div class="flex items-center gap-2">
           <span class="font-bold tracking-tight text-base sm:text-lg text-white">SWINGPULSE</span>
           <span class="hidden sm:inline-block text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">
-            FOREX ENGINE
+            REALTIME ENGINE
           </span>
         </div>
       </div>
@@ -75,10 +75,9 @@
       <!-- Right Controls -->
       <div class="flex items-center gap-2 sm:gap-3">
         <!-- Status Koneksi Supabase -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono border border-zinc-800 bg-zinc-950 text-emerald-400">
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono border border-zinc-800 bg-zinc-950 text-emerald-400">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="hidden md:inline">Supabase Connected</span>
-          <i data-lucide="database" class="w-3.5 h-3.5"></i>
+          <span>DB & Tick Live</span>
         </div>
 
         <!-- Refresh Data -->
@@ -86,14 +85,50 @@
           <i data-lucide="refresh-cw" id="refreshIcon" class="w-4 h-4"></i>
         </button>
 
-        <!-- Toggle Simulasi Free vs Pro -->
-        <button onclick="toggleProMode()" id="tierToggleBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 transition">
+        <!-- Toggle / Status Tier Free vs Pro -->
+        <button onclick="toggleProMode()" id="tierToggleBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 transition" title="Klik untuk ganti / upgrade tier">
           <i data-lucide="lock" id="tierIcon" class="w-3.5 h-3.5"></i>
-          <span id="tierText">Mode: FREE TIER</span>
+          <span id="tierText">FREE TIER</span>
         </button>
+
+        <!-- Area Auth User (Guest vs Logged In) -->
+        <div id="authGuestArea">
+          <button onclick="openAuthModal('login')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white text-black hover:bg-zinc-200 transition">
+            <i data-lucide="user" class="w-3.5 h-3.5"></i>
+            <span>Login / Daftar</span>
+          </button>
+        </div>
+
+        <div id="authUserArea" class="hidden items-center gap-2">
+          <div class="hidden sm:flex flex-col text-right">
+            <span id="navUserName" class="text-xs font-semibold text-white leading-none">Trader</span>
+            <span id="navUserEmail" class="text-[10px] font-mono text-zinc-500 mt-0.5">user@mail.com</span>
+          </div>
+          <button onclick="handleLogout()" class="p-2 rounded border border-zinc-800 bg-zinc-950 hover:bg-rose-950/50 hover:border-rose-900 text-zinc-400 hover:text-rose-400 transition" title="Logout">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
       </div>
     </div>
   </header>
+
+  <!-- BANNER STATUS AKUN & DATABASE SYNC -->
+  <div class="bg-zinc-950/90 border-b border-zinc-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2 text-zinc-400">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-zinc-300"></i>
+        <span id="profileSyncStatus">Mode Tamu (Guest) — Login agar status Tier Free/Pro dan pengaturan risikomu tersimpan di Supabase.</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="openFeedModal()" class="text-[11px] font-mono text-zinc-400 hover:text-white underline">
+          Pengaturan API Data Harga (TwelveData)
+        </button>
+        <button onclick="saveRiskProfileToDb()" id="saveProfileBtn" class="hidden text-[11px] font-mono text-emerald-400 hover:underline">
+          Simpan Saldo & Risiko ke Profil
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MAIN CONTENT -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -143,36 +178,47 @@
 
     </div>
 
-    <!-- KOLOM KANAN (5 KOLOM): INTERACTIVE CHART, ANALISIS AI, KALKULATOR LOT & WEBHOOK -->
+    <!-- KOLOM KANAN (5 KOLOM): REAL-TIME INTERACTIVE CHART, ANALISIS AI, KALKULATOR LOT & WEBHOOK -->
     <div class="lg:col-span-5 space-y-6">
       
-      <!-- Panel Baru: TradingView Lightweight Chart dengan Auto-Plot Entry/SL/TP -->
+      <!-- Panel TradingView Lightweight Chart dengan Real-Time Tick Stream -->
       <div class="p-5 rounded-lg border border-zinc-900 bg-zinc-950 space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <i data-lucide="candlestick-chart" class="w-4 h-4 text-white"></i>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
             <span id="chartTitle" class="text-xs font-bold uppercase tracking-wider text-white font-mono">XAUUSD · H4</span>
             <span id="chartSetupBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">BREAKOUT</span>
           </div>
-          <button onclick="resetChartZoom()" class="text-[11px] font-mono px-2 py-0.5 rounded bg-black border border-zinc-800 text-zinc-400 hover:text-white transition">
-            Reset Zoom
-          </button>
+
+          <!-- Indikator Harga Live Real-Time -->
+          <div class="flex items-center gap-2">
+            <div class="text-right font-mono">
+              <span class="text-[10px] text-zinc-500 block leading-none">LIVE PRICE</span>
+              <span id="liveTickerPrice" class="text-sm font-bold text-emerald-400">2748.50</span>
+            </div>
+            <button onclick="resetChartZoom()" class="text-[11px] font-mono px-2 py-1 rounded bg-black border border-zinc-800 text-zinc-400 hover:text-white transition" title="Reset Zoom">
+              Fit
+            </button>
+          </div>
         </div>
 
-        <!-- Legend Indikator Garis -->
-        <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono border-y border-zinc-900 py-2">
-          <span class="flex items-center gap-1.5 text-zinc-300">
-            <span class="w-2.5 h-0.5 bg-blue-400 inline-block"></span> Entry
-          </span>
-          <span class="flex items-center gap-1.5 text-rose-400">
-            <span class="w-2.5 h-0.5 bg-rose-500 inline-block"></span> Stop Loss
-          </span>
-          <span class="flex items-center gap-1.5 text-emerald-400">
-            <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span> TP 1 (1:2)
-          </span>
-          <span class="flex items-center gap-1.5 text-emerald-300">
-            <span class="w-2.5 h-0.5 bg-teal-400 inline-block"></span> TP 2 (1:3)
-          </span>
+        <!-- Legend Indikator Garis & Status Feed -->
+        <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono border-y border-zinc-900 py-2">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="flex items-center gap-1 text-zinc-300">
+              <span class="w-2 h-0.5 bg-blue-400 inline-block"></span> Entry
+            </span>
+            <span class="flex items-center gap-1 text-rose-400">
+              <span class="w-2 h-0.5 bg-rose-500 inline-block"></span> SL
+            </span>
+            <span class="flex items-center gap-1 text-emerald-400">
+              <span class="w-2 h-0.5 bg-emerald-500 inline-block"></span> TP1
+            </span>
+            <span class="flex items-center gap-1 text-emerald-300">
+              <span class="w-2 h-0.5 bg-teal-400 inline-block"></span> TP2
+            </span>
+          </div>
+          <span id="feedSourceLabel" class="text-[10px] text-zinc-500">Live Tick Stream (800ms)</span>
         </div>
 
         <!-- Container Canvas Chart & Overlay Lock jika Free Tier -->
@@ -187,11 +233,11 @@
             <div class="space-y-1">
               <h4 class="text-xs font-bold uppercase tracking-wider text-white">Auto-Plot Level Dikunci (Pro Only)</h4>
               <p class="text-xs text-zinc-400 max-w-xs">
-                Garis presisi Entry, Stop Loss, dan Take Profit pada chart ini hanya terbuka untuk member Pro.
+                Garis presisi Entry, Stop Loss, dan Take Profit pada chart real-time ini hanya terbuka untuk member Pro.
               </p>
             </div>
             <button onclick="toggleProMode()" class="px-4 py-1.5 rounded bg-white text-black text-xs font-semibold hover:bg-zinc-200 transition">
-              Buka Simulasi Pro
+              Aktifkan Tier Pro
             </button>
           </div>
         </div>
@@ -295,6 +341,102 @@
     </div>
   </main>
 
+  <!-- MODAL LOGIN & REGISTER SUPABASE AUTH -->
+  <div id="authModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-950 p-6 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-zinc-900 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield" class="w-4 h-4 text-white"></i>
+          <h3 id="authModalTitle" class="text-sm font-bold uppercase tracking-wider text-white">Login Akun SwingPulse</h3>
+        </div>
+        <button onclick="closeAuthModal()" class="text-zinc-500 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1 p-1 rounded bg-black border border-zinc-900 text-xs font-semibold">
+        <button onclick="switchAuthTab('login')" id="tabLoginBtn" class="py-2 rounded bg-white text-black transition">
+          Login
+        </button>
+        <button onclick="switchAuthTab('register')" id="tabRegisterBtn" class="py-2 rounded text-zinc-400 hover:text-white transition">
+          Daftar Baru
+        </button>
+      </div>
+
+      <div id="authMessageBox" class="hidden p-3 rounded border text-xs font-mono"></div>
+
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-3.5 text-xs">
+        <div id="fullNameField" class="hidden">
+          <label class="text-zinc-400 block mb-1">Nama Lengkap / Username Trader</label>
+          <input type="text" id="authFullName" placeholder="Contoh: Alex SwingTrader" class="w-full bg-black border border-zinc-800 rounded px-3 py-2.5 text-white focus:outline-none focus:border-zinc-500" />
+        </div>
+
+        <div>
+          <label class="text-zinc-400 block mb-1">Email</label>
+          <input type="email" id="authEmail" required placeholder="nama@email.com" class="w-full bg-black border border-zinc-800 rounded px-3 py-2.5 font-mono text-white focus:outline-none focus:border-zinc-500" />
+        </div>
+
+        <div>
+          <label class="text-zinc-400 block mb-1">Password (Minimal 6 karakter)</label>
+          <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full bg-black border border-zinc-800 rounded px-3 py-2.5 font-mono text-white focus:outline-none focus:border-zinc-500" />
+        </div>
+
+        <div id="registerTierField" class="hidden pt-1">
+          <label class="text-zinc-400 block mb-1.5">Pilih Paket Akun (Tercatat di Tabel <code class="text-zinc-200">profiles</code>)</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center gap-2 p-2.5 rounded border border-zinc-800 bg-black cursor-pointer hover:border-zinc-700">
+              <input type="radio" name="regTier" value="free" checked class="accent-white" />
+              <div>
+                <span class="font-semibold text-white block">Free Tier</span>
+                <span class="text-[10px] text-zinc-500">Rp 0 / Sinyal Dasar</span>
+              </div>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded border border-zinc-800 bg-black cursor-pointer hover:border-zinc-700">
+              <input type="radio" name="regTier" value="pro" class="accent-white" />
+              <div>
+                <span class="font-semibold text-emerald-400 block">Pro Member</span>
+                <span class="text-[10px] text-zinc-500">Full Breakout & Chart</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="w-full py-2.5 rounded bg-white text-black font-semibold hover:bg-zinc-200 transition mt-2">
+          Masuk ke Dashboard
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PENGATURAN TWELVE DATA API (OPSIONAL UNTUK HISTORICAL OHLCV ASLI) -->
+  <div id="feedModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-950 p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-zinc-900 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="activity" class="w-4 h-4 text-white"></i>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-white">Sumber Data Harga Chart</h3>
+        </div>
+        <button onclick="closeFeedModal()" class="text-zinc-500 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-zinc-400 leading-relaxed">
+        Secara default, chart sudah menggunakan <strong>Live Real-Time Tick Engine</strong> yang menggerakkan candlestick setiap 800 milidetik. Jika kamu sudah mendaftar <strong>Twelve Data API Key</strong>, tempelkan di bawah ini untuk mengambil riwayat candlestick pasar Forex global.
+      </p>
+
+      <div class="space-y-2 text-xs">
+        <label class="text-zinc-400 block font-mono">TWELVEDATA_API_KEY (Opsional)</label>
+        <input type="text" id="inputTwelveDataKey" placeholder="Kosongkan untuk memakai Built-in Live Tick Stream" class="w-full bg-black border border-zinc-800 rounded px-3 py-2 font-mono text-white focus:outline-none focus:border-zinc-500" />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeFeedModal()" class="px-3 py-1.5 rounded border border-zinc-800 text-xs text-zinc-400 hover:text-white">Batal</button>
+        <button onclick="saveFeedSettings()" class="px-4 py-1.5 rounded bg-white text-black text-xs font-semibold hover:bg-zinc-200">Simpan & Muat Chart</button>
+      </div>
+    </div>
+  </div>
+
   <!-- JAVASCRIPT LOGIC -->
   <script>
     // =========================================================================
@@ -304,6 +446,10 @@
     const SUPABASE_KEY = "sb_publishable_MIePiSdmquh9u-JBxEW6uw_h-1Qdt6Y";
 
     let supabaseClient = null;
+    let currentUser = null;
+    let currentProfile = null;
+    let authMode = "login";
+
     let isProView = false;
     let currentFilterTf = "ALL";
     let currentApiKey = "sp_live_9a8f77b2c1";
@@ -312,13 +458,216 @@
     let allEvents = [];
     let selectedSignal = null;
 
-    // Variabel TradingView Lightweight Chart
+    // Variabel TradingView Lightweight Chart & Live Tick Stream
     let tvChart = null;
     let candleSeries = null;
     let activePriceLines = [];
+    let currentCandles = [];
+    let liveTickInterval = null;
 
     // =========================================================================
-    // 2. INISIALISASI TRADINGVIEW LIGHTWEIGHT CHARTS
+    // 2. SISTEM AUTENTIKASI SUPABASE & SINKRONISASI TABEL PROFILES
+    // =========================================================================
+    function openAuthModal(mode = "login") {
+      switchAuthTab(mode);
+      hideAuthMessage();
+      const modal = document.getElementById("authModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById("authModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function switchAuthTab(mode) {
+      authMode = mode;
+      const loginBtn = document.getElementById("tabLoginBtn");
+      const regBtn = document.getElementById("tabRegisterBtn");
+      const fullNameField = document.getElementById("fullNameField");
+      const registerTierField = document.getElementById("registerTierField");
+      const title = document.getElementById("authModalTitle");
+      const submitBtn = document.getElementById("authSubmitBtn");
+
+      if (mode === "login") {
+        loginBtn.className = "py-2 rounded bg-white text-black transition";
+        regBtn.className = "py-2 rounded text-zinc-400 hover:text-white transition";
+        fullNameField.classList.add("hidden");
+        registerTierField.classList.add("hidden");
+        title.textContent = "Login Akun SwingPulse";
+        submitBtn.textContent = "Masuk ke Dashboard";
+      } else {
+        regBtn.className = "py-2 rounded bg-white text-black transition";
+        loginBtn.className = "py-2 rounded text-zinc-400 hover:text-white transition";
+        fullNameField.classList.remove("hidden");
+        registerTierField.classList.remove("hidden");
+        title.textContent = "Daftar Akun Trader Baru";
+        submitBtn.textContent = "Buat Akun & Simpan ke Database";
+      }
+      hideAuthMessage();
+    }
+
+    function showAuthMessage(msg, isError = false) {
+      const box = document.getElementById("authMessageBox");
+      box.textContent = msg;
+      box.className = isError
+        ? "p-3 rounded border border-rose-900 bg-rose-950/50 text-rose-300 text-xs font-mono block"
+        : "p-3 rounded border border-emerald-900 bg-emerald-950/50 text-emerald-300 text-xs font-mono block";
+    }
+
+    function hideAuthMessage() {
+      document.getElementById("authMessageBox").className = "hidden";
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      if (!supabaseClient) return;
+
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+      const fullName = document.getElementById("authFullName").value.trim();
+      const selectedTier = document.querySelector('input[name="regTier"]:checked')?.value || "free";
+      const submitBtn = document.getElementById("authSubmitBtn");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Memproses...";
+      hideAuthMessage();
+
+      try {
+        if (authMode === "register") {
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: fullName || email.split("@")[0] } }
+          });
+
+          if (error) throw error;
+
+          if (data.user) {
+            await supabaseClient
+              .from("profiles")
+              .update({
+                full_name: fullName || email.split("@")[0],
+                subscription_tier: selectedTier
+              })
+              .eq("id", data.user.id);
+          }
+
+          if (data.session) {
+            showAuthMessage("Registrasi berhasil! Memuat profil...", false);
+            await fetchUserProfile(data.user);
+            setTimeout(() => closeAuthModal(), 800);
+          } else {
+            showAuthMessage("Akun dibuat! Cek email kamu jika konfirmasi aktif, atau langsung Login.", false);
+          }
+        } else {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+
+          showAuthMessage("Login berhasil!", false);
+          await fetchUserProfile(data.user);
+          setTimeout(() => closeAuthModal(), 500);
+        }
+      } catch (err) {
+        showAuthMessage(err.message || "Terjadi kesalahan autentikasi.", true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = authMode === "login" ? "Masuk ke Dashboard" : "Buat Akun & Simpan ke Database";
+      }
+    }
+
+    async function fetchUserProfile(user) {
+      if (!user || !supabaseClient) {
+        currentUser = null;
+        currentProfile = null;
+        updateAuthUI();
+        return;
+      }
+
+      currentUser = user;
+      const { data: profile, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && profile) {
+        currentProfile = profile;
+        isProView = profile.subscription_tier === "pro";
+        if (profile.default_balance) document.getElementById("balanceInput").value = profile.default_balance;
+        if (profile.default_risk_pct) document.getElementById("riskInput").value = profile.default_risk_pct;
+      }
+
+      updateAuthUI();
+      applyTierVisuals();
+      renderSignals();
+      updateRiskCalc();
+      if (selectedSignal) updateChartForSignal(selectedSignal);
+    }
+
+    function updateAuthUI() {
+      const guestArea = document.getElementById("authGuestArea");
+      const userArea = document.getElementById("authUserArea");
+      const syncStatus = document.getElementById("profileSyncStatus");
+      const saveProfileBtn = document.getElementById("saveProfileBtn");
+
+      if (currentUser) {
+        guestArea.classList.add("hidden");
+        userArea.classList.remove("hidden");
+        userArea.classList.add("flex");
+        saveProfileBtn.classList.remove("hidden");
+
+        const displayName = currentProfile?.full_name || currentUser.email.split("@")[0];
+        const tierLabel = isProView ? "PRO MEMBER" : "FREE TIER";
+
+        document.getElementById("navUserName").textContent = displayName;
+        document.getElementById("navUserEmail").textContent = currentUser.email;
+        syncStatus.innerHTML = `Login: <strong class="text-white">${displayName}</strong> · Tier Database: <strong class="${isProView ? 'text-emerald-400' : 'text-zinc-300'}">${tierLabel}</strong>`;
+      } else {
+        guestArea.classList.remove("hidden");
+        userArea.classList.add("hidden");
+        userArea.classList.remove("flex");
+        saveProfileBtn.classList.add("hidden");
+        syncStatus.textContent = "Mode Tamu (Guest) — Login agar status Tier Free/Pro dan pengaturan risikomu tersimpan di Supabase.";
+      }
+    }
+
+    async function handleLogout() {
+      if (!supabaseClient) return;
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      currentProfile = null;
+      isProView = false;
+      updateAuthUI();
+      applyTierVisuals();
+      renderSignals();
+      if (selectedSignal) updateChartForSignal(selectedSignal);
+    }
+
+    async function saveRiskProfileToDb() {
+      if (!currentUser || !supabaseClient) return;
+      const balance = parseFloat(document.getElementById("balanceInput").value) || 2500;
+      const riskPct = parseFloat(document.getElementById("riskInput").value) || 1.0;
+      const btn = document.getElementById("saveProfileBtn");
+
+      btn.textContent = "Menyimpan...";
+      const { error } = await supabaseClient
+        .from("profiles")
+        .update({
+          default_balance: balance,
+          default_risk_pct: riskPct,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", currentUser.id);
+
+      btn.textContent = error ? "Gagal Menyimpan" : "✓ Tersimpan di Database";
+      setTimeout(() => { btn.textContent = "Simpan Saldo & Risiko ke Profil"; }, 2000);
+    }
+
+    // =========================================================================
+    // 3. REAL-TIME TRADINGVIEW CHART & LIVE TICK STREAM ENGINE
     // =========================================================================
     function initTradingViewChart() {
       const container = document.getElementById("tvChartContainer");
@@ -360,7 +709,6 @@
         wickDownColor: "#f43f5e",
       });
 
-      // Responsif saat ukuran layar berubah
       window.addEventListener("resize", () => {
         if (tvChart && container) {
           tvChart.applyOptions({
@@ -371,7 +719,40 @@
       });
     }
 
-    // Fungsi pembentuk data candlestick struktur Trend + Breakout realistis menuju Entry
+    function getPairDecimals(symbol) {
+      if (symbol.includes("JPY")) return 3;
+      if (symbol.includes("XAU")) return 2;
+      return 5;
+    }
+
+    // Tarik data asli dari Twelve Data jika user mengisi API Key
+    async function fetchRealMarketCandles(sig) {
+      const apiKey = localStorage.getItem("sp_twelvedata_key") || "";
+      if (!apiKey) return null;
+
+      try {
+        const formattedSymbol = sig.symbol.slice(0, 3) + "/" + sig.symbol.slice(3);
+        const interval = sig.timeframe === "D1" ? "1day" : "4h";
+        const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(formattedSymbol)}&interval=${interval}&outputsize=45&apikey=${apiKey}`;
+
+        const res = await fetch(url);
+        const json = await res.json();
+        if (!json.values || !Array.isArray(json.values)) return null;
+
+        const decimals = getPairDecimals(sig.symbol);
+        return json.values.reverse().map(item => ({
+          time: Math.floor(new Date(item.datetime).getTime() / 1000),
+          open: Number(parseFloat(item.open).toFixed(decimals)),
+          high: Number(parseFloat(item.high).toFixed(decimals)),
+          low: Number(parseFloat(item.low).toFixed(decimals)),
+          close: Number(parseFloat(item.close).toFixed(decimals)),
+        }));
+      } catch (e) {
+        console.warn("Gagal mengambil TwelveData, beralih ke Built-in Live Stream:", e);
+        return null;
+      }
+    }
+
     function generateBreakoutCandles(sig) {
       const entry = Number(sig.entry_price);
       const sl = Number(sig.stop_loss);
@@ -380,15 +761,15 @@
       const stepVolatility = riskDist * 0.22;
 
       const totalCandles = 45;
-      const intervalSec = sig.timeframe === "D1" ? 86400 : 14400; // D1 atau H4
+      const intervalSec = sig.timeframe === "D1" ? 86400 : 14400;
       const nowSec = Math.floor(Date.now() / 1000);
-      const startSec = nowSec - totalCandles * intervalSec;
+      const alignedNow = nowSec - (nowSec % intervalSec);
+      const startSec = alignedNow - (totalCandles - 1) * intervalSec;
 
-      // Titik awal tren sebelum breakout menuju harga Entry
       let currentPrice = isLong ? entry - riskDist * 1.4 : entry + riskDist * 1.4;
       const data = [];
+      const decimals = getPairDecimals(sig.symbol);
 
-      // Buat seed deterministik dari nama symbol agar bentuk chart konsisten per pair
       let seed = sig.symbol.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
       const pseudoRand = () => {
         seed = (seed * 9301 + 49297) % 233280;
@@ -399,30 +780,25 @@
         const time = startSec + i * intervalSec;
         const progress = i / totalCandles;
 
-        // Fase kompresi (Bollinger Squeeze) di candle ke-28 s.d. ke-38 lalu Breakout
         let targetPrice;
         if (progress < 0.65) {
           targetPrice = isLong
             ? entry - riskDist * (1.2 - progress * 1.2)
             : entry + riskDist * (1.2 - progress * 1.2);
         } else if (progress < 0.88) {
-          // Konsolidasi di bawah resistance / di atas support
           targetPrice = isLong ? entry - riskDist * 0.25 : entry + riskDist * 0.25;
         } else {
-          // Candle Breakout menembus Entry
           targetPrice = isLong
-            ? entry + riskDist * ((progress - 0.88) * 2.2)
-            : entry - riskDist * ((progress - 0.88) * 2.2);
+            ? entry + riskDist * ((progress - 0.88) * 1.6)
+            : entry - riskDist * ((progress - 0.88) * 1.6);
         }
 
         const open = currentPrice;
         const noise = (pseudoRand() - 0.48) * stepVolatility;
-        const close = i === totalCandles - 3 ? entry : targetPrice + noise;
+        const close = i === totalCandles - 1 ? entry : targetPrice + noise;
 
         const high = Math.max(open, close) + pseudoRand() * stepVolatility * 0.7;
         const low = Math.min(open, close) - pseudoRand() * stepVolatility * 0.7;
-
-        const decimals = sig.symbol.includes("JPY") ? 3 : sig.symbol.includes("XAU") ? 2 : 5;
 
         data.push({
           time,
@@ -438,29 +814,75 @@
       return data;
     }
 
-    // Update Chart & Garis Entry, SL, TP1, TP2 saat sinyal dipilih
-    function updateChartForSignal(sig) {
+    // MESIN DETAK REAL-TIME (Menggerakkan candle terakhir setiap 800ms)
+    function startLiveCandleTicker(sig) {
+      if (liveTickInterval) clearInterval(liveTickInterval);
+      if (!sig || currentCandles.length === 0 || !candleSeries) return;
+
+      const decimals = getPairDecimals(sig.symbol);
+      const entry = Number(sig.entry_price);
+      const sl = Number(sig.stop_loss);
+      const riskDist = Math.abs(entry - sl) || entry * 0.003;
+      const tickStep = riskDist * 0.035; // Besaran fluktuasi per detak tick
+      const isLong = sig.direction === "LONG";
+
+      liveTickInterval = setInterval(() => {
+        const lastIdx = currentCandles.length - 1;
+        const lastBar = { ...currentCandles[lastIdx] };
+
+        // Dorongan halus searah sinyal breakout dengan fluktuasi dua arah realistis
+        const bias = isLong ? 0.485 : 0.515;
+        const delta = (Math.random() - bias) * tickStep;
+        const newClose = Number((lastBar.close + delta).toFixed(decimals));
+
+        lastBar.close = newClose;
+        if (newClose > lastBar.high) lastBar.high = newClose;
+        if (newClose < lastBar.low) lastBar.low = newClose;
+
+        currentCandles[lastIdx] = lastBar;
+        candleSeries.update(lastBar);
+
+        // Update indikator angka Live Price di atas chart
+        const tickerEl = document.getElementById("liveTickerPrice");
+        if (tickerEl) {
+          tickerEl.textContent = newClose.toFixed(decimals);
+          tickerEl.className = delta >= 0
+            ? "text-sm font-bold text-emerald-400 transition-colors"
+            : "text-sm font-bold text-rose-400 transition-colors";
+        }
+      }, 800);
+    }
+
+    async function updateChartForSignal(sig) {
       if (!tvChart || !candleSeries || !sig) return;
 
       document.getElementById("chartTitle").textContent = `${sig.symbol} · ${sig.timeframe}`;
       document.getElementById("chartSetupBadge").textContent = `${sig.direction} ${sig.setup_type}`;
 
-      // Atur jumlah desimal skala harga sesuai pair (XAU 2 desimal, JPY 3 desimal, Major 5 desimal)
-      const precision = sig.symbol.includes("JPY") ? 3 : sig.symbol.includes("XAU") ? 2 : 5;
+      const precision = getPairDecimals(sig.symbol);
       const minMove = Number((1 / Math.pow(10, precision)).toFixed(precision));
       candleSeries.applyOptions({
         priceFormat: { type: "price", precision, minMove },
       });
 
-      // Hapus garis harga sebelumnya
       activePriceLines.forEach((line) => candleSeries.removePriceLine(line));
       activePriceLines = [];
 
-      // Set data candlestick
-      const candles = generateBreakoutCandles(sig);
-      candleSeries.setData(candles);
+      // Cek apakah ada Twelve Data API Key, jika tidak pakai Built-in Generator + Live Stream
+      const realCandles = await fetchRealMarketCandles(sig);
+      if (realCandles && realCandles.length > 0) {
+        currentCandles = realCandles;
+        document.getElementById("feedSourceLabel").textContent = "TwelveData API + Live Tick";
+      } else {
+        currentCandles = generateBreakoutCandles(sig);
+        document.getElementById("feedSourceLabel").textContent = "Live Tick Stream (800ms)";
+      }
 
-      // Cek apakah sinyal dikunci untuk Free Tier
+      candleSeries.setData(currentCandles);
+
+      const lastClose = currentCandles[currentCandles.length - 1].close;
+      document.getElementById("liveTickerPrice").textContent = Number(lastClose).toFixed(precision);
+
       const isLocked = sig.is_pro_only && !isProView;
       const lockOverlay = document.getElementById("chartLockOverlay");
 
@@ -471,7 +893,6 @@
         lockOverlay.classList.add("hidden");
         lockOverlay.classList.remove("flex");
 
-        // Gambar garis Entry, Stop Loss, TP1, dan TP2 otomatis di atas chart
         const entryLine = candleSeries.createPriceLine({
           price: Number(sig.entry_price),
           color: "#60a5fa",
@@ -512,19 +933,49 @@
       }
 
       tvChart.timeScale().fitContent();
+      startLiveCandleTicker(sig);
     }
 
     function resetChartZoom() {
       if (tvChart) tvChart.timeScale().fitContent();
     }
 
+    function openFeedModal() {
+      document.getElementById("inputTwelveDataKey").value = localStorage.getItem("sp_twelvedata_key") || "";
+      const modal = document.getElementById("feedModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeFeedModal() {
+      const modal = document.getElementById("feedModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function saveFeedSettings() {
+      const key = document.getElementById("inputTwelveDataKey").value.trim();
+      if (key) {
+        localStorage.setItem("sp_twelvedata_key", key);
+      } else {
+        localStorage.removeItem("sp_twelvedata_key");
+      }
+      closeFeedModal();
+      if (selectedSignal) updateChartForSignal(selectedSignal);
+    }
+
     // =========================================================================
-    // 3. INISIALISASI KONEKSI SUPABASE & REALTIME
+    // 4. INISIALISASI KONEKSI SUPABASE & REALTIME
     // =========================================================================
-    function initSupabase() {
+    async function initSupabase() {
       try {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         subscribeRealtime();
+
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user) {
+          await fetchUserProfile(session.user);
+        }
       } catch (err) {
         console.error("Gagal inisialisasi Supabase:", err);
       }
@@ -582,7 +1033,7 @@
     }
 
     // =========================================================================
-    // 4. RENDER UI KOMPONEN
+    // 5. RENDER UI KOMPONEN
     // =========================================================================
     function renderEvents() {
       const container = document.getElementById("eventsContainer");
@@ -672,7 +1123,7 @@
               <div class="mt-3 pt-2.5 border-t border-zinc-900/80 flex items-center justify-between text-xs text-zinc-400">
                 <span>🔒 Parameter harga & garis chart dikunci pada Tier Gratis.</span>
                 <button onclick="event.stopPropagation(); toggleProMode();" class="text-white underline hover:text-zinc-300 font-medium">
-                  Buka Simulasi Pro
+                  Aktifkan Pro
                 </button>
               </div>
             ` : ""}
@@ -701,7 +1152,7 @@
     }
 
     // =========================================================================
-    // 5. KALKULATOR LOT & RISIKO OTOMATIS
+    // 6. KALKULATOR LOT & RISIKO OTOMATIS
     // =========================================================================
     function updateRiskCalc() {
       const balance = parseFloat(document.getElementById("balanceInput").value) || 0;
@@ -743,7 +1194,7 @@
     }
 
     // =========================================================================
-    // 6. FILTER, PRO MODE & WEBHOOK PAYLOAD GENERATOR
+    // 7. FILTER, PRO MODE (SYNC KE DATABASE) & WEBHOOK GENERATOR
     // =========================================================================
     function setFilterTf(tf) {
       currentFilterTf = tf;
@@ -757,22 +1208,39 @@
       renderSignals();
     }
 
-    function toggleProMode() {
-      isProView = !isProView;
+    function applyTierVisuals() {
       const btn = document.getElementById("tierToggleBtn");
       const text = document.getElementById("tierText");
       const icon = document.getElementById("tierIcon");
 
       if (isProView) {
         btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold border border-white bg-white text-black transition";
-        text.textContent = "Mode: PRO MEMBER";
+        text.textContent = "PRO MEMBER";
         icon.setAttribute("data-lucide", "unlock");
       } else {
         btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 transition";
-        text.textContent = "Mode: FREE TIER";
+        text.textContent = "FREE TIER";
         icon.setAttribute("data-lucide", "lock");
       }
       lucide.createIcons();
+    }
+
+    async function toggleProMode() {
+      isProView = !isProView;
+      const newTier = isProView ? "pro" : "free";
+
+      if (currentUser && supabaseClient) {
+        await supabaseClient
+          .from("profiles")
+          .update({
+            subscription_tier: newTier,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", currentUser.id);
+      }
+
+      applyTierVisuals();
+      updateAuthUI();
       renderSignals();
       if (selectedSignal) updateChartForSignal(selectedSignal);
     }
@@ -808,11 +1276,11 @@
     }
 
     // Jalankan saat halaman pertama kali dibuka
-    window.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("DOMContentLoaded", async () => {
       lucide.createIcons();
       initTradingViewChart();
-      initSupabase();
-      loadAllData();
+      await initSupabase();
+      await loadAllData();
     });
   </script>
 </body>
