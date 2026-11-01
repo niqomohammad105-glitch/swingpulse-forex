@@ -11,6 +11,9 @@
   <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
+  <!-- TradingView Lightweight Charts CDN (Standalone v4.1.3) -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+  
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -95,8 +98,8 @@
   <!-- MAIN CONTENT -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
     
-    <!-- KOLOM KIRI (8 KOLOM): NEWS SHIELD & DAFTAR SINYAL -->
-    <div class="lg:col-span-8 space-y-6">
+    <!-- KOLOM KIRI (7 KOLOM): NEWS SHIELD & DAFTAR SINYAL -->
+    <div class="lg:col-span-7 space-y-6">
       
       <!-- High-Impact News Shield Banner -->
       <div class="p-4 rounded-lg border border-zinc-900 bg-zinc-950/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -140,9 +143,60 @@
 
     </div>
 
-    <!-- KOLOM KANAN (4 KOLOM): ANALISIS AI, KALKULATOR LOT & WEBHOOK -->
-    <div class="lg:col-span-4 space-y-6">
+    <!-- KOLOM KANAN (5 KOLOM): INTERACTIVE CHART, ANALISIS AI, KALKULATOR LOT & WEBHOOK -->
+    <div class="lg:col-span-5 space-y-6">
       
+      <!-- Panel Baru: TradingView Lightweight Chart dengan Auto-Plot Entry/SL/TP -->
+      <div class="p-5 rounded-lg border border-zinc-900 bg-zinc-950 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="candlestick-chart" class="w-4 h-4 text-white"></i>
+            <span id="chartTitle" class="text-xs font-bold uppercase tracking-wider text-white font-mono">XAUUSD · H4</span>
+            <span id="chartSetupBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">BREAKOUT</span>
+          </div>
+          <button onclick="resetChartZoom()" class="text-[11px] font-mono px-2 py-0.5 rounded bg-black border border-zinc-800 text-zinc-400 hover:text-white transition">
+            Reset Zoom
+          </button>
+        </div>
+
+        <!-- Legend Indikator Garis -->
+        <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono border-y border-zinc-900 py-2">
+          <span class="flex items-center gap-1.5 text-zinc-300">
+            <span class="w-2.5 h-0.5 bg-blue-400 inline-block"></span> Entry
+          </span>
+          <span class="flex items-center gap-1.5 text-rose-400">
+            <span class="w-2.5 h-0.5 bg-rose-500 inline-block"></span> Stop Loss
+          </span>
+          <span class="flex items-center gap-1.5 text-emerald-400">
+            <span class="w-2.5 h-0.5 bg-emerald-500 inline-block"></span> TP 1 (1:2)
+          </span>
+          <span class="flex items-center gap-1.5 text-emerald-300">
+            <span class="w-2.5 h-0.5 bg-teal-400 inline-block"></span> TP 2 (1:3)
+          </span>
+        </div>
+
+        <!-- Container Canvas Chart & Overlay Lock jika Free Tier -->
+        <div class="relative w-full h-72 rounded bg-black border border-zinc-900 overflow-hidden">
+          <div id="tvChartContainer" class="w-full h-full"></div>
+
+          <!-- Overlay Kunci apabila Sinyal Pro dibuka pada Mode Free -->
+          <div id="chartLockOverlay" class="hidden absolute inset-0 bg-black/85 backdrop-blur-sm z-20 flex-col items-center justify-center p-6 text-center space-y-3">
+            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
+              <i data-lucide="lock" class="w-5 h-5"></i>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-white">Auto-Plot Level Dikunci (Pro Only)</h4>
+              <p class="text-xs text-zinc-400 max-w-xs">
+                Garis presisi Entry, Stop Loss, dan Take Profit pada chart ini hanya terbuka untuk member Pro.
+              </p>
+            </div>
+            <button onclick="toggleProMode()" class="px-4 py-1.5 rounded bg-white text-black text-xs font-semibold hover:bg-zinc-200 transition">
+              Buka Simulasi Pro
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Panel 1: Detail & Analisis Algoritma Sinyal Terpilih -->
       <div class="p-5 rounded-lg border border-zinc-900 bg-zinc-950 space-y-4">
         <div class="flex items-center justify-between">
@@ -163,18 +217,6 @@
             <p id="detailSummary" class="text-xs text-zinc-400 leading-relaxed">
               Klik salah satu kartu sinyal di sebelah kiri untuk melihat alasan teknikal dan menghitung ukuran lot otomatis.
             </p>
-          </div>
-        </div>
-
-        <!-- Visual Risk-to-Reward Bar -->
-        <div class="space-y-1.5">
-          <div class="flex justify-between text-[11px] font-mono text-zinc-500">
-            <span>SL Risk (1R)</span>
-            <span>Target TP1 (2R) · TP2 (3R)</span>
-          </div>
-          <div class="w-full h-2 rounded-full bg-zinc-900 overflow-hidden flex">
-            <div class="w-1/4 bg-rose-500/80 h-full"></div>
-            <div class="w-3/4 bg-emerald-500/80 h-full"></div>
           </div>
         </div>
       </div>
@@ -270,8 +312,214 @@
     let allEvents = [];
     let selectedSignal = null;
 
+    // Variabel TradingView Lightweight Chart
+    let tvChart = null;
+    let candleSeries = null;
+    let activePriceLines = [];
+
     // =========================================================================
-    // 2. INISIALISASI KONEKSI SUPABASE & REALTIME
+    // 2. INISIALISASI TRADINGVIEW LIGHTWEIGHT CHARTS
+    // =========================================================================
+    function initTradingViewChart() {
+      const container = document.getElementById("tvChartContainer");
+      if (!container || !window.LightweightCharts) return;
+
+      tvChart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: {
+          background: { type: "solid", color: "#000000" },
+          textColor: "#a1a1aa",
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 11,
+        },
+        grid: {
+          vertLines: { color: "#111113" },
+          horzLines: { color: "#111113" },
+        },
+        crosshair: {
+          mode: LightweightCharts.CrosshairMode.Normal,
+        },
+        rightPriceScale: {
+          borderColor: "#27272a",
+          scaleMargins: { top: 0.15, bottom: 0.15 },
+        },
+        timeScale: {
+          borderColor: "#27272a",
+          timeVisible: true,
+          secondsVisible: false,
+        },
+      });
+
+      candleSeries = tvChart.addCandlestickSeries({
+        upColor: "#10b981",
+        downColor: "#f43f5e",
+        borderUpColor: "#10b981",
+        borderDownColor: "#f43f5e",
+        wickUpColor: "#10b981",
+        wickDownColor: "#f43f5e",
+      });
+
+      // Responsif saat ukuran layar berubah
+      window.addEventListener("resize", () => {
+        if (tvChart && container) {
+          tvChart.applyOptions({
+            width: container.clientWidth,
+            height: container.clientHeight,
+          });
+        }
+      });
+    }
+
+    // Fungsi pembentuk data candlestick struktur Trend + Breakout realistis menuju Entry
+    function generateBreakoutCandles(sig) {
+      const entry = Number(sig.entry_price);
+      const sl = Number(sig.stop_loss);
+      const isLong = sig.direction === "LONG";
+      const riskDist = Math.abs(entry - sl) || entry * 0.005;
+      const stepVolatility = riskDist * 0.22;
+
+      const totalCandles = 45;
+      const intervalSec = sig.timeframe === "D1" ? 86400 : 14400; // D1 atau H4
+      const nowSec = Math.floor(Date.now() / 1000);
+      const startSec = nowSec - totalCandles * intervalSec;
+
+      // Titik awal tren sebelum breakout menuju harga Entry
+      let currentPrice = isLong ? entry - riskDist * 1.4 : entry + riskDist * 1.4;
+      const data = [];
+
+      // Buat seed deterministik dari nama symbol agar bentuk chart konsisten per pair
+      let seed = sig.symbol.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+      const pseudoRand = () => {
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+      };
+
+      for (let i = 0; i < totalCandles; i++) {
+        const time = startSec + i * intervalSec;
+        const progress = i / totalCandles;
+
+        // Fase kompresi (Bollinger Squeeze) di candle ke-28 s.d. ke-38 lalu Breakout
+        let targetPrice;
+        if (progress < 0.65) {
+          targetPrice = isLong
+            ? entry - riskDist * (1.2 - progress * 1.2)
+            : entry + riskDist * (1.2 - progress * 1.2);
+        } else if (progress < 0.88) {
+          // Konsolidasi di bawah resistance / di atas support
+          targetPrice = isLong ? entry - riskDist * 0.25 : entry + riskDist * 0.25;
+        } else {
+          // Candle Breakout menembus Entry
+          targetPrice = isLong
+            ? entry + riskDist * ((progress - 0.88) * 2.2)
+            : entry - riskDist * ((progress - 0.88) * 2.2);
+        }
+
+        const open = currentPrice;
+        const noise = (pseudoRand() - 0.48) * stepVolatility;
+        const close = i === totalCandles - 3 ? entry : targetPrice + noise;
+
+        const high = Math.max(open, close) + pseudoRand() * stepVolatility * 0.7;
+        const low = Math.min(open, close) - pseudoRand() * stepVolatility * 0.7;
+
+        const decimals = sig.symbol.includes("JPY") ? 3 : sig.symbol.includes("XAU") ? 2 : 5;
+
+        data.push({
+          time,
+          open: Number(open.toFixed(decimals)),
+          high: Number(high.toFixed(decimals)),
+          low: Number(low.toFixed(decimals)),
+          close: Number(close.toFixed(decimals)),
+        });
+
+        currentPrice = close;
+      }
+
+      return data;
+    }
+
+    // Update Chart & Garis Entry, SL, TP1, TP2 saat sinyal dipilih
+    function updateChartForSignal(sig) {
+      if (!tvChart || !candleSeries || !sig) return;
+
+      document.getElementById("chartTitle").textContent = `${sig.symbol} · ${sig.timeframe}`;
+      document.getElementById("chartSetupBadge").textContent = `${sig.direction} ${sig.setup_type}`;
+
+      // Atur jumlah desimal skala harga sesuai pair (XAU 2 desimal, JPY 3 desimal, Major 5 desimal)
+      const precision = sig.symbol.includes("JPY") ? 3 : sig.symbol.includes("XAU") ? 2 : 5;
+      const minMove = Number((1 / Math.pow(10, precision)).toFixed(precision));
+      candleSeries.applyOptions({
+        priceFormat: { type: "price", precision, minMove },
+      });
+
+      // Hapus garis harga sebelumnya
+      activePriceLines.forEach((line) => candleSeries.removePriceLine(line));
+      activePriceLines = [];
+
+      // Set data candlestick
+      const candles = generateBreakoutCandles(sig);
+      candleSeries.setData(candles);
+
+      // Cek apakah sinyal dikunci untuk Free Tier
+      const isLocked = sig.is_pro_only && !isProView;
+      const lockOverlay = document.getElementById("chartLockOverlay");
+
+      if (isLocked) {
+        lockOverlay.classList.remove("hidden");
+        lockOverlay.classList.add("flex");
+      } else {
+        lockOverlay.classList.add("hidden");
+        lockOverlay.classList.remove("flex");
+
+        // Gambar garis Entry, Stop Loss, TP1, dan TP2 otomatis di atas chart
+        const entryLine = candleSeries.createPriceLine({
+          price: Number(sig.entry_price),
+          color: "#60a5fa",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          axisLabelVisible: true,
+          title: "ENTRY",
+        });
+
+        const slLine = candleSeries.createPriceLine({
+          price: Number(sig.stop_loss),
+          color: "#f43f5e",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "STOP LOSS",
+        });
+
+        const tp1Line = candleSeries.createPriceLine({
+          price: Number(sig.tp1_price),
+          color: "#10b981",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: "TP 1 (1:2)",
+        });
+
+        const tp2Line = candleSeries.createPriceLine({
+          price: Number(sig.tp2_price),
+          color: "#2dd4bf",
+          lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Dotted,
+          axisLabelVisible: true,
+          title: "TP 2 (1:3)",
+        });
+
+        activePriceLines.push(entryLine, slLine, tp1Line, tp2Line);
+      }
+
+      tvChart.timeScale().fitContent();
+    }
+
+    function resetChartZoom() {
+      if (tvChart) tvChart.timeScale().fitContent();
+    }
+
+    // =========================================================================
+    // 3. INISIALISASI KONEKSI SUPABASE & REALTIME
     // =========================================================================
     function initSupabase() {
       try {
@@ -299,7 +547,12 @@
 
         if (!sigErr && sigData && sigData.length > 0) {
           allSignals = sigData;
-          selectedSignal = allSignals[0];
+          if (!selectedSignal) {
+            selectedSignal = allSignals[0];
+          } else {
+            const updated = allSignals.find(s => String(s.id) === String(selectedSignal.id));
+            selectedSignal = updated || allSignals[0];
+          }
         }
         if (evtData && evtData.length > 0) {
           allEvents = evtData;
@@ -311,6 +564,7 @@
       renderSelectedDetail();
       updateRiskCalc();
       updateWebhookBox();
+      if (selectedSignal) updateChartForSignal(selectedSignal);
 
       if (refreshIcon) {
         setTimeout(() => refreshIcon.classList.remove("animate-spin"), 400);
@@ -328,7 +582,7 @@
     }
 
     // =========================================================================
-    // 3. RENDER UI KOMPONEN
+    // 4. RENDER UI KOMPONEN
     // =========================================================================
     function renderEvents() {
       const container = document.getElementById("eventsContainer");
@@ -354,12 +608,12 @@
 
       container.innerHTML = filtered.map(sig => {
         const isLocked = sig.is_pro_only && !isProView;
-        const isSelected = selectedSignal && selectedSignal.id === sig.id;
+        const isSelected = selectedSignal && String(selectedSignal.id) === String(sig.id);
         const isLong = sig.direction === "LONG";
 
         return `
           <div onclick="selectSignal('${sig.id}')" class="signal-card p-5 rounded-lg border cursor-pointer ${
-            isSelected ? "bg-zinc-950 border-zinc-500" : "bg-black border-zinc-900 hover:border-zinc-800"
+            isSelected ? "bg-zinc-950 border-zinc-400 ring-1 ring-zinc-700" : "bg-black border-zinc-900 hover:border-zinc-800"
           }">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
               <div class="flex items-center gap-2.5">
@@ -390,7 +644,7 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-zinc-900 text-xs font-mono">
               <div>
                 <span class="text-zinc-500 block mb-0.5">ENTRY PRICE</span>
-                <span class="${isLocked ? "blur-sm select-none text-zinc-500" : "text-white font-semibold"}">
+                <span class="${isLocked ? "blur-sm select-none text-zinc-500" : "text-blue-400 font-semibold"}">
                   ${isLocked ? "1.00000" : sig.entry_price}
                 </span>
               </div>
@@ -408,7 +662,7 @@
               </div>
               <div>
                 <span class="text-zinc-500 block mb-0.5">TARGET TP 2 (1:3)</span>
-                <span class="${isLocked ? "blur-sm select-none text-zinc-500" : "text-emerald-300"}">
+                <span class="${isLocked ? "blur-sm select-none text-zinc-500" : "text-teal-300"}">
                   ${isLocked ? "1.00000" : sig.tp2_price}
                 </span>
               </div>
@@ -416,7 +670,7 @@
 
             ${isLocked ? `
               <div class="mt-3 pt-2.5 border-t border-zinc-900/80 flex items-center justify-between text-xs text-zinc-400">
-                <span>🔒 Parameter harga presisi dikunci pada Tier Gratis.</span>
+                <span>🔒 Parameter harga & garis chart dikunci pada Tier Gratis.</span>
                 <button onclick="event.stopPropagation(); toggleProMode();" class="text-white underline hover:text-zinc-300 font-medium">
                   Buka Simulasi Pro
                 </button>
@@ -435,6 +689,7 @@
         renderSelectedDetail();
         updateRiskCalc();
         updateWebhookBox();
+        updateChartForSignal(found);
       }
     }
 
@@ -446,7 +701,7 @@
     }
 
     // =========================================================================
-    // 4. KALKULATOR LOT & RISIKO OTOMATIS
+    // 5. KALKULATOR LOT & RISIKO OTOMATIS
     // =========================================================================
     function updateRiskCalc() {
       const balance = parseFloat(document.getElementById("balanceInput").value) || 0;
@@ -488,7 +743,7 @@
     }
 
     // =========================================================================
-    // 5. FILTER, PRO MODE & WEBHOOK PAYLOAD GENERATOR
+    // 6. FILTER, PRO MODE & WEBHOOK PAYLOAD GENERATOR
     // =========================================================================
     function setFilterTf(tf) {
       currentFilterTf = tf;
@@ -519,6 +774,7 @@
       }
       lucide.createIcons();
       renderSignals();
+      if (selectedSignal) updateChartForSignal(selectedSignal);
     }
 
     function generateNewApiKey() {
@@ -554,6 +810,7 @@
     // Jalankan saat halaman pertama kali dibuka
     window.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
+      initTradingViewChart();
       initSupabase();
       loadAllData();
     });
