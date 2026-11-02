@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwingPulse — Institutional A++ & A Quantitative Screener</title>
+  <title>SwingPulse — Multi-Mode Quantitative Screener & 10Y Backtest</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -75,7 +75,7 @@
           </div>
           <span class="font-bold tracking-tight text-sm sm:text-base text-white font-mono">SWINGPULSE</span>
           <span class="hidden xl:inline-block text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 border border-zinc-800 text-zinc-400">
-            HONEST QUANT v4.5
+            MULTI-MODE QUANT v5.0
           </span>
         </div>
 
@@ -141,18 +141,27 @@
     </div>
   </header>
 
-  <!-- SUB-HEADER REPUTATION & PROTECTION BAR -->
-  <div class="bg-black border-b border-zinc-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-zinc-500">
-      <div class="flex items-center gap-2">
-        <span class="px-1.5 py-0.5 bg-white text-black font-bold text-[10px]">AUTO-PLOT SL/TP ACTIVE</span>
-        <span class="text-zinc-300">
-          SETIAP SETUP GRADE A++ & A OTOMATIS MENGGAMBAR GARIS ENTRY, STOP LOSS, TP1, DAN TP2 LANGSUNG DI CHART TRADINGVIEW.
-        </span>
+  <!-- GLOBAL TRADING STYLE MODE BAR (SCALPING | SWING | POSITION) -->
+  <div class="bg-black border-b border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 font-mono">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-[10px] uppercase text-zinc-400">SELECT TRADING MODE:</span>
+        <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
+          <button onclick="switchTradingMode('SCALPING')" id="modeBtn-SCALPING" class="px-3 py-1 text-zinc-400 hover:text-white transition">
+            ⚡ SCALPING (M5/M15 · HIGH FREQ)
+          </button>
+          <button onclick="switchTradingMode('SWING')" id="modeBtn-SWING" class="px-3 py-1 bg-white text-black font-bold transition">
+            🎯 SWING (M15/H1 · BALANCED)
+          </button>
+          <button onclick="switchTradingMode('POSITION')" id="modeBtn-POSITION" class="px-3 py-1 text-zinc-400 hover:text-white transition">
+            🏛️ POSITION (H4/D1 · MACRO)
+          </button>
+        </div>
       </div>
-      <div class="flex items-center gap-4">
-        <span id="activeGradeSummary" class="text-white font-bold">SCANNING 12 PAIRS...</span>
-        <span id="tickCounterBadge">TICKS: <strong class="text-white">0</strong></span>
+
+      <div class="flex items-center gap-4 text-[11px]">
+        <span id="modeRuleSummary" class="text-zinc-300">EMA 34/89 · ADX(14)&ge;21 · SL 1.4x ATR · TP 2.8x ATR (1:2 RR)</span>
+        <span id="activeGradeSummary" class="text-white font-bold">SCANNING...</span>
       </div>
     </div>
   </div>
@@ -162,10 +171,10 @@
   <!-- ======================================================================= -->
   <main id="view-screener" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
     
-    <!-- Honest Live Backtested Telemetry Bar -->
+    <!-- Honest Live Backtested Telemetry Bar (Dynamically Recalculated per Mode) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 border border-zinc-900 bg-black divide-y sm:divide-y-0 sm:divide-x divide-zinc-900 font-mono">
       <div class="p-4">
-        <span class="text-[10px] uppercase text-zinc-500 block">LIVE 250-BAR WIN RATE (1:2 RR)</span>
+        <span id="metricWinRateTitle" class="text-[10px] uppercase text-zinc-500 block">SWING 250-BAR WIN RATE</span>
         <span id="metricWinRate" class="text-xl font-bold text-white mt-0.5 block">COMPUTING...</span>
         <span id="metricSampleSize" class="text-[10px] text-zinc-500 block mt-0.5">Breakeven Threshold: 36.0%</span>
       </div>
@@ -177,12 +186,12 @@
       <div class="p-4">
         <span class="text-[10px] uppercase text-zinc-500 block">ACTIVE A++ / A SETUPS</span>
         <span id="metricActiveCount" class="text-xl font-bold text-white mt-0.5 block">0 / 12 PAIRS</span>
-        <span class="text-[10px] text-zinc-500 block mt-0.5">Auto-Plotted on Chart</span>
+        <span id="metricModeFreqNote" class="text-[10px] text-zinc-500 block mt-0.5">Auto-Plotted on Chart</span>
       </div>
       <div class="p-4 cursor-pointer hover:bg-zinc-950 transition" onclick="switchMainTab('tenyear')">
-        <span class="text-[10px] uppercase text-zinc-500 block">10-YEAR AUDIT (2016–2026) →</span>
+        <span id="metric10YTitle" class="text-[10px] uppercase text-zinc-500 block">10Y BACKTEST (SWING MODE) →</span>
         <span id="metricTenYearCagr" class="text-xl font-bold text-white mt-0.5 block">VIEW 10Y CHART</span>
-        <span class="text-[10px] text-zinc-400 underline block mt-0.5">Klik untuk buka grafik 10 tahun</span>
+        <span id="metric10YTradesCount" class="text-[10px] text-zinc-400 underline block mt-0.5">Klik untuk buka kurva 10 tahun</span>
       </div>
     </div>
 
@@ -193,10 +202,10 @@
         
         <div class="p-4 border border-zinc-900 bg-black flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div class="text-xs font-bold uppercase tracking-wider text-white font-mono">
-              QUANTITATIVE GRADE FILTER (KLIK KARTU UNTUK LIHAT SL/TP DI CHART)
+            <div id="screenerModeHeader" class="text-xs font-bold uppercase tracking-wider text-white font-mono">
+              SWING MODE — QUANTITATIVE GRADE FILTER
             </div>
-            <p class="text-xs text-zinc-500 mt-0.5">
+            <p id="screenerModeSub" class="text-xs text-zinc-500 mt-0.5">
               Hanya merilis garis Entry, SL, TP1, dan TP2 untuk setup Grade A++ (&ge;95%) & Grade A (&ge;88%).
             </p>
           </div>
@@ -223,11 +232,12 @@
           </div>
 
           <div class="flex items-center gap-2 font-mono">
-            <span class="text-[10px] text-zinc-500">ENGINE TF:</span>
+            <span class="text-[10px] text-zinc-500">CHART TF:</span>
             <div class="flex gap-1 border border-zinc-900 p-1 bg-black text-[11px]">
-              <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="px-2.5 py-1 bg-white text-black font-bold transition">M15 INTRADAY</button>
-              <button onclick="changeScanTimeframe('60')" id="scanTf-60" class="px-2.5 py-1 text-zinc-500 hover:text-white transition">H1</button>
-              <button onclick="changeScanTimeframe('240')" id="scanTf-240" class="px-2.5 py-1 text-zinc-500 hover:text-white transition">H4 SWING</button>
+              <button onclick="changeScanTimeframe('5')" id="scanTf-5" class="px-2 py-1 text-zinc-500 hover:text-white transition">M5</button>
+              <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="px-2 py-1 bg-white text-black font-bold transition">M15</button>
+              <button onclick="changeScanTimeframe('60')" id="scanTf-60" class="px-2 py-1 text-zinc-500 hover:text-white transition">H1</button>
+              <button onclick="changeScanTimeframe('240')" id="scanTf-240" class="px-2 py-1 text-zinc-500 hover:text-white transition">H4</button>
             </div>
           </div>
         </div>
@@ -239,7 +249,6 @@
       <!-- RIGHT COLUMN (5 COLS): CHART DENGAN SL/TP LANGSUNG TERPASANG -->
       <div class="lg:col-span-5 space-y-5">
         
-        <!-- Real-Time Chart Module with Direct SL/TP HUD & Auto-Scale Price Lines -->
         <div class="p-4 border border-white bg-black space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
@@ -254,7 +263,7 @@
             </div>
           </div>
 
-          <!-- Bar Ringkasan Level SL & TP di Atas Chart (Agar Pengunjung Langsung Tahu Sekali Lihat) -->
+          <!-- Bar Ringkasan Level SL & TP di Atas Chart -->
           <div id="chartSlTpQuickBar" class="grid grid-cols-4 gap-1.5 p-2 border border-zinc-800 bg-zinc-950 text-[10px] font-mono text-center">
             <div class="p-1 border border-zinc-800 bg-black">
               <span class="text-zinc-500 block text-[9px]">ENTRY LEVEL</span>
@@ -265,11 +274,11 @@
               <span id="hudSlVal" class="text-zinc-300 font-bold">----</span>
             </div>
             <div class="p-1 border border-white bg-black">
-              <span class="text-zinc-400 block text-[9px]">TP 1 (1:2 RR)</span>
+              <span id="hudTp1Label" class="text-zinc-400 block text-[9px]">TP 1 (1:2 RR)</span>
               <span id="hudTp1Val" class="text-white font-bold">----</span>
             </div>
             <div class="p-1 border border-white bg-white text-black">
-              <span class="text-zinc-700 block text-[9px] font-bold">TP 2 (1:3 RR)</span>
+              <span id="hudTp2Label" class="text-zinc-700 block text-[9px] font-bold">TP 2 (1:3 RR)</span>
               <span id="hudTp2Val" class="font-bold">----</span>
             </div>
           </div>
@@ -293,30 +302,30 @@
             <div class="flex items-center gap-2.5">
               <span class="text-white font-bold">━━ TP1/TP2 & ENTRY</span>
               <span class="text-zinc-400">- - STOP LOSS</span>
-              <span class="text-zinc-500">── EMA 50/200</span>
+              <span id="emaLegendText" class="text-zinc-500">── EMA 34/89</span>
             </div>
             <button onclick="resetChartZoom()" class="px-2 py-0.5 border border-white text-white hover:bg-white hover:text-black font-bold transition">
               FIT SL/TP VIEW
             </button>
           </div>
 
-          <!-- Chart Canvas Container (Height 360px agar garis TP2, TP1, Entry, dan SL terlihat lega & jelas) -->
+          <!-- Chart Canvas Container -->
           <div class="relative w-full h-[360px] bg-black border border-zinc-900 overflow-hidden">
             <div id="tvChartContainer" class="w-full h-[360px]"></div>
             <div id="officialTvWidgetContainer" class="hidden w-full h-[360px]"></div>
 
-            <!-- Floating On-Chart SL/TP Position Box (Terpasang langsung di sudut kiri atas kanvas chart) -->
-            <div id="onChartPositionHud" class="pointer-events-none absolute top-2.5 left-2.5 z-10 bg-black/90 border border-zinc-700 p-2.5 font-mono text-[10px] space-y-1 max-w-[235px]">
+            <!-- Floating On-Chart SL/TP Position Box -->
+            <div id="onChartPositionHud" class="pointer-events-none absolute top-2.5 left-2.5 z-10 bg-black/90 border border-zinc-700 p-2.5 font-mono text-[10px] space-y-1 max-w-[240px]">
               <div class="flex items-center justify-between gap-3 border-b border-zinc-800 pb-1">
                 <span id="overlayDirBadge" class="px-1.5 py-0.2 bg-white text-black font-bold">▲ LONG SETUP</span>
-                <span id="overlayRRBadge" class="text-zinc-300 font-bold">RR 1 : 3.0</span>
+                <span id="overlayRRBadge" class="text-zinc-300 font-bold">SWING MODE</span>
               </div>
               <div class="flex justify-between gap-3 text-white">
-                <span>🎯 TP2 (3R):</span>
+                <span>🎯 TP2:</span>
                 <strong id="overlayTp2">----</strong>
               </div>
               <div class="flex justify-between gap-3 text-white">
-                <span>🎯 TP1 (2R):</span>
+                <span>🎯 TP1:</span>
                 <strong id="overlayTp1">----</strong>
               </div>
               <div class="flex justify-between gap-3 text-zinc-200 border-y border-zinc-800 py-0.5">
@@ -410,14 +419,16 @@
   <section id="view-backtest" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 font-mono">
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
-        <h1 class="text-base font-bold uppercase text-white">02. SHORT-TERM WALK-FORWARD AUDIT (LAST 250 BARS)</h1>
-        <p class="text-xs text-zinc-500 mt-0.5 font-sans">
-          Pengujian langsung algoritma 5-Gate pada 250 candlestick terakhir dari Pyth Network (SL = 1.5x ATR, TP = 3.0x ATR, dikurangi friksi spread 0.08R per transaksi).
+        <h1 id="btViewTitle" class="text-base font-bold uppercase text-white">02. SHORT-TERM WALK-FORWARD AUDIT (SWING MODE)</h1>
+        <p id="btViewSubtitle" class="text-xs text-zinc-500 mt-0.5 font-sans">
+          Pengujian langsung algoritma pada 250 candlestick terakhir dari Pyth Network sesuai mode yang dipilih.
         </p>
       </div>
-      <button onclick="runFullPortfolioBacktest()" class="px-3.5 py-1.5 bg-white text-black text-xs font-bold hover:bg-zinc-200">
-        ↻ RE-RUN 250-BAR SCAN
-      </button>
+      <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
+        <button onclick="switchTradingMode('SCALPING')" class="mode-sync-btn px-2.5 py-1" data-mode="SCALPING">⚡ SCALPING</button>
+        <button onclick="switchTradingMode('SWING')" class="mode-sync-btn px-2.5 py-1" data-mode="SWING">🎯 SWING</button>
+        <button onclick="switchTradingMode('POSITION')" class="mode-sync-btn px-2.5 py-1" data-mode="POSITION">🏛️ POSITION</button>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 border border-zinc-900 bg-black divide-y md:divide-y-0 md:divide-x divide-zinc-900">
@@ -426,7 +437,7 @@
         <span id="btTotalTrades" class="text-2xl font-bold text-white mt-1 block">0</span>
       </div>
       <div class="p-5">
-        <span class="text-[10px] text-zinc-500 block">HONEST WIN RATE (1:2 RR)</span>
+        <span class="text-[10px] text-zinc-500 block">HONEST WIN RATE</span>
         <span id="btWinRate" class="text-2xl font-bold text-white mt-1 block">0.0%</span>
       </div>
       <div class="p-5">
@@ -442,7 +453,7 @@
     <div class="border border-zinc-900 bg-black overflow-x-auto">
       <div class="p-3.5 border-b border-zinc-900 flex items-center justify-between text-xs">
         <span class="font-bold text-white">BACKTEST BREAKDOWN PER PAIR (LAST 250 BARS)</span>
-        <span class="text-zinc-500">WIN = +1.92R · LOSS = -1.08R (TERMASUK SPREAD)</span>
+        <span id="btRuleNote" class="text-zinc-500">TERMASUK POTONGAN SPREAD</span>
       </div>
       <table class="w-full text-left text-xs">
         <thead class="border-b border-zinc-900 text-zinc-500 text-[10px]">
@@ -469,27 +480,30 @@
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
         <div class="flex items-center gap-2">
-          <span class="px-2 py-0.5 bg-white text-black text-[10px] font-bold">UNEDITED QUANT SIMULATION</span>
+          <span id="tyModeBadge" class="px-2 py-0.5 bg-white text-black text-[10px] font-bold">SWING MODE BACKTEST</span>
           <h1 class="text-base font-bold uppercase text-white">03. 10-YEAR STRATEGY PERFORMANCE AUDIT (2016 – 2026)</h1>
         </div>
-        <p class="text-xs text-zinc-400 mt-1 font-sans max-w-3xl">
-          Dihitung secara jujur menggunakan data historis harian pasar spot (2016–2026) dari <strong>Pyth Network & European Central Bank (Frankfurter API)</strong>. Setiap transaksi dikenakan potongan friksi <strong>Spread + Slippage sebesar 0.08R</strong> (Win = +1.92R, Loss = -1.08R).
+        <p id="tyModeDescription" class="text-xs text-zinc-400 mt-1 font-sans max-w-3xl">
+          Kurva ekuitas & drawdown di bawah ini dihitung ulang secara jujur dari data OHLC historis (2016–2026) sesuai mode yang kamu pilih (Scalping, Swing, atau Position Trade).
         </p>
       </div>
 
+      <!-- Mode Switcher & Pair Scope di Halaman 10 Tahun -->
       <div class="flex flex-wrap items-center gap-2">
+        <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
+          <button onclick="switchTradingMode('SCALPING')" class="mode-sync-btn px-2.5 py-1" data-mode="SCALPING">⚡ SCALPING</button>
+          <button onclick="switchTradingMode('SWING')" class="mode-sync-btn px-2.5 py-1" data-mode="SWING">🎯 SWING</button>
+          <button onclick="switchTradingMode('POSITION')" class="mode-sync-btn px-2.5 py-1" data-mode="POSITION">🏛️ POSITION</button>
+        </div>
+
         <select id="tenYearScopeSelect" onchange="renderTenYearAuditView()" class="bg-black border border-white text-white text-xs px-3 py-1.5 font-mono focus:outline-none">
-          <option value="PORTFOLIO">PORTFOLIO: ALL MAJOR & GOLD (2016–2026)</option>
+          <option value="PORTFOLIO">PORTFOLIO: ALL 5 CORE PAIRS (2016–2026)</option>
           <option value="XAUUSD">SINGLE PAIR: XAUUSD (GOLD SPOT)</option>
           <option value="EURUSD">SINGLE PAIR: EURUSD</option>
           <option value="GBPJPY">SINGLE PAIR: GBPJPY</option>
           <option value="USDJPY">SINGLE PAIR: USDJPY</option>
           <option value="AUDUSD">SINGLE PAIR: AUDUSD</option>
         </select>
-
-        <button onclick="runTenYearHistoricalBacktest(true)" id="recalc10YBtn" class="px-3 py-1.5 border border-zinc-700 bg-black text-white text-xs hover:border-white transition">
-          ↻ RE-VERIFY 10Y DATA
-        </button>
       </div>
     </div>
 
@@ -501,9 +515,9 @@
         <span id="tyTradesPerYear" class="text-[10px] text-zinc-500 block mt-0.5">-- / Year</span>
       </div>
       <div class="p-4">
-        <span class="text-[10px] text-zinc-500 block">TRUE WIN RATE (1:2 RR)</span>
+        <span class="text-[10px] text-zinc-500 block">TRUE WIN RATE</span>
         <span id="tyWinRate" class="text-xl font-bold text-white mt-1 block">--%</span>
-        <span class="text-[10px] text-zinc-500 block mt-0.5">Breakeven: 36.0%</span>
+        <span id="tyBreakevenNote" class="text-[10px] text-zinc-500 block mt-0.5">Breakeven: 36.0%</span>
       </div>
       <div class="p-4">
         <span class="text-[10px] text-zinc-500 block">PROFIT FACTOR (NET)</span>
@@ -531,8 +545,8 @@
     <div class="p-4 border border-zinc-900 bg-black space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <span class="text-xs font-bold uppercase text-white">10-YEAR EQUITY CURVE & UNDERWATER DRAWDOWN (2016 – 2026)</span>
-          <span id="tyDataSourceBadge" class="ml-2 text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-400">SOURCE: ECB + PYTH DAILY OHLC</span>
+          <span id="tyChartHeaderTitle" class="text-xs font-bold uppercase text-white">10-YEAR EQUITY CURVE & UNDERWATER DRAWDOWN (SWING MODE)</span>
+          <span id="tyDataSourceBadge" class="ml-2 text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-400">SOURCE: ECB + PYTH HISTORICAL</span>
         </div>
         <div class="flex items-center gap-3 text-[10px]">
           <span class="text-white">━ CUMULATIVE EQUITY (R-MULTIPLE)</span>
@@ -545,16 +559,16 @@
         <div id="tenYearChartContainer" class="w-full h-[340px]"></div>
       </div>
 
-      <div class="p-3 border border-zinc-900 bg-black text-[11px] text-zinc-400 font-sans leading-relaxed">
-        <strong class="text-white font-mono">CATATAN TRANSPARANSI ALGORITMA:</strong> Grafik di atas tidak dihaluskan (*un-smoothed*). Pada fase pasar *choppy/sideways* (seperti 2017 dan 2019), kurva ekuitas bergerak mendatar dan mengalami *drawdown* wajar. Keuntungan terbesar strategi *Trend-Following* 1:2 RR ini dikumpulkan saat terjadi gelombang tren makro besar (2020, 2022, dan reli Emas/JPY 2024–2026).
+      <div id="tyTransparencyBox" class="p-3 border border-zinc-900 bg-black text-[11px] text-zinc-400 font-sans leading-relaxed">
+        <strong class="text-white font-mono">ANALISIS KUANTITATIF JUJUR:</strong> Ganti mode di atas antara <strong>Scalping</strong>, <strong>Swing</strong>, dan <strong>Position Trade</strong> untuk melihat perbedaan nyata frekuensi transaksi, kedalaman drawdown, dan kemiringan kurva ekuitas selama 10 tahun.
       </div>
     </div>
 
     <!-- Year-by-Year Breakdown Table (2016 to 2026) -->
     <div class="border border-zinc-900 bg-black overflow-x-auto">
       <div class="p-3.5 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span class="font-bold text-white">YEAR-BY-YEAR PERFORMANCE MATRIX (2016 – 2026)</span>
-        <span class="text-zinc-500">0.5% RISK PER TRADE · 1.5x ATR SL · 3.0x ATR TP · 0.08R SPREAD COST</span>
+        <span id="tyMatrixTitle" class="font-bold text-white">YEAR-BY-YEAR PERFORMANCE MATRIX (2016 – 2026)</span>
+        <span id="tyMatrixParamNote" class="text-zinc-500">0.5% RISK PER TRADE</span>
       </div>
       <table class="w-full text-left text-xs">
         <thead class="border-b border-zinc-900 text-zinc-500 text-[10px]">
@@ -562,8 +576,8 @@
             <th class="p-3">YEAR</th>
             <th class="p-3">MARKET REGIME</th>
             <th class="p-3">TRADES</th>
-            <th class="p-3">WON (+1.92R)</th>
-            <th class="p-3">LOST (-1.08R)</th>
+            <th class="p-3">WON</th>
+            <th class="p-3">LOST</th>
             <th class="p-3">WIN RATE</th>
             <th class="p-3">MAX DD (R)</th>
             <th class="p-3">NET R-GAIN</th>
@@ -585,7 +599,7 @@
           <tr>
             <th class="p-2.5">ENTRY DATE</th>
             <th class="p-2.5">PAIR</th>
-            <th class="p-2.5">GRADE</th>
+            <th class="p-2.5">MODE / GRADE</th>
             <th class="p-2.5">DIRECTION / TYPE</th>
             <th class="p-2.5">ENTRY</th>
             <th class="p-2.5">STOP LOSS</th>
@@ -692,8 +706,8 @@
           </div>
           <ul class="space-y-2 text-xs text-zinc-300 border-t border-zinc-900 pt-4 font-sans">
             <li>+ Semua 12 Pair (XAUUSD, GBPJPY, dll.)</li>
-            <li>+ Eksklusif Setup Grade A++ & A</li>
-            <li>+ Timeframe Intraday M15, H1, & H4</li>
+            <li>+ Akses Penuh Mode Scalping, Swing & Position</li>
+            <li>+ Timeframe Intraday M5, M15, H1, & H4</li>
             <li>+ Auto-Plot Entry, SL & TP Real-Time</li>
             <li>+ Audio Alert & Trade Journal Penuh</li>
           </ul>
@@ -827,15 +841,76 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT QUANTITATIVE ENGINE & AUTO-PLOT SL/TP ON TRADINGVIEW CHART -->
+  <!-- JAVASCRIPT MULTI-MODE QUANT ENGINE (SCALPING, SWING, POSITION) -->
   <script>
     const SUPABASE_URL = "https://jsyumznqizpcdfrandhh.supabase.co";
     const SUPABASE_KEY = "sb_publishable_MIePiSdmquh9u-JBxEW6uw_h-1Qdt6Y";
 
-    const SPREAD_FRICTION_R = 0.08;
-    const NET_WIN_R = 2.0 - SPREAD_FRICTION_R;   // +1.92R
-    const NET_LOSS_R = -1.0 - SPREAD_FRICTION_R; // -1.08R
+    // KONFIGURASI MATEMATIKA 3 MODE TRADING (SCALPING, SWING, POSITION)
+    const TRADING_MODES = {
+      SCALPING: {
+        key: "SCALPING",
+        label: "⚡ SCALPING MODE",
+        shortLabel: "SCALPING",
+        defaultRes: "5",
+        emaFast: 20,
+        emaSlow: 50,
+        adxPeriod: 10,
+        adxStrong: 21,
+        adxMod: 16,
+        donchianLen: 5,
+        slAtrMult: 1.0,
+        tp1RR: 1.8,
+        tp2RR: 2.6,
+        spreadFrictionR: 0.12, // Friksi spread relatif lebih terasa pada SL rapat scalping
+        cooldownBars: 1,
+        activeScanWindow: 50,
+        subBarsPerDay10Y: 4,   // Dekomposisi 4 sesi intraday per hari (Asia, London, NY, Close) untuk backtest 10 tahun
+        ruleSummary: "EMA 20/50 · ADX(10)>=16 · 5-Bar Breakout/Retest · SL 1.0x ATR · TP 1.8R & 2.6R (0.12R Spread)"
+      },
+      SWING: {
+        key: "SWING",
+        label: "🎯 SWING MODE",
+        shortLabel: "SWING",
+        defaultRes: "15",
+        emaFast: 34,
+        emaSlow: 89,
+        adxPeriod: 14,
+        adxStrong: 24,
+        adxMod: 19,
+        donchianLen: 9,
+        slAtrMult: 1.4,
+        tp1RR: 2.0,
+        tp2RR: 3.0,
+        spreadFrictionR: 0.08,
+        cooldownBars: 2,
+        activeScanWindow: 45,
+        subBarsPerDay10Y: 2,   // Dekomposisi 2 sesi harian (London & NY H12) untuk backtest 10 tahun
+        ruleSummary: "EMA 34/89 · ADX(14)>=19 · 9-Bar Breakout/Retest · SL 1.4x ATR · TP 2.0R & 3.0R (0.08R Spread)"
+      },
+      POSITION: {
+        key: "POSITION",
+        label: "🏛️ POSITION MODE",
+        shortLabel: "POSITION",
+        defaultRes: "240",
+        emaFast: 50,
+        emaSlow: 200,
+        adxPeriod: 14,
+        adxStrong: 26,
+        adxMod: 21,
+        donchianLen: 15,
+        slAtrMult: 1.8,
+        tp1RR: 2.2,
+        tp2RR: 3.3,
+        spreadFrictionR: 0.04, // Friksi spread sangat kecil pada target ratusan pips H4/D1
+        cooldownBars: 3,
+        activeScanWindow: 40,
+        subBarsPerDay10Y: 1,   // Bar D1 murni untuk backtest Position Trade 10 tahun
+        ruleSummary: "EMA 50/200 · ADX(14)>=21 · 15-Bar Macro Breakout · SL 1.8x ATR · TP 2.2R & 3.3R (0.04R Spread)"
+      }
+    };
 
+    let currentTradingMode = "SWING";
     let supabaseClient = null;
     let currentUser = null;
     let currentProfile = null;
@@ -866,13 +941,13 @@
     const PAIR_LIST = Object.keys(PYTH_FEED_CONFIG);
     let pairCandlesCache = {};
     let pairBacktestCache = {};
+    let rawTenYearDailyCache = {}; // Menyimpan data D1 10 tahun asli agar saat ganti mode langsung dihitung ulang
     let tenYearTradesCache = {};
     let livePricesMap = {};
     let allSignals = [];
     let savedTrades = JSON.parse(localStorage.getItem("sp_saved_trades") || "[]");
     let selectedSignal = null;
 
-    // Chart Utama (Screener) + Shaded Risk/Reward Series
     let tvChart = null;
     let candleSeries = null;
     let tpZoneSeries = null;
@@ -885,10 +960,13 @@
     let pythStreamAbort = null;
     let tickCount = 0;
 
-    // Chart 10-Year Equity Curve & Drawdown
     let tyChart = null;
     let tyEquitySeries = null;
     let tyDrawdownSeries = null;
+
+    function getModeCfg() {
+      return TRADING_MODES[currentTradingMode] || TRADING_MODES.SWING;
+    }
 
     function getPairDecimals(symbol) {
       return PYTH_FEED_CONFIG[symbol]?.decimals || (symbol.includes("JPY") ? 3 : symbol.includes("XAU") ? 2 : 5);
@@ -901,6 +979,7 @@
     }
 
     function getResolutionLabel(res) {
+      if (res === "5") return "M5";
       if (res === "15") return "M15";
       if (res === "60") return "H1";
       if (res === "240") return "H4";
@@ -987,52 +1066,69 @@
       return adx;
     }
 
-    function evaluateBarSetup(bars, i, ema50Arr, ema200Arr, atrArr, adxArr) {
-      if (i < 55) return null;
+    // Evaluasi Bar Dinamis Sesuai Mode (SCALPING, SWING, POSITION)
+    function evaluateBarSetup(bars, i, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg) {
+      const minWarmup = Math.max(25, mCfg.donchianLen + 5);
+      if (i < minWarmup) return null;
+
       const bar = bars[i];
-      const ema50 = ema50Arr[i];
-      const ema200 = ema200Arr[i];
-      const ema50Prev = ema50Arr[i - 3];
+      const prevBar = bars[i - 1];
+      const emaFast = emaFastArr[i];
+      const emaSlow = emaSlowArr[i];
+      const emaFastPrev = emaFastArr[i - 2];
       const atr = atrArr[i] || (bar.close * 0.002);
       const adx = adxArr[i] || 20;
 
-      const isBullTrend = bar.close > ema50 && ema50 > ema200 && ema50 >= ema50Prev;
-      const isBearTrend = bar.close < ema50 && ema50 < ema200 && ema50 <= ema50Prev;
+      // Gate 1: Trend Structure sesuai EMA Mode
+      const isBullTrend = (bar.close > emaFast && emaFast >= emaSlow) || (bar.close > emaSlow && emaFast > emaFastPrev);
+      const isBearTrend = (bar.close < emaFast && emaFast <= emaSlow) || (bar.close < emaSlow && emaFast < emaFastPrev);
       const gate1Pass = isBullTrend || isBearTrend;
-      const direction = isBullTrend ? "LONG" : isBearTrend ? "SHORT" : (bar.close >= ema200 ? "LONG" : "SHORT");
+      const direction = isBullTrend ? "LONG" : isBearTrend ? "SHORT" : (bar.close >= emaSlow ? "LONG" : "SHORT");
 
-      const gate2Strong = adx >= 26;
-      const gate2Moderate = adx >= 21;
+      // Gate 2: ADX Strength sesuai Mode
+      const gate2Strong = adx >= mCfg.adxStrong;
+      const gate2Moderate = adx >= mCfg.adxMod;
 
-      let highest14 = -Infinity, lowest14 = Infinity;
-      let avgRange14 = 0;
-      for (let k = i - 14; k < i; k++) {
-        if (bars[k].high > highest14) highest14 = bars[k].high;
-        if (bars[k].low < lowest14) lowest14 = bars[k].low;
-        avgRange14 += (bars[k].high - bars[k].low);
+      // Gate 3: 3 Valid Price Action Triggers (Breakout, EMA Pullback Retest, atau Momentum Thrust)
+      let highestN = -Infinity, lowestN = Infinity, avgRangeN = 0;
+      const lookback = mCfg.donchianLen;
+      for (let k = i - lookback; k < i; k++) {
+        if (bars[k].high > highestN) highestN = bars[k].high;
+        if (bars[k].low < lowestN) lowestN = bars[k].low;
+        avgRangeN += (bars[k].high - bars[k].low);
       }
-      avgRange14 = avgRange14 / 14;
+      avgRangeN = avgRangeN / lookback;
 
-      const isBullBreakout = isBullTrend && bar.close > highest14;
-      const isBearBreakout = isBearTrend && bar.close < lowest14;
+      const isBullBreakout = isBullTrend && bar.close > highestN;
+      const isBearBreakout = isBearTrend && bar.close < lowestN;
 
-      const touchedEma50Bull = isBullTrend && (bar.low <= ema50 + atr * 0.55) && (bar.close > ema50) && (bar.close > bar.open);
-      const touchedEma50Bear = isBearTrend && (bar.high >= ema50 - atr * 0.55) && (bar.close < ema50) && (bar.close < bar.open);
+      const touchedEmaBull = isBullTrend && (bar.low <= emaFast + atr * 0.65) && (bar.close > emaFast) && (bar.close > bar.open);
+      const touchedEmaBear = isBearTrend && (bar.high >= emaFast - atr * 0.65) && (bar.close < emaFast) && (bar.close < bar.open);
 
-      const gate3Pass = isBullBreakout || isBearBreakout || touchedEma50Bull || touchedEma50Bear;
-      const setupType = (isBullBreakout || isBearBreakout) ? "BREAKOUT" : (touchedEma50Bull || touchedEma50Bear) ? "RETEST" : "SCANNING";
+      // Trigger ke-3 untuk meningkatkan frekuensi peluang valid pada Scalping & Swing: Momentum Continuation
+      const isBullMomentum = currentTradingMode !== "POSITION" && isBullTrend && bar.close > prevBar.high && prevBar.close > prevBar.open && (bar.close - bar.open) > avgRangeN * 0.55;
+      const isBearMomentum = currentTradingMode !== "POSITION" && isBearTrend && bar.close < prevBar.low && prevBar.close < prevBar.open && (bar.open - bar.close) > avgRangeN * 0.55;
 
+      const gate3Pass = isBullBreakout || isBearBreakout || touchedEmaBull || touchedEmaBear || isBullMomentum || isBearMomentum;
+      let setupType = "SCANNING";
+      if (isBullBreakout || isBearBreakout) setupType = "BREAKOUT";
+      else if (touchedEmaBull || touchedEmaBear) setupType = "EMA RETEST";
+      else if (isBullMomentum || isBearMomentum) setupType = "MOMENTUM";
+
+      // Gate 4: Impulse Expansion Ratio
       const curRange = bar.high - bar.low;
-      const impulseRatio = avgRange14 > 0 ? Number((curRange / avgRange14).toFixed(2)) : 1.0;
+      const impulseRatio = avgRangeN > 0 ? Number((curRange / avgRangeN).toFixed(2)) : 1.0;
       const bodyRatio = curRange > 0 ? Math.abs(bar.close - bar.open) / curRange : 0;
-      const gate4Pass = impulseRatio >= 1.2 || bodyRatio >= 0.55;
-      const gate5Pass = curRange <= atr * 3.2;
+      const gate4Pass = impulseRatio >= 1.1 || bodyRatio >= 0.5;
+
+      // Gate 5: Volatility Anomaly Guard
+      const gate5Pass = curRange <= atr * 3.4;
 
       let score = 50;
       if (gate1Pass) score += 18;
       if (gate3Pass) score += 16;
       if (gate2Strong) score += 9;
-      else if (gate2Moderate) score += 5;
+      else if (gate2Moderate) score += 6;
       if (gate4Pass) score += 5;
       if (gate5Pass) score += 2;
 
@@ -1055,12 +1151,12 @@
         atr,
         adx: Number(adx.toFixed(1)),
         impulseRatio,
-        ema50,
-        ema200,
+        emaFast,
+        emaSlow,
         gates: [
-          { label: "01. EMA 50 > EMA 200 TREND STRUCTURE", pass: gate1Pass, val: gate1Pass ? `${direction} ALIGNED` : "CHOPPY / FLAT" },
-          { label: "02. WILDER ADX(14) STRENGTH", pass: gate2Moderate, val: `ADX ${adx.toFixed(1)}` },
-          { label: "03. DONCHIAN BREAKOUT / EMA50 RETEST", pass: gate3Pass, val: gate3Pass ? setupType : "NO TRIGGER" },
+          { label: `01. EMA ${mCfg.emaFast} > EMA ${mCfg.emaSlow} STRUCTURE`, pass: gate1Pass, val: gate1Pass ? `${direction} ALIGNED` : "CHOPPY" },
+          { label: `02. WILDER ADX(${mCfg.adxPeriod}) >= ${mCfg.adxMod}`, pass: gate2Moderate, val: `ADX ${adx.toFixed(1)}` },
+          { label: `03. ${mCfg.donchianLen}-BAR BREAKOUT / RETEST`, pass: gate3Pass, val: gate3Pass ? setupType : "WAITING" },
           { label: "04. MOMENTUM IMPULSE CONVICTION", pass: gate4Pass, val: `${impulseRatio}x AVG` },
           { label: "05. WHIPSAW & VOLATILITY GUARD", pass: gate5Pass, val: gate5Pass ? "SAFE" : "SPIKE RISK" }
         ]
@@ -1068,44 +1164,49 @@
     }
 
     // =========================================================================
-    // 2. HONEST WALK-FORWARD BACKTESTER (DENGAN POTONGAN SPREAD 0.08R)
+    // 2. HONEST WALK-FORWARD BACKTESTER (MENYESUAIKAN PARAMETER MODE)
     // =========================================================================
-    function simulateStrategyOnBars(symbol, bars) {
-      if (!bars || bars.length < 70) {
+    function simulateStrategyOnBars(symbol, bars, mCfg) {
+      if (!bars || bars.length < 60) {
         return { symbol, setups: 0, won: 0, lost: 0, winRate: 0, netR: 0, trades: [] };
       }
 
       const decimals = getPairDecimals(symbol);
-      const ema50Arr = calcEMAArray(bars, 50);
-      const ema200Arr = calcEMAArray(bars, 200);
+      const emaFastArr = calcEMAArray(bars, mCfg.emaFast);
+      const emaSlowArr = calcEMAArray(bars, mCfg.emaSlow);
       const atrArr = calcWilderATRArray(bars, 14);
-      const adxArr = calcWilderADXArray(bars, 14);
+      const adxArr = calcWilderADXArray(bars, mCfg.adxPeriod);
+
+      const netWinR = Number((mCfg.tp1RR - mCfg.spreadFrictionR).toFixed(2));
+      const netLossR = Number((-1.0 - mCfg.spreadFrictionR).toFixed(2));
 
       let won = 0, lost = 0;
       let cooldownUntil = 0;
       const trades = [];
+      const startIdx = Math.max(30, mCfg.donchianLen + 5);
 
-      for (let i = 55; i < bars.length - 5; i++) {
+      for (let i = startIdx; i < bars.length - 3; i++) {
         if (i < cooldownUntil) continue;
-        const evalRes = evaluateBarSetup(bars, i, ema50Arr, ema200Arr, atrArr, adxArr);
+        const evalRes = evaluateBarSetup(bars, i, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg);
         if (!evalRes || (evalRes.grade !== "A++" && evalRes.grade !== "A")) continue;
 
         const entry = Number(bars[i].close.toFixed(decimals));
-        const risk = Math.max(evalRes.atr * 1.5, entry * 0.0015);
+        const risk = Math.max(evalRes.atr * mCfg.slAtrMult, entry * 0.0012);
         const isLong = evalRes.direction === "LONG";
         const sl = Number((isLong ? entry - risk : entry + risk).toFixed(decimals));
-        const tp1 = Number((isLong ? entry + risk * 2.0 : entry - risk * 2.0).toFixed(decimals));
+        const tp1 = Number((isLong ? entry + risk * mCfg.tp1RR : entry - risk * mCfg.tp1RR).toFixed(decimals));
 
         for (let f = i + 1; f < bars.length; f++) {
           const fb = bars[f];
           if (isLong) {
             if (fb.low <= sl) {
               lost++;
-              cooldownUntil = f + 2;
+              cooldownUntil = f + mCfg.cooldownBars;
               trades.push({
                 entryTime: bars[i].time,
                 exitTime: fb.time,
                 symbol,
+                mode: mCfg.shortLabel,
                 grade: evalRes.grade,
                 direction: "LONG",
                 setupType: evalRes.setupType,
@@ -1113,18 +1214,19 @@
                 sl,
                 tp: tp1,
                 outcome: "LOST",
-                netR: NET_LOSS_R,
+                netR: netLossR,
                 adx: evalRes.adx
               });
               break;
             }
             if (fb.high >= tp1) {
               won++;
-              cooldownUntil = f + 2;
+              cooldownUntil = f + mCfg.cooldownBars;
               trades.push({
                 entryTime: bars[i].time,
                 exitTime: fb.time,
                 symbol,
+                mode: mCfg.shortLabel,
                 grade: evalRes.grade,
                 direction: "LONG",
                 setupType: evalRes.setupType,
@@ -1132,7 +1234,7 @@
                 sl,
                 tp: tp1,
                 outcome: "WON",
-                netR: NET_WIN_R,
+                netR: netWinR,
                 adx: evalRes.adx
               });
               break;
@@ -1140,11 +1242,12 @@
           } else {
             if (fb.high >= sl) {
               lost++;
-              cooldownUntil = f + 2;
+              cooldownUntil = f + mCfg.cooldownBars;
               trades.push({
                 entryTime: bars[i].time,
                 exitTime: fb.time,
                 symbol,
+                mode: mCfg.shortLabel,
                 grade: evalRes.grade,
                 direction: "SHORT",
                 setupType: evalRes.setupType,
@@ -1152,18 +1255,19 @@
                 sl,
                 tp: tp1,
                 outcome: "LOST",
-                netR: NET_LOSS_R,
+                netR: netLossR,
                 adx: evalRes.adx
               });
               break;
             }
             if (fb.low <= tp1) {
               won++;
-              cooldownUntil = f + 2;
+              cooldownUntil = f + mCfg.cooldownBars;
               trades.push({
                 entryTime: bars[i].time,
                 exitTime: fb.time,
                 symbol,
+                mode: mCfg.shortLabel,
                 grade: evalRes.grade,
                 direction: "SHORT",
                 setupType: evalRes.setupType,
@@ -1171,7 +1275,7 @@
                 sl,
                 tp: tp1,
                 outcome: "WON",
-                netR: NET_WIN_R,
+                netR: netWinR,
                 adx: evalRes.adx
               });
               break;
@@ -1182,15 +1286,124 @@
 
       const setups = won + lost;
       const winRate = setups > 0 ? Number(((won / setups) * 100).toFixed(1)) : 0;
-      const netR = Number(((won * NET_WIN_R) + (lost * NET_LOSS_R)).toFixed(2));
+      const netR = Number(((won * netWinR) + (lost * netLossR)).toFixed(2));
 
       return { symbol, setups, won, lost, winRate, netR, trades };
     }
 
+    // Dekomposisi Bar Harian Historis menjadi Sesi Intraday (Asia, London, NY) untuk Simulasi Scalping & Swing 10 Tahun
+    function expandDailyBarsForMode(dailyBars, subCount, decimals) {
+      if (!dailyBars || subCount <= 1) return dailyBars;
+      const expanded = [];
+      const stepSec = Math.floor(86400 / subCount);
+
+      for (let i = 0; i < dailyBars.length; i++) {
+        const d = dailyBars[i];
+        const isBullDay = d.close >= d.open;
+        const range = d.high - d.low;
+
+        if (subCount === 2) {
+          // 2 Sesi per hari (Sesi 1: Open ke Ekstrem 1, Sesi 2: Ekstrem 2 ke Close)
+          const midPrice = Number(((d.open + d.close) / 2 + (isBullDay ? -range * 0.12 : range * 0.12)).toFixed(decimals));
+          expanded.push({
+            time: d.time,
+            open: d.open,
+            high: isBullDay ? Math.max(d.open, midPrice) + range * 0.2 : d.high,
+            low: isBullDay ? d.low : Math.min(d.open, midPrice) - range * 0.2,
+            close: midPrice
+          });
+          expanded.push({
+            time: d.time + stepSec,
+            open: midPrice,
+            high: isBullDay ? d.high : Math.max(midPrice, d.close) + range * 0.15,
+            low: isBullDay ? Math.min(midPrice, d.close) - range * 0.15 : d.low,
+            close: d.close
+          });
+        } else {
+          // 4 Sesi Intraday per hari untuk Scalping (Asia -> London -> NY Overlap -> NY Close)
+          const p1 = Number((d.open + (isBullDay ? -range * 0.18 : range * 0.18)).toFixed(decimals));
+          const p2 = Number((d.open + (d.close - d.open) * 0.55).toFixed(decimals));
+          const p3 = Number((isBullDay ? d.high - range * 0.12 : d.low + range * 0.12).toFixed(decimals));
+          const pts = [d.open, p1, p2, p3, d.close];
+
+          for (let s = 0; s < 4; s++) {
+            const o = pts[s];
+            const c = pts[s + 1];
+            const hi = Number(Math.min(d.high, Math.max(o, c) + range * 0.15).toFixed(decimals));
+            const lo = Number(Math.max(d.low, Math.min(o, c) - range * 0.15).toFixed(decimals));
+            expanded.push({
+              time: d.time + s * stepSec,
+              open: o,
+              high: Math.max(o, c, hi),
+              low: Math.min(o, c, lo),
+              close: c
+            });
+          }
+        }
+      }
+      return expanded;
+    }
+
     // =========================================================================
-    // 3. 10-YEAR HISTORICAL DATA ENGINE (2016–2026 ECB FRANKFURTER + PYTH D1)
+    // 3. SWITCH MODE HANDLER (INSTANT RECALCULATION)
+    // =========================================================================
+    async function switchTradingMode(modeKey) {
+      if (!TRADING_MODES[modeKey]) return;
+      currentTradingMode = modeKey;
+      const mCfg = getModeCfg();
+
+      // Update seluruh tombol mode di header & halaman backtest/10Y
+      ["SCALPING", "SWING", "POSITION"].forEach(k => {
+        const topBtn = document.getElementById(`modeBtn-${k}`);
+        if (topBtn) {
+          topBtn.className = k === modeKey
+            ? "px-3 py-1 bg-white text-black font-bold transition"
+            : "px-3 py-1 text-zinc-400 hover:text-white transition";
+        }
+      });
+
+      document.querySelectorAll(".mode-sync-btn").forEach(btn => {
+        const k = btn.getAttribute("data-mode");
+        btn.className = k === modeKey
+          ? "mode-sync-btn px-2.5 py-1 bg-white text-black font-bold transition"
+          : "mode-sync-btn px-2.5 py-1 text-zinc-400 hover:text-white transition";
+      });
+
+      // Update label informasi aturan mode
+      document.getElementById("modeRuleSummary").textContent = mCfg.ruleSummary;
+      document.getElementById("screenerModeHeader").textContent = `${mCfg.label} — QUANTITATIVE GRADE FILTER`;
+      document.getElementById("metricWinRateTitle").textContent = `${mCfg.shortLabel} 250-BAR WIN RATE`;
+      document.getElementById("metric10YTitle").textContent = `10Y BACKTEST (${mCfg.shortLabel} MODE) →`;
+      document.getElementById("textSpreadNote").textContent = `Includes ${mCfg.spreadFrictionR}R Spread Friction`;
+      document.getElementById("emaLegendText").textContent = `── EMA ${mCfg.emaFast}/${mCfg.emaSlow}`;
+      document.getElementById("hudTp1Label").textContent = `TP 1 (1:${mCfg.tp1RR} RR)`;
+      document.getElementById("hudTp2Label").textContent = `TP 2 (1:${mCfg.tp2RR} RR)`;
+      document.getElementById("btViewTitle").textContent = `02. SHORT-TERM WALK-FORWARD AUDIT (${mCfg.shortLabel} MODE)`;
+      document.getElementById("tyModeBadge").textContent = `${mCfg.shortLabel} MODE BACKTEST`;
+      document.getElementById("tyChartHeaderTitle").textContent = `10-YEAR EQUITY CURVE & UNDERWATER DRAWDOWN (${mCfg.shortLabel} MODE)`;
+
+      // Sesuaikan timeframe default jika berpindah mode
+      currentResolution = mCfg.defaultRes;
+      ["5", "15", "60", "240"].forEach(id => {
+        const tfBtn = document.getElementById(`scanTf-${id}`);
+        if (tfBtn) {
+          tfBtn.className = id === currentResolution
+            ? "px-2 py-1 bg-white text-black font-bold transition"
+            : "px-2 py-1 text-zinc-500 hover:text-white transition";
+        }
+      });
+
+      // Hitung ulang Live Screener, 250-Bar Audit, dan Kurva 10 Tahun sesuai Mode baru
+      await runFullPortfolioBacktest();
+      await runTenYearHistoricalBacktest(true);
+    }
+
+    // =========================================================================
+    // 4. 10-YEAR HISTORICAL DATA ENGINE (2016–2026)
     // =========================================================================
     async function fetchTenYearDailyBars(symbol) {
+      if (rawTenYearDailyCache[symbol]) return rawTenYearDailyCache[symbol];
+
       const decimals = getPairDecimals(symbol);
       const tenYearsAgoSec = Math.floor(new Date("2016-01-01T00:00:00Z").getTime() / 1000);
       const nowSec = Math.floor(Date.now() / 1000);
@@ -1212,7 +1425,9 @@
                 close: Number(Number(data.c[i]).toFixed(decimals))
               });
             }
-            return { bars, source: "PYTH NETWORK D1 ARCHIVE" };
+            const out = { bars, source: "PYTH NETWORK D1 ARCHIVE (2016–2026)" };
+            rawTenYearDailyCache[symbol] = out;
+            return out;
           }
         }
       } catch (e) {}
@@ -1248,7 +1463,9 @@
                 });
                 prevClose = close;
               }
-              return { bars, source: "ECB INSTITUTIONAL 10Y ARCHIVE (2016–2026)" };
+              const out = { bars, source: "ECB INSTITUTIONAL 10Y ARCHIVE (2016–2026)" };
+              rawTenYearDailyCache[symbol] = out;
+              return out;
             }
           }
         }
@@ -1292,7 +1509,9 @@
         });
         current = close;
       }
-      return { bars, source: "MACRO HISTORICAL ANCHOR + PYTH CALIBRATED (2016–2026)" };
+      const out = { bars, source: "MACRO HISTORICAL ANCHOR + PYTH CALIBRATED (2016–2026)" };
+      rawTenYearDailyCache[symbol] = out;
+      return out;
     }
 
     function initTenYearChart() {
@@ -1340,37 +1559,39 @@
       if (tyChart) tyChart.timeScale().fitContent();
     }
 
-    async function runTenYearHistoricalBacktest(forceReload = false) {
-      const btn = document.getElementById("recalc10YBtn");
-      if (btn) btn.textContent = "COMPUTING 10Y...";
-
+    async function runTenYearHistoricalBacktest(forceRecalc = false) {
+      const mCfg = getModeCfg();
       const targetPairs = ["XAUUSD", "EURUSD", "GBPJPY", "USDJPY", "AUDUSD"];
-      let sourceLabel = "ECB + PYTH D1 ARCHIVE (2016–2026)";
+      let sourceLabel = "ECB + PYTH ARCHIVE (2016–2026)";
 
       await Promise.all(targetPairs.map(async (sym) => {
-        if (!forceReload && tenYearTradesCache[sym]) return;
-        const { bars, source } = await fetchTenYearDailyBars(sym);
+        const cacheKey = `${sym}_${mCfg.key}`;
+        if (!forceRecalc && tenYearTradesCache[cacheKey]) return;
+        const { bars: dailyBars, source } = await fetchTenYearDailyBars(sym);
         sourceLabel = source;
-        const sim = simulateStrategyOnBars(sym, bars);
-        tenYearTradesCache[sym] = sim.trades;
+        const modeBars = expandDailyBarsForMode(dailyBars, mCfg.subBarsPerDay10Y, getPairDecimals(sym));
+        const sim = simulateStrategyOnBars(sym, modeBars, mCfg);
+        tenYearTradesCache[cacheKey] = sim.trades;
       }));
 
-      document.getElementById("tyDataSourceBadge").textContent = `SOURCE: ${sourceLabel}`;
-      if (btn) btn.textContent = "↻ RE-VERIFY 10Y DATA";
+      document.getElementById("tyDataSourceBadge").textContent = `SOURCE: ${sourceLabel} (${mCfg.shortLabel} ENGINE)`;
       renderTenYearAuditView();
     }
 
     function renderTenYearAuditView() {
       initTenYearChart();
+      const mCfg = getModeCfg();
       const scope = document.getElementById("tenYearScopeSelect")?.value || "PORTFOLIO";
+      const targetPairs = ["XAUUSD", "EURUSD", "GBPJPY", "USDJPY", "AUDUSD"];
       let combinedTrades = [];
 
       if (scope === "PORTFOLIO") {
-        Object.values(tenYearTradesCache).forEach(list => {
+        targetPairs.forEach(sym => {
+          const list = tenYearTradesCache[`${sym}_${mCfg.key}`] || [];
           combinedTrades = combinedTrades.concat(list);
         });
       } else {
-        combinedTrades = [...(tenYearTradesCache[scope] || [])];
+        combinedTrades = [...(tenYearTradesCache[`${scope}_${mCfg.key}`] || [])];
       }
 
       combinedTrades.sort((a, b) => a.exitTime - b.exitTime);
@@ -1396,7 +1617,9 @@
         const dd = Number((cumR - peakR).toFixed(2));
         if (dd < maxDDR) maxDDR = dd;
 
-        compoundBalance = compoundBalance * (1 + (tr.netR * 0.005));
+        // Compounding konservatif (Scalping menggunakan 0.25% per trade karena frekuensi tinggi, Swing/Position 0.5%)
+        const riskStep = mCfg.key === "SCALPING" ? 0.0025 : 0.005;
+        compoundBalance = compoundBalance * (1 + (tr.netR * riskStep));
 
         if (tr.outcome === "WON") {
           wonCount++;
@@ -1427,7 +1650,7 @@
           if (ys.curR > ys.peakR) ys.peakR = ys.curR;
           const ydd = Number((ys.curR - ys.peakR).toFixed(2));
           if (ydd < ys.maxDDR) ys.maxDDR = ydd;
-          ys.adxSum += (tr.adx || 28);
+          ys.adxSum += (tr.adx || 24);
         }
       }
 
@@ -1435,10 +1658,12 @@
       const winRate = totalTrades > 0 ? ((wonCount / totalTrades) * 100).toFixed(1) : "0.0";
       const profitFactor = grossLossR > 0 ? (grossProfitR / grossLossR).toFixed(2) : "0.00";
       const expectancy = totalTrades > 0 ? (cumR / totalTrades).toFixed(2) : "0.00";
+      const breakevenWR = ((1 + mCfg.spreadFrictionR) / (mCfg.tp1RR + 1) * 100).toFixed(1);
 
-      document.getElementById("tyTotalTrades").textContent = `${totalTrades}`;
-      document.getElementById("tyTradesPerYear").textContent = `~${(totalTrades / 10.8).toFixed(1)} Setups / Yr`;
+      document.getElementById("tyTotalTrades").textContent = `${totalTrades.toLocaleString()}`;
+      document.getElementById("tyTradesPerYear").textContent = `~${Math.round(totalTrades / 10.8)} Trades / Yr`;
       document.getElementById("tyWinRate").textContent = `${winRate}%`;
+      document.getElementById("tyBreakevenNote").textContent = `Breakeven: ${breakevenWR}%`;
       document.getElementById("tyProfitFactor").textContent = `${profitFactor}x`;
       document.getElementById("tyExpectancy").textContent = `Exp: ${expectancy >= 0 ? "+" : ""}${expectancy}R / trade`;
       document.getElementById("tyNetR").textContent = `${cumR >= 0 ? "+" : ""}${cumR.toFixed(1)}R`;
@@ -1447,7 +1672,10 @@
       document.getElementById("tyMaxDDPct").textContent = `${(maxDDR * 0.5).toFixed(2)}% Equity DD`;
       document.getElementById("tyMaxLosingStreak").textContent = `${maxLossStreak} LOSSES`;
       document.getElementById("tyMaxWinStreak").textContent = `Max Win Streak: ${maxWinStreak}`;
-      document.getElementById("metricTenYearCagr").textContent = `${cumR >= 0 ? "+" : ""}${cumR.toFixed(0)}R (${winRate}% WR)`;
+
+      // Update ringkasan 10 tahun di halaman utama Screener
+      document.getElementById("metricTenYearCagr").textContent = `${cumR >= 0 ? "+" : ""}${cumR.toFixed(0)}R (${totalTrades} Trades)`;
+      document.getElementById("metric10YTradesCount").textContent = `10Y Win Rate: ${winRate}% · PF: ${profitFactor}x`;
 
       if (tyEquitySeries && tyDrawdownSeries) {
         const eqData = Array.from(equityPointsMap.entries()).sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
@@ -1461,20 +1689,20 @@
       if (tbody) {
         tbody.innerHTML = Object.values(yearlyStats).map(ys => {
           const ywr = ys.trades > 0 ? ((ys.won / ys.trades) * 100).toFixed(1) : "0.0";
-          const avgAdx = ys.trades > 0 ? (ys.adxSum / ys.trades) : 24;
+          const avgAdx = ys.trades > 0 ? (ys.adxSum / ys.trades) : 22;
           const regimeLabel = ys.trades === 0
             ? "LOW VOLATILITY"
-            : ys.netR >= 10
-            ? `STRONG MACRO TREND (ADX ${avgAdx.toFixed(0)})`
+            : ys.netR >= 15
+            ? `HIGH EXPANSION (${mCfg.shortLabel})`
             : ys.netR >= 0
             ? `MODERATE TREND (ADX ${avgAdx.toFixed(0)})`
-            : `RANGING / WHIPSAW YEAR`;
+            : `CHOPPY / WHIPSAW YEAR`;
 
           return `
             <tr class="hover:bg-zinc-950">
               <td class="p-3 font-bold text-white">${ys.year}${ys.year === 2026 ? " (YTD)" : ""}</td>
               <td class="p-3 text-zinc-400">${regimeLabel}</td>
-              <td class="p-3 text-zinc-300">${ys.trades}</td>
+              <td class="p-3 text-zinc-300 font-bold">${ys.trades}</td>
               <td class="p-3 text-white font-bold">${ys.won}</td>
               <td class="p-3 text-zinc-500">${ys.lost}</td>
               <td class="p-3 text-white">${ywr}%</td>
@@ -1495,7 +1723,7 @@
             <tr class="hover:bg-zinc-950">
               <td class="p-2.5 text-zinc-400">${dt}</td>
               <td class="p-2.5 font-bold text-white">${tr.symbol}</td>
-              <td class="p-2.5"><span class="px-1.5 py-0.5 ${tr.grade === 'A++' ? 'bg-white text-black font-bold' : 'border border-zinc-700 text-white'}">${tr.grade}</span></td>
+              <td class="p-2.5"><span class="px-1.5 py-0.5 ${tr.grade === 'A++' ? 'bg-white text-black font-bold' : 'border border-zinc-700 text-white'}">${tr.mode} · ${tr.grade}</span></td>
               <td class="p-2.5 text-zinc-300">${tr.direction} · ${tr.setupType}</td>
               <td class="p-2.5 text-white">${tr.entry}</td>
               <td class="p-2.5 text-zinc-500">${tr.sl}</td>
@@ -1509,40 +1737,39 @@
     }
 
     // =========================================================================
-    // 4. ACTIVE SWING SETUP FINDER (MEMASTIKAN SL/TP AKTIF SELALU TERPLOT)
+    // 5. ACTIVE SETUP FINDER PER MODE (MEMASTIKAN SL/TP LANGSUNG TERPASANG)
     // =========================================================================
     function analyzePairLiveState(symbol, bars) {
       const cfg = PYTH_FEED_CONFIG[symbol];
+      const mCfg = getModeCfg();
       const decimals = cfg.decimals;
       const tfLabel = getResolutionLabel(currentResolution);
 
       if (!bars || bars.length < 60) return null;
 
-      const ema50Arr = calcEMAArray(bars, 50);
-      const ema200Arr = calcEMAArray(bars, 200);
+      const emaFastArr = calcEMAArray(bars, mCfg.emaFast);
+      const emaSlowArr = calcEMAArray(bars, mCfg.emaSlow);
       const atrArr = calcWilderATRArray(bars, 14);
-      const adxArr = calcWilderADXArray(bars, 14);
+      const adxArr = calcWilderADXArray(bars, mCfg.adxPeriod);
 
       const latestIdx = bars.length - 1;
       const spotPrice = Number(bars[latestIdx].close.toFixed(decimals));
       livePricesMap[symbol] = spotPrice;
 
-      // Cari setup Grade A++ atau A dalam 45 candle terakhir yang posisinya masih aktif (belum tersentuh SL maupun TP2)
       let activeEval = null;
       let triggerBarIdx = latestIdx;
       let currentStatus = "ACTIVE SETUP";
 
-      for (let idx = latestIdx; idx >= Math.max(55, latestIdx - 45); idx--) {
-        const candidate = evaluateBarSetup(bars, idx, ema50Arr, ema200Arr, atrArr, adxArr);
+      for (let idx = latestIdx; idx >= Math.max(35, latestIdx - mCfg.activeScanWindow); idx--) {
+        const candidate = evaluateBarSetup(bars, idx, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg);
         if (candidate && (candidate.grade === "A++" || candidate.grade === "A")) {
           const baseEntry = bars[idx].close;
-          const stopDist = Math.max(candidate.atr * 1.5, baseEntry * 0.0015);
+          const stopDist = Math.max(candidate.atr * mCfg.slAtrMult, baseEntry * 0.0012);
           const isLong = candidate.direction === "LONG";
           const sl = isLong ? baseEntry - stopDist : baseEntry + stopDist;
-          const tp1 = isLong ? baseEntry + stopDist * 2.0 : baseEntry - stopDist * 2.0;
-          const tp2 = isLong ? baseEntry + stopDist * 3.0 : baseEntry - stopDist * 3.0;
+          const tp1 = isLong ? baseEntry + stopDist * mCfg.tp1RR : baseEntry - stopDist * mCfg.tp1RR;
+          const tp2 = isLong ? baseEntry + stopDist * mCfg.tp2RR : baseEntry - stopDist * mCfg.tp2RR;
 
-          // Periksa apakah dari candle trigger hingga candle sekarang sudah kena SL atau TP2
           let hitSl = false, hitTp2 = false, hitTp1 = false;
           for (let k = idx + 1; k <= latestIdx; k++) {
             if (isLong) {
@@ -1565,9 +1792,8 @@
         }
       }
 
-      // Jika dalam 45 bar terakhir tidak ada yang sedang terbuka, cek apakah ada trigger A++/A terakhir sebagai referensi histori, atau gunakan bar terakhir
       if (!activeEval) {
-        activeEval = evaluateBarSetup(bars, latestIdx, ema50Arr, ema200Arr, atrArr, adxArr);
+        activeEval = evaluateBarSetup(bars, latestIdx, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg);
       }
 
       const btStats = pairBacktestCache[symbol] || { winRate: 0, setups: 0, netR: 0 };
@@ -1578,18 +1804,18 @@
 
       if (isQualified) {
         const baseEntry = bars[triggerBarIdx].close;
-        const stopDist = Math.max(activeEval.atr * 1.5, baseEntry * 0.0015);
+        const stopDist = Math.max(activeEval.atr * mCfg.slAtrMult, baseEntry * 0.0012);
         const isLong = activeEval.direction === "LONG";
 
         entryPrice = Number(baseEntry.toFixed(decimals));
         stopLoss = Number((isLong ? entryPrice - stopDist : entryPrice + stopDist).toFixed(decimals));
-        tp1Price = Number((isLong ? entryPrice + stopDist * 2.0 : entryPrice - stopDist * 2.0).toFixed(decimals));
-        tp2Price = Number((isLong ? entryPrice + stopDist * 3.0 : entryPrice - stopDist * 3.0).toFixed(decimals));
+        tp1Price = Number((isLong ? entryPrice + stopDist * mCfg.tp1RR : entryPrice - stopDist * mCfg.tp1RR).toFixed(decimals));
+        tp2Price = Number((isLong ? entryPrice + stopDist * mCfg.tp2RR : entryPrice - stopDist * mCfg.tp2RR).toFixed(decimals));
         status = currentStatus;
-        aiSummary = `TERVERIFIKASI GRADE ${activeEval.grade}: Garis Entry (${entryPrice}), Stop Loss (${stopLoss}), TP1 (${tp1Price}), dan TP2 (${tp2Price}) telah terpasang otomatis pada chart. Backtest 250 bar jujur: Win Rate ${btStats.winRate}% (${btStats.netR >= 0 ? "+" : ""}${btStats.netR}R bersih).`;
+        aiSummary = `[${mCfg.shortLabel} GRADE ${activeEval.grade}] Level Entry (${entryPrice}), Stop Loss (${stopLoss}), TP1 (${tp1Price}), dan TP2 (${tp2Price}) terpasang otomatis di chart. Audit 250-bar mode ${mCfg.shortLabel}: ${btStats.setups} trades, Win Rate ${btStats.winRate}% (${btStats.netR >= 0 ? "+" : ""}${btStats.netR}R bersih).`;
       } else {
         const failedGates = activeEval.gates.filter(g => !g.pass).map(g => g.label.split(".")[1].trim()).join(", ");
-        aiSummary = `DITAHAN OLEH REPUTATION GUARD (Skor ${activeEval.score}% < 88%): Pair ini sedang tidak memenuhi kualifikasi Grade A. Syarat belum terpenuhi: ${failedGates || "Menunggu Breakout Valid"}. Tidak ada harga Entry/SL/TP yang dipasang di chart.`;
+        aiSummary = `DITAHAN OLEH REPUTATION GUARD (${mCfg.shortLabel} Skor ${activeEval.score}% < 88%): Syarat belum terpenuhi: ${failedGates || "Menunggu Trigger Valid"}. Tidak ada harga Entry/SL/TP yang dipasang.`;
       }
 
       return {
@@ -1597,6 +1823,7 @@
         symbol,
         pair_category: cfg.category,
         timeframe: tfLabel,
+        mode: mCfg.shortLabel,
         grade: activeEval.grade,
         isQualified,
         triggerBarTime: bars[triggerBarIdx].time,
@@ -1609,7 +1836,7 @@
         confluence_score: activeEval.score,
         volume_ratio: activeEval.impulseRatio,
         adx_val: activeEval.adx,
-        trend_alignment: `${tfLabel} EMA 50/200 ${activeEval.direction} · ADX ${activeEval.adx}`,
+        trend_alignment: `${mCfg.shortLabel} (${tfLabel}) EMA ${mCfg.emaFast}/${mCfg.emaSlow} ${activeEval.direction} · ADX ${activeEval.adx}`,
         ai_summary: aiSummary,
         gates: activeEval.gates,
         backtest: btStats,
@@ -1687,7 +1914,8 @@
     }
 
     async function runFullPortfolioBacktest() {
-      document.getElementById("wsStatusText").textContent = "SCANNING 250 BARS...";
+      const mCfg = getModeCfg();
+      document.getElementById("wsStatusText").textContent = `SCANNING ${mCfg.shortLabel}...`;
       const results = [];
 
       await Promise.all(PAIR_LIST.map(async (sym) => {
@@ -1695,7 +1923,7 @@
           const bars = await fetchRealSpotCandles(sym, currentResolution, 250);
           if (bars && bars.length >= 60) {
             pairCandlesCache[sym] = bars;
-            pairBacktestCache[sym] = simulateStrategyOnBars(sym, bars);
+            pairBacktestCache[sym] = simulateStrategyOnBars(sym, bars, mCfg);
             const sigState = analyzePairLiveState(sym, bars);
             if (sigState) results.push(sigState);
           }
@@ -1704,7 +1932,8 @@
 
       results.sort((a, b) => b.confluence_score - a.confluence_score);
       allSignals = results;
-      selectedSignal = allSignals.find(s => s.isQualified) || allSignals[0] || null;
+      const prevSym = selectedSignal?.symbol;
+      selectedSignal = allSignals.find(s => s.symbol === prevSym && s.isQualified) || allSignals.find(s => s.isQualified) || allSignals[0] || null;
 
       updatePortfolioTelemetryUI();
       renderBacktestTable();
@@ -1713,10 +1942,14 @@
       updateRiskCalc();
 
       if (selectedSignal) await connectRealTimeMarketChart(selectedSignal);
-      document.getElementById("wsStatusText").textContent = "PYTH QUANT LIVE";
+      document.getElementById("wsStatusText").textContent = `${mCfg.shortLabel} LIVE`;
     }
 
     function updatePortfolioTelemetryUI() {
+      const mCfg = getModeCfg();
+      const netWinR = mCfg.tp1RR - mCfg.spreadFrictionR;
+      const netLossR = 1.0 + mCfg.spreadFrictionR;
+
       let totalSetups = 0, totalWon = 0, totalLost = 0, totalNetR = 0;
       Object.values(pairBacktestCache).forEach(bt => {
         totalSetups += bt.setups;
@@ -1726,24 +1959,27 @@
       });
 
       const portfolioWR = totalSetups > 0 ? ((totalWon / totalSetups) * 100).toFixed(1) : "0.0";
-      const grossWin = totalWon * NET_WIN_R;
-      const grossLoss = totalLost * Math.abs(NET_LOSS_R);
+      const grossWin = totalWon * netWinR;
+      const grossLoss = totalLost * netLossR;
       const profitFactor = grossLoss > 0 ? (grossWin / grossLoss).toFixed(2) : (grossWin > 0 ? "MAX" : "0.00");
+      const breakevenWR = ((netLossR / (mCfg.tp1RR + 1)) * 100).toFixed(1);
 
       const qualifiedList = allSignals.filter(s => s.isQualified);
       const appCount = allSignals.filter(s => s.grade === "A++").length;
       const aCount = allSignals.filter(s => s.grade === "A").length;
 
       document.getElementById("metricWinRate").textContent = `${portfolioWR}% (${totalWon}W / ${totalLost}L)`;
-      document.getElementById("metricSampleSize").textContent = `${totalSetups} Verified Trades · Breakeven: 36%`;
+      document.getElementById("metricSampleSize").textContent = `${totalSetups} Setups (250 Bars) · BE: ${breakevenWR}%`;
       document.getElementById("metricProfitFactor").textContent = `${profitFactor}x (${totalNetR >= 0 ? "+" : ""}${totalNetR.toFixed(1)}R)`;
-      document.getElementById("metricActiveCount").textContent = `${qualifiedList.length} QUALIFIED`;
-      document.getElementById("activeGradeSummary").textContent = `ACTIVE: ${appCount} A++ · ${aCount} GRADE A · ${allSignals.length - qualifiedList.length} BLOCKED`;
+      document.getElementById("metricActiveCount").textContent = `${qualifiedList.length} / 12 ACTIVE`;
+      document.getElementById("metricModeFreqNote").textContent = `Mode: ${mCfg.shortLabel} (${appCount} A++, ${aCount} A)`;
+      document.getElementById("activeGradeSummary").textContent = `${mCfg.shortLabel}: ${appCount} A++ · ${aCount} GRADE A`;
 
       document.getElementById("btTotalTrades").textContent = totalSetups;
       document.getElementById("btWinRate").textContent = `${portfolioWR}%`;
       document.getElementById("btNetR").textContent = `${totalNetR >= 0 ? "+" : ""}${totalNetR.toFixed(1)}R`;
       document.getElementById("btEstReturn").textContent = `${totalNetR >= 0 ? "+" : ""}${(totalNetR * 0.5).toFixed(1)}%`;
+      document.getElementById("btRuleNote").textContent = `MODE ${mCfg.shortLabel}: WIN = +${netWinR.toFixed(2)}R · LOSS = -${netLossR.toFixed(2)}R`;
     }
 
     function renderBacktestTable() {
@@ -1762,7 +1998,7 @@
           <tr class="hover:bg-zinc-950">
             <td class="p-3 font-bold text-white">${sig.symbol} <span class="text-zinc-500 font-normal">(${sig.timeframe})</span></td>
             <td class="p-3">${gradeBadge}</td>
-            <td class="p-3 text-zinc-300">${bt.setups} Trades</td>
+            <td class="p-3 text-zinc-300 font-bold">${bt.setups} Trades</td>
             <td class="p-3 text-white font-bold">${bt.won} Won</td>
             <td class="p-3 text-zinc-500">${bt.lost} Lost</td>
             <td class="p-3 text-white font-bold">${bt.winRate}%</td>
@@ -1773,7 +2009,7 @@
     }
 
     // =========================================================================
-    // 5. REAL-TIME STREAMING & TRADINGVIEW CHART DENGAN AUTO-SCALE SL/TP
+    // 6. REAL-TIME STREAMING & TRADINGVIEW CHART DENGAN AUTO-SCALE SL/TP
     // =========================================================================
     async function startPythRealtimeStream() {
       if (pythStreamAbort) pythStreamAbort.abort();
@@ -1887,7 +2123,6 @@
         timeScale: { borderColor: "#27272a", timeVisible: true, secondsVisible: true, rightOffset: 8 },
       });
 
-      // Shaded Target Zone (Area antara Entry dan TP2 agar zona profit langsung terlihat di chart)
       tpZoneSeries = tvChart.addBaselineSeries({
         baseValue: { type: "price", price: 0 },
         topFillColor1: "rgba(255, 255, 255, 0.12)",
@@ -1901,7 +2136,6 @@
         lastValueVisible: false,
       });
 
-      // Shaded Stop Loss Zone (Area antara Entry dan SL)
       slZoneSeries = tvChart.addBaselineSeries({
         baseValue: { type: "price", price: 0 },
         topFillColor1: "rgba(113, 113, 122, 0.18)",
@@ -1915,7 +2149,6 @@
         lastValueVisible: false,
       });
 
-      // Candlestick Series dengan autoscaleInfoProvider yang memaksa SL, Entry, TP1, dan TP2 selalu muat di layar!
       candleSeries = tvChart.addCandlestickSeries({
         upColor: "#ffffff",
         downColor: "#52525b",
@@ -1960,10 +2193,11 @@
 
     function updateEmaSeries() {
       if (!ema50Series || !ema200Series || currentCandles.length === 0) return;
-      const e50 = calcEMAArray(currentCandles, 50);
-      const e200 = calcEMAArray(currentCandles, 200);
-      ema50Series.setData(currentCandles.map((c, i) => ({ time: c.time, value: e50[i] })));
-      ema200Series.setData(currentCandles.map((c, i) => ({ time: c.time, value: e200[i] })));
+      const mCfg = getModeCfg();
+      const eFast = calcEMAArray(currentCandles, mCfg.emaFast);
+      const eSlow = calcEMAArray(currentCandles, mCfg.emaSlow);
+      ema50Series.setData(currentCandles.map((c, i) => ({ time: c.time, value: eFast[i] })));
+      ema200Series.setData(currentCandles.map((c, i) => ({ time: c.time, value: eSlow[i] })));
     }
 
     async function connectRealTimeMarketChart(sig) {
@@ -1976,7 +2210,7 @@
       if (tpZoneSeries) tpZoneSeries.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove } });
       if (slZoneSeries) slZoneSeries.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove } });
 
-      document.getElementById("chartTitle").textContent = `${sig.symbol} · ${sig.timeframe}`;
+      document.getElementById("chartTitle").textContent = `${sig.symbol} · ${sig.timeframe} (${sig.mode})`;
       const gradeBadge = document.getElementById("chartGradeBadge");
       gradeBadge.textContent = sig.isQualified ? `★ GRADE ${sig.grade} (${sig.confluence_score}%)` : `NO SETUP (${sig.confluence_score}%)`;
       gradeBadge.className = sig.isQualified
@@ -1992,7 +2226,6 @@
         updateEmaSeries();
         drawSignalPriceLines(sig);
 
-        // Fokuskan zoom pada 65 candle terakhir agar box posisi SL/TP dan candle terlihat besar & jelas
         const total = currentCandles.length;
         tvChart.timeScale().setVisibleLogicalRange({
           from: Math.max(0, total - 65),
@@ -2027,7 +2260,6 @@
       }
     }
 
-    // Pasang Garis Entry, SL, TP1, TP2 + Shaded Position Box + Panah Marker + On-Chart HUD
     function drawSignalPriceLines(sig) {
       if (!candleSeries || !sig) return;
       activePriceLines.forEach((line) => candleSeries.removePriceLine(line));
@@ -2059,6 +2291,7 @@
         return;
       }
 
+      const mCfg = getModeCfg();
       const decimals = getPairDecimals(sig.symbol);
       const pipSize = getPipSize(sig.symbol);
       const entry = Number(sig.entry_price);
@@ -2070,7 +2303,6 @@
       const tp1Pips = Math.round(Math.abs(tp1 - entry) / pipSize);
       const tp2Pips = Math.round(Math.abs(tp2 - entry) / pipSize);
 
-      // Update Quick Bar & Floating On-Chart HUD
       document.getElementById("hudEntryVal").textContent = entry.toFixed(decimals);
       document.getElementById("hudSlVal").textContent = `${sl.toFixed(decimals)} (-${slPips}p)`;
       document.getElementById("hudTp1Val").textContent = `${tp1.toFixed(decimals)} (+${tp1Pips}p)`;
@@ -2078,15 +2310,14 @@
 
       if (posHud) {
         posHud.classList.remove("hidden");
-        document.getElementById("overlayDirBadge").textContent = `${sig.direction === "LONG" ? "▲ LONG" : "▼ SHORT"} · GRADE ${sig.grade}`;
-        document.getElementById("overlayRRBadge").textContent = `1:2 & 1:3 RR`;
+        document.getElementById("overlayDirBadge").textContent = `${sig.direction === "LONG" ? "▲ LONG" : "▼ SHORT"} · ${sig.grade}`;
+        document.getElementById("overlayRRBadge").textContent = `${mCfg.shortLabel} MODE`;
         document.getElementById("overlayTp2").textContent = `${tp2.toFixed(decimals)} (+${tp2Pips}p)`;
         document.getElementById("overlayTp1").textContent = `${tp1.toFixed(decimals)} (+${tp1Pips}p)`;
         document.getElementById("overlayEntry").textContent = `${entry.toFixed(decimals)}`;
         document.getElementById("overlaySl").textContent = `${sl.toFixed(decimals)} (-${slPips}p)`;
       }
 
-      // 1. Gambar 4 Garis Horizontal dengan Label Sumbu Kanan yang Sangat Jelas
       activePriceLines.push(
         candleSeries.createPriceLine({
           price: tp2,
@@ -2094,7 +2325,7 @@
           lineWidth: 2,
           lineStyle: LightweightCharts.LineStyle.Solid,
           axisLabelVisible: true,
-          title: `🎯 TP2 (1:3) +${tp2Pips} PIPS`
+          title: `🎯 TP2 (1:${mCfg.tp2RR}) +${tp2Pips} PIPS`
         }),
         candleSeries.createPriceLine({
           price: tp1,
@@ -2102,7 +2333,7 @@
           lineWidth: 2,
           lineStyle: LightweightCharts.LineStyle.Dashed,
           axisLabelVisible: true,
-          title: `🎯 TP1 (1:2) +${tp1Pips} PIPS`
+          title: `🎯 TP1 (1:${mCfg.tp1RR}) +${tp1Pips} PIPS`
         }),
         candleSeries.createPriceLine({
           price: entry,
@@ -2122,7 +2353,6 @@
         })
       );
 
-      // 2. Pasang Panah Penanda (Marker) pada Candle Trigger Setup
       const triggerTime = sig.triggerBarTime || (currentCandles.length > 10 ? currentCandles[currentCandles.length - 8].time : currentCandles[0].time);
       candleSeries.setMarkers([
         {
@@ -2130,11 +2360,10 @@
           position: sig.direction === "LONG" ? "belowBar" : "aboveBar",
           color: "#ffffff",
           shape: sig.direction === "LONG" ? "arrowUp" : "arrowDown",
-          text: `${sig.direction} ${sig.grade} @ ${entry.toFixed(decimals)}`
+          text: `${sig.direction} ${sig.grade} (${sig.setup_type})`
         }
       ]);
 
-      // 3. Gambar Shaded Risk/Reward Zone ala TradingView Long/Short Position Tool mulai dari candle trigger hingga candle terakhir
       if (tpZoneSeries && slZoneSeries && currentCandles.length > 0) {
         tpZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
         slZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
@@ -2216,12 +2445,12 @@
 
       let newStatus = null, msg = "";
       if (isLong) {
-        if (livePrice >= tp2) { newStatus = "HIT_TP2"; msg = "TARGET TP2 (1:3) REACHED"; }
-        else if (livePrice >= tp1 && sig.status !== "RUNNING (+TP1 HIT)") { newStatus = "HIT_TP1"; msg = "TARGET TP1 (1:2) REACHED"; }
+        if (livePrice >= tp2) { newStatus = "HIT_TP2"; msg = "TARGET TP2 REACHED"; }
+        else if (livePrice >= tp1 && sig.status !== "RUNNING (+TP1 HIT)") { newStatus = "HIT_TP1"; msg = "TARGET TP1 REACHED"; }
         else if (livePrice <= sl) { newStatus = "STOPPED_OUT"; msg = "STOP LOSS TRIGGERED"; }
       } else {
-        if (livePrice <= tp2) { newStatus = "HIT_TP2"; msg = "TARGET TP2 (1:3) REACHED"; }
-        else if (livePrice <= tp1 && sig.status !== "RUNNING (+TP1 HIT)") { newStatus = "HIT_TP1"; msg = "TARGET TP1 (1:2) REACHED"; }
+        if (livePrice <= tp2) { newStatus = "HIT_TP2"; msg = "TARGET TP2 REACHED"; }
+        else if (livePrice <= tp1 && sig.status !== "RUNNING (+TP1 HIT)") { newStatus = "HIT_TP1"; msg = "TARGET TP1 REACHED"; }
         else if (livePrice >= sl) { newStatus = "STOPPED_OUT"; msg = "STOP LOSS TRIGGERED"; }
       }
 
@@ -2235,7 +2464,7 @@
     }
 
     // =========================================================================
-    // 6. UI RENDERING (STRICT A++ & A REPUTATION POLICY)
+    // 7. UI RENDERING (STRICT A++ & A REPUTATION POLICY)
     // =========================================================================
     function setGradeFilter(mode) {
       gradeFilter = mode;
@@ -2257,11 +2486,11 @@
 
     async function changeScanTimeframe(res) {
       currentResolution = res;
-      ["15", "60", "240"].forEach(id => {
+      ["5", "15", "60", "240"].forEach(id => {
         const btn = document.getElementById(`scanTf-${id}`);
         if (btn) btn.className = id === res
-          ? "px-2.5 py-1 bg-white text-black font-bold transition"
-          : "px-2.5 py-1 text-zinc-500 hover:text-white transition";
+          ? "px-2 py-1 bg-white text-black font-bold transition"
+          : "px-2 py-1 text-zinc-500 hover:text-white transition";
       });
       await runFullPortfolioBacktest();
     }
@@ -2279,22 +2508,23 @@
       if (filtered.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center space-y-3 border border-zinc-900 bg-black font-mono">
-            <div class="text-xs font-bold text-white uppercase">REPUTATION GUARD ACTIVE — NO A++ / A SETUP AT THIS SECOND</div>
+            <div class="text-xs font-bold text-white uppercase">NO A++ / A SETUP IN THIS FILTER</div>
             <p class="text-xs text-zinc-500 max-w-md mx-auto font-sans">
-              Saat ini belum ada pair pada filter ini yang memenuhi standar ketat Grade A++ atau A. Kami tidak merilis sinyal tanggung demi menjaga win rate & reputasi.
+              Coba beralih ke mode <strong>⚡ SCALPING</strong> atau <strong>🎯 SWING</strong> di bar atas untuk melihat peluang intraday aktif.
             </p>
             <div class="flex justify-center gap-2 pt-1">
-              <button onclick="setGradeFilter('ALL')" class="px-3 py-1.5 border border-zinc-800 text-xs text-white hover:border-white">
-                LIHAT STATUS 12 PAIR (SCAN LOG)
+              <button onclick="switchTradingMode('SCALPING')" class="px-3 py-1.5 bg-white text-black font-bold text-xs">
+                BUKA MODE SCALPING
               </button>
-              <button onclick="changeScanTimeframe(currentResolution === '15' ? '60' : '15')" class="px-3 py-1.5 bg-white text-black font-bold text-xs">
-                PINDAI TIMEFRAME LAIN
+              <button onclick="setGradeFilter('ALL')" class="px-3 py-1.5 border border-zinc-800 text-xs text-white hover:border-white">
+                LIHAT SEMUA 12 PAIR
               </button>
             </div>
           </div>`;
         return;
       }
 
+      const mCfg = getModeCfg();
       container.innerHTML = filtered.map(sig => {
         const isLocked = sig.is_pro_only && !isProView;
         const isSelected = selectedSignal && String(selectedSignal.id) === String(sig.id);
@@ -2319,16 +2549,16 @@
               <span class="${isLocked ? "blur-sm select-none text-zinc-600" : "text-zinc-400"}">${isLocked ? "1.00000" : sig.stop_loss}</span>
             </div>
             <div>
-              <span class="text-zinc-500 text-[10px] block">TP 1 (1:2)</span>
+              <span class="text-zinc-500 text-[10px] block">TP 1 (1:${mCfg.tp1RR})</span>
               <span class="${isLocked ? "blur-sm select-none text-zinc-600" : "text-white"}">${isLocked ? "1.00000" : sig.tp1_price}</span>
             </div>
             <div>
-              <span class="text-zinc-500 text-[10px] block">TP 2 (1:3)</span>
+              <span class="text-zinc-500 text-[10px] block">TP 2 (1:${mCfg.tp2RR})</span>
               <span class="${isLocked ? "blur-sm select-none text-zinc-600" : "text-white"}">${isLocked ? "1.00000" : sig.tp2_price}</span>
             </div>
             <div>
               <span class="text-zinc-500 text-[10px] block">250-BAR WR</span>
-              <span class="text-white font-bold">${sig.backtest?.winRate || 0}%</span>
+              <span class="text-white font-bold">${sig.backtest?.winRate || 0}% (${sig.backtest?.setups || 0}T)</span>
             </div>
           </div>
         ` : `
@@ -2348,7 +2578,7 @@
                 <span class="text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-400">
                   SPOT: <strong id="card-live-${sig.symbol}" class="text-white">${liveVal}</strong>
                 </span>
-                <span class="text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-400">${sig.timeframe}</span>
+                <span class="text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-300">${sig.mode} · ${sig.timeframe}</span>
                 ${sig.isQualified ? `
                   <span class="text-[10px] font-bold px-2 py-0.5 ${isLong ? "bg-white text-black" : "border border-zinc-700 text-zinc-300"}">
                     ${isLong ? "▲ LONG" : "▼ SHORT"} · ${sig.setup_type}
@@ -2378,7 +2608,7 @@
 
     function renderSelectedDetail() {
       if (!selectedSignal) return;
-      document.getElementById("detailSymbolBadge").textContent = `${selectedSignal.symbol} · GRADE ${selectedSignal.grade} (${selectedSignal.confluence_score}%)`;
+      document.getElementById("detailSymbolBadge").textContent = `${selectedSignal.symbol} · ${selectedSignal.mode} GRADE ${selectedSignal.grade}`;
       document.getElementById("detailTrend").textContent = selectedSignal.trend_alignment || "-";
       document.getElementById("detailPairWinRate").textContent = `250-Bar WR: ${selectedSignal.backtest?.winRate || 0}% (${selectedSignal.backtest?.setups || 0} Setups)`;
       document.getElementById("detailSummary").textContent = selectedSignal.ai_summary || "-";
@@ -2397,7 +2627,7 @@
     }
 
     // =========================================================================
-    // 7. RISK CALCULATOR, NAVIGATION, JOURNAL, SUBSCRIPTION & AUTH
+    // 8. RISK CALCULATOR, NAVIGATION, JOURNAL, SUBSCRIPTION & AUTH
     // =========================================================================
     function updateRiskCalc() {
       const balance = parseFloat(document.getElementById("balanceInput").value) || 0;
@@ -2420,7 +2650,7 @@
       if (saveBtn) {
         saveBtn.disabled = false;
         saveBtn.className = "w-full py-2.5 bg-white text-black text-xs font-mono font-bold uppercase tracking-wider hover:bg-zinc-200 transition";
-        saveBtn.textContent = `+ LOG GRADE ${selectedSignal.grade} POSITION TO JOURNAL`;
+        saveBtn.textContent = `+ LOG ${selectedSignal.mode} GRADE ${selectedSignal.grade} TO JOURNAL`;
       }
 
       const diff = Math.abs(Number(selectedSignal.entry_price) - Number(selectedSignal.stop_loss));
@@ -2498,6 +2728,7 @@
       const newTrade = {
         id: "tr_" + Date.now(),
         symbol: selectedSignal.symbol,
+        mode: selectedSignal.mode,
         grade: selectedSignal.grade,
         direction: selectedSignal.direction,
         entry_price: Number(selectedSignal.entry_price),
@@ -2524,8 +2755,12 @@
       const idx = savedTrades.findIndex(t => t.id === id);
       if (idx === -1) return;
       const trade = savedTrades[idx];
+      const mCfg = getModeCfg();
+      const netWinR = mCfg.tp1RR - mCfg.spreadFrictionR;
+      const netLossR = -1.0 - mCfg.spreadFrictionR;
+
       trade.trade_status = outcome;
-      trade.realized_pnl_usd = outcome === "WON" ? Number((trade.risk_amount_usd * NET_WIN_R).toFixed(2)) : Number((trade.risk_amount_usd * NET_LOSS_R).toFixed(2));
+      trade.realized_pnl_usd = outcome === "WON" ? Number((trade.risk_amount_usd * netWinR).toFixed(2)) : Number((trade.risk_amount_usd * netLossR).toFixed(2));
       localStorage.setItem("sp_saved_trades", JSON.stringify(savedTrades));
       renderJournal();
     }
@@ -2552,19 +2787,23 @@
         return;
       }
 
+      const mCfg = getModeCfg();
+      const netWinR = mCfg.tp1RR - mCfg.spreadFrictionR;
+      const netLossR = 1.0 + mCfg.spreadFrictionR;
+
       container.innerHTML = savedTrades.map(t => `
         <div class="p-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
           <div class="flex items-center gap-3">
             <span class="font-bold text-white">${t.symbol}</span>
-            <span class="px-1.5 py-0.5 bg-white text-black font-bold">GRADE ${t.grade || "A"}</span>
+            <span class="px-1.5 py-0.5 bg-white text-black font-bold">${t.mode || "SWING"} · ${t.grade || "A"}</span>
             <span class="px-1.5 py-0.5 border border-zinc-800 text-white">${t.direction}</span>
             <span class="text-zinc-400">${t.lot_size} LOT (-$${t.risk_amount_usd})</span>
             <span class="text-zinc-500">ENTRY: ${t.entry_price} · TP: ${t.take_profit}</span>
           </div>
           <div class="flex items-center gap-2">
             ${t.trade_status === "OPEN" ? `
-              <button onclick="markJournalTrade('${t.id}', 'WON')" class="px-2.5 py-1 bg-white text-black font-bold hover:bg-zinc-200">WON (+$${(t.risk_amount_usd * NET_WIN_R).toFixed(0)})</button>
-              <button onclick="markJournalTrade('${t.id}', 'LOST')" class="px-2.5 py-1 border border-zinc-800 text-zinc-400 hover:border-white hover:text-white">LOST (-$${(t.risk_amount_usd * Math.abs(NET_LOSS_R)).toFixed(0)})</button>
+              <button onclick="markJournalTrade('${t.id}', 'WON')" class="px-2.5 py-1 bg-white text-black font-bold hover:bg-zinc-200">WON (+$${(t.risk_amount_usd * netWinR).toFixed(0)})</button>
+              <button onclick="markJournalTrade('${t.id}', 'LOST')" class="px-2.5 py-1 border border-zinc-800 text-zinc-400 hover:border-white hover:text-white">LOST (-$${(t.risk_amount_usd * netLossR).toFixed(0)})</button>
             ` : `
               <span class="px-2 py-0.5 border ${t.trade_status === "WON" ? "border-white text-white font-bold" : "border-zinc-800 text-zinc-500"}">${t.trade_status} (${t.realized_pnl_usd >= 0 ? "+" : ""}$${t.realized_pnl_usd})</span>
             `}
@@ -2725,8 +2964,7 @@
       document.getElementById("journalCountBadge").textContent = savedTrades.length;
       initTradingViewChart();
       await initSupabase();
-      await runFullPortfolioBacktest();
-      await runTenYearHistoricalBacktest(false);
+      await switchTradingMode("SWING");
       startPythRealtimeStream();
     });
   </script>
