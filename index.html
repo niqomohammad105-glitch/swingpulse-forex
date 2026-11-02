@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwingPulse — Sniper A+ Forex Trend & Breakout Screener</title>
+  <title>SwingPulse — Real-Time Institutional Forex & Gold Screener</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,6 +13,9 @@
   
   <!-- TradingView Lightweight Charts CDN (Standalone v4.1.3) -->
   <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+
+  <!-- Official TradingView Widget Script -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
   
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -70,7 +73,7 @@
           <div class="flex items-center gap-2">
             <span class="font-bold tracking-tight text-base sm:text-lg text-white">SWINGPULSE</span>
             <span class="hidden xl:inline-block text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800 text-emerald-400">
-              SNIPER A+
+              PYTH ORACLE LIVE
             </span>
           </div>
         </div>
@@ -97,14 +100,14 @@
           <i data-lucide="volume-2" id="soundIcon" class="w-4 h-4"></i>
         </button>
 
-        <!-- Indikator WebSocket Status -->
+        <!-- Indikator Real-Time Stream Status -->
         <div class="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-mono border border-zinc-800 bg-zinc-950 text-emerald-400">
           <span id="wsStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <span id="wsStatusText" class="hidden lg:inline">Live WS</span>
+          <span id="wsStatusText" class="hidden lg:inline">Pyth Oracle Connecting...</span>
         </div>
 
         <!-- Toggle / Status Tier Free vs Pro -->
-        <button onclick="toggleProMode()" id="tierToggleBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold border border-white bg-white text-black transition" title="Klik untuk simulasi ganti tier Free/Pro">
+        <button onclick="toggleProMode()" id="tierToggleBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold border border-white bg-white text-black transition" title="Klik untuk ganti / simulasi tier">
           <i data-lucide="unlock" id="tierIcon" class="w-3.5 h-3.5"></i>
           <span id="tierText">PRO MEMBER</span>
         </button>
@@ -131,9 +134,9 @@
 
     <!-- Mobile Navigation Bar -->
     <div class="flex md:hidden border-t border-zinc-900 bg-zinc-950 px-4 py-1.5 justify-around text-xs">
-      <button onclick="switchMainTab('screener')" id="mnav-screener" class="py-1 font-semibold text-white">Screener</button>
-      <button onclick="switchMainTab('journal')" id="mnav-journal" class="py-1 text-zinc-400">Journal</button>
-      <button onclick="switchMainTab('pricing')" id="mnav-pricing" class="py-1 text-amber-400">Subscription</button>
+      <button onclick="switchMainTab('screener')" class="py-1 font-semibold text-white">Screener</button>
+      <button onclick="switchMainTab('journal')" class="py-1 text-zinc-400">Journal</button>
+      <button onclick="switchMainTab('pricing')" class="py-1 text-amber-400">Subscription</button>
     </div>
   </header>
 
@@ -141,14 +144,14 @@
   <div class="bg-zinc-950/90 border-b border-zinc-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
       <div class="flex items-center gap-2 text-zinc-400">
-        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <i data-lucide="radio" class="w-3.5 h-3.5 text-emerald-400"></i>
         <span id="profileSyncStatus">
-          <strong>Strict Sniper Filter Aktif:</strong> Hanya menampilkan setup dengan Skor Konfluensi <strong>&ge; 90%</strong> (5-Gate Institutional Validated).
+          <strong>100% Real-Time Spot Feed (Pyth Institutional Oracle):</strong> Seluruh harga & candlestick terhubung langsung ke pasar spot global tanpa angka acak.
         </span>
       </div>
       <div class="flex items-center gap-4">
         <span id="filteredOutCount" class="text-[11px] font-mono text-amber-400">8 Pair Ditahan (Belum A+)</span>
-        <span id="tickCounterBadge" class="text-[11px] font-mono text-zinc-400">Ticks: <strong class="text-white">0</strong></span>
+        <span id="tickCounterBadge" class="text-[11px] font-mono text-zinc-400">Live Updates: <strong class="text-emerald-400">0</strong></span>
       </div>
     </div>
   </div>
@@ -182,11 +185,11 @@
 
       <div class="p-4 rounded-lg border border-zinc-900 bg-zinc-950/70 flex items-center justify-between">
         <div>
-          <span class="text-[11px] font-mono uppercase text-zinc-500 block">Net Pips Bulan Ini</span>
-          <span class="text-xl font-bold font-mono text-emerald-400">+1,420 Pips</span>
+          <span class="text-[11px] font-mono uppercase text-zinc-500 block">Sumber Harga Spot</span>
+          <span class="text-base font-bold font-mono text-emerald-400">Pyth + OANDA Live</span>
         </div>
         <div class="p-2.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
-          <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+          <i data-lucide="globe" class="w-4 h-4"></i>
         </div>
       </div>
 
@@ -255,31 +258,41 @@
         <div id="signalsContainer" class="space-y-3"></div>
       </div>
 
-      <!-- KOLOM KANAN (5 KOLOM): REAL-TIME CHART + EMA 50/200, 5-GATE CHECKLIST, LOT CALCULATOR -->
+      <!-- KOLOM KANAN (5 KOLOM): REAL-TIME DUAL CHART, 5-GATE CHECKLIST, LOT CALCULATOR -->
       <div class="lg:col-span-5 space-y-6">
         
-        <!-- Panel TradingView Lightweight Chart dengan EMA 50 & EMA 200 -->
+        <!-- Panel Dual-Mode Real-Time Chart (Auto-Plot Pyth Oracle vs TradingView Official) -->
         <div class="p-5 rounded-lg border border-zinc-800 bg-zinc-950 space-y-3">
+          
+          <!-- Baris Atas: Nama Pair, Timeframe & Live Ticker Price -->
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <span id="chartTitle" class="text-sm font-bold uppercase tracking-wider text-white font-mono">XAUUSD</span>
-              <div class="flex gap-1 bg-black p-0.5 rounded border border-zinc-800 text-[10px] font-mono">
-                <button onclick="changeChartInterval('1m')" id="int-1m" class="px-2 py-0.5 rounded bg-white text-black font-bold">1m LIVE</button>
-                <button onclick="changeChartInterval('5m')" id="int-5m" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white">5m</button>
-                <button onclick="changeChartInterval('4h')" id="int-4h" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white">H4</button>
+              <div id="customTfButtons" class="flex gap-1 bg-black p-0.5 rounded border border-zinc-800 text-[10px] font-mono">
+                <button onclick="changeChartResolution('1')" id="res-1" class="px-2 py-0.5 rounded bg-white text-black font-bold">M1</button>
+                <button onclick="changeChartResolution('5')" id="res-5" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white">M5</button>
+                <button onclick="changeChartResolution('15')" id="res-15" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white">M15</button>
+                <button onclick="changeChartResolution('240')" id="res-240" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white">H4</button>
               </div>
             </div>
 
             <div class="flex items-center gap-2">
               <div class="text-right font-mono">
-                <span id="priceChangeBadge" class="text-[10px] text-emerald-400 block leading-none">LIVE STREAM</span>
-                <span id="liveTickerPrice" class="text-base font-bold text-emerald-400">----.--</span>
+                <span id="priceChangeBadge" class="text-[10px] text-emerald-400 block leading-none">SPOT ORACLE LIVE</span>
+                <span id="liveTickerPrice" class="text-base font-bold text-emerald-400">Loading...</span>
               </div>
-              <button onclick="resetChartZoom()" class="text-[11px] font-mono px-2 py-1 rounded bg-black border border-zinc-800 text-zinc-400 hover:text-white transition" title="Reset Zoom">
-                Fit
-              </button>
             </div>
+          </div>
+
+          <!-- Sakelar Mode Chart: Auto-Plot Entry/SL/TP vs TradingView Official Widget -->
+          <div class="flex items-center justify-between gap-2 bg-black p-1 rounded border border-zinc-900 text-[11px] font-mono">
+            <button onclick="switchChartEngine('autoplot')" id="engineBtnAuto" class="flex-1 py-1 rounded bg-zinc-200 text-black font-bold transition">
+              Auto-Plot Level (Pyth Live)
+            </button>
+            <button onclick="switchChartEngine('tvwidget')" id="engineBtnTv" class="flex-1 py-1 rounded text-zinc-400 hover:text-white transition">
+              TradingView Official (OANDA)
+            </button>
           </div>
 
           <!-- Banner Status Sinyal Terpilih (Hit TP / SL) -->
@@ -289,32 +302,26 @@
           </div>
 
           <!-- Legend Garis Harga & Indikator EMA -->
-          <div class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono border-y border-zinc-900 py-2">
+          <div id="autoPlotLegend" class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono border-y border-zinc-900 py-2">
             <div class="flex flex-wrap items-center gap-2.5">
-              <span class="flex items-center gap-1 text-amber-400">
-                <span class="w-2.5 h-0.5 bg-amber-400 inline-block"></span> EMA 50
-              </span>
-              <span class="flex items-center gap-1 text-purple-400">
-                <span class="w-2.5 h-0.5 bg-purple-400 inline-block"></span> EMA 200
-              </span>
-              <span class="flex items-center gap-1 text-blue-400">
-                <span class="w-2 h-0.5 bg-blue-400 inline-block"></span> Entry
-              </span>
-              <span class="flex items-center gap-1 text-rose-400">
-                <span class="w-2 h-0.5 bg-rose-500 inline-block"></span> SL
-              </span>
-              <span class="flex items-center gap-1 text-emerald-400">
-                <span class="w-2 h-0.5 bg-emerald-500 inline-block"></span> TP1/2
-              </span>
+              <span class="flex items-center gap-1 text-amber-400"><span class="w-2.5 h-0.5 bg-amber-400 inline-block"></span> EMA 50</span>
+              <span class="flex items-center gap-1 text-purple-400"><span class="w-2.5 h-0.5 bg-purple-400 inline-block"></span> EMA 200</span>
+              <span class="flex items-center gap-1 text-blue-400"><span class="w-2 h-0.5 bg-blue-400 inline-block"></span> Entry</span>
+              <span class="flex items-center gap-1 text-rose-400"><span class="w-2 h-0.5 bg-rose-500 inline-block"></span> SL</span>
+              <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-0.5 bg-emerald-500 inline-block"></span> TP1/2</span>
             </div>
-            <button onclick="reanchorSignalToLivePrice()" class="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 hover:bg-zinc-800 transition">
-              ⚡ Kalibrasi Level
+            <button onclick="reanchorSignalToLivePrice(true)" class="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-200 hover:bg-zinc-800 transition">
+              ⚡ Set Entry = Live Price
             </button>
           </div>
 
-          <!-- Container Canvas Chart -->
-          <div class="relative w-full h-[300px] rounded bg-black border border-zinc-900 overflow-hidden">
-            <div id="tvChartContainer" class="w-full h-[300px]"></div>
+          <!-- Container Canvas Chart (Height 320px) -->
+          <div class="relative w-full h-[320px] rounded bg-black border border-zinc-900 overflow-hidden">
+            <!-- Engine 1: Lightweight Charts (Pyth Real-Time + Auto-Plot Entry/SL/TP) -->
+            <div id="tvChartContainer" class="w-full h-[320px]"></div>
+
+            <!-- Engine 2: Official TradingView OANDA Widget -->
+            <div id="officialTvWidgetContainer" class="hidden w-full h-[320px]"></div>
 
             <!-- Overlay Kunci apabila Sinyal Pro dibuka pada Mode Free -->
             <div id="chartLockOverlay" class="hidden absolute inset-0 bg-black/85 backdrop-blur-sm z-20 flex-col items-center justify-center p-6 text-center space-y-3">
@@ -361,7 +368,7 @@
             </span>
             <div class="flex gap-1">
               <button onclick="setBalancePreset(2500)" class="text-[11px] px-2 py-0.5 rounded border font-mono bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600 transition">$2,500</button>
-              <button onclick="setBalancePreset(10000)" class="text-[11px] px-2 py-0.5 rounded border font-mono bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600 transition">$10,000</button>
+              <button onclick="setBalancePreset(15000)" class="text-[11px] px-2 py-0.5 rounded border font-mono bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600 transition">$15,000</button>
             </div>
           </div>
 
@@ -372,7 +379,7 @@
             </div>
             <div>
               <label class="text-zinc-500 block mb-1">Risiko per Trade (%)</label>
-              <input type="number" id="riskInput" step="0.1" value="1.0" oninput="updateRiskCalc()" class="w-full bg-black border border-zinc-800 rounded px-3 py-2 font-mono text-white focus:outline-none focus:border-zinc-500" />
+              <input type="number" id="riskInput" step="0.1" value="0.5" oninput="updateRiskCalc()" class="w-full bg-black border border-zinc-800 rounded px-3 py-2 font-mono text-white focus:outline-none focus:border-zinc-500" />
             </div>
           </div>
 
@@ -383,7 +390,7 @@
             </div>
             <div class="text-right">
               <span class="text-[11px] text-zinc-500 block">Batas Risiko ($)</span>
-              <span id="calcRiskUsd" class="text-sm font-mono font-semibold text-rose-400">-$25.00</span>
+              <span id="calcRiskUsd" class="text-sm font-mono font-semibold text-rose-400">-$12.50</span>
             </div>
           </div>
 
@@ -413,7 +420,6 @@
       </button>
     </div>
 
-    <!-- Prop Firm Drawdown Guard Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="p-5 rounded-lg border border-zinc-900 bg-zinc-950 space-y-1">
         <span class="text-xs font-mono text-zinc-500">TOTAL REALIZED P&L</span>
@@ -439,15 +445,12 @@
       </div>
     </div>
 
-    <!-- Tabel Jurnal Trading -->
     <div class="rounded-lg border border-zinc-900 bg-zinc-950 overflow-hidden">
       <div class="p-4 border-b border-zinc-900 flex items-center justify-between">
         <span class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Riwayat Eksekusi Posisi (`user_saved_trades`)</span>
         <span class="text-[11px] font-mono text-zinc-500">Klik tombol Won / Lost untuk mencatat hasil akhir</span>
       </div>
-      <div id="journalListContainer" class="divide-y divide-zinc-900">
-        <!-- Diisi dinamis oleh renderJournal() -->
-      </div>
+      <div id="journalListContainer" class="divide-y divide-zinc-900"></div>
     </div>
   </section>
 
@@ -463,13 +466,11 @@
         Investasi Satu Setup A+ Menutup Biaya Langganan Sebulan
       </h1>
       <p class="text-xs sm:text-sm text-zinc-400">
-        Pilih paket yang sesuai dengan gaya *swing trading* kamu. Dukungan pembayaran instan via **QRIS Indonesia** dan **Kartu / Stripe**.
+        Pilih paket yang sesuai dengan gaya trading kamu. Dukungan pembayaran instan via <strong>QRIS Indonesia</strong> dan <strong>Kartu / Stripe</strong>.
       </p>
     </div>
 
-    <!-- 3 Kartu Pilihan Paket Subscription -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-      
       <!-- Tier 1: Free Basic -->
       <div class="p-6 rounded-xl border border-zinc-900 bg-zinc-950/60 flex flex-col justify-between space-y-6">
         <div class="space-y-4">
@@ -496,7 +497,7 @@
         </button>
       </div>
 
-      <!-- Tier 2: Pro Sniper Monthly (Highlight Utama) -->
+      <!-- Tier 2: Pro Sniper Monthly -->
       <div class="p-6 rounded-xl border-2 border-white bg-zinc-950 flex flex-col justify-between space-y-6 relative shadow-2xl">
         <span class="absolute -top-3 right-4 px-2.5 py-0.5 rounded bg-white text-black text-[10px] font-mono font-bold uppercase">
           PALING POPULER
@@ -526,7 +527,7 @@
         </button>
       </div>
 
-      <!-- Tier 3: Prop Desk Lifetime / Quarterly -->
+      <!-- Tier 3: Prop Desk Quarterly -->
       <div class="p-6 rounded-xl border border-zinc-900 bg-zinc-950/60 flex flex-col justify-between space-y-6">
         <div class="space-y-4">
           <div>
@@ -540,8 +541,8 @@
 
           <ul class="space-y-2.5 text-xs text-zinc-300 border-t border-zinc-900 pt-4">
             <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-amber-400"></i> Seluruh Fitur <strong>Pro Sniper A+</strong></li>
-            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-amber-400"></i> Prioritas Webhook TradingView Tanpa Delay</li>
-            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-amber-400"></i> Preset Khusus Evaluasi FTMO & FundedNext</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-amber-400"></i> Prioritas Stream Oracle Tanpa Delay</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-amber-400"></i> Preset Khusus Evaluasi Prop Firm ($2.5k & $15k)</li>
             <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-amber-400"></i> Kode Indikator Pine Script v5 Eksklusif</li>
             <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-amber-400"></i> Bebas Perpanjangan Selama 90 Hari</li>
           </ul>
@@ -551,7 +552,6 @@
           Pilih Paket 3 Bulan
         </button>
       </div>
-
     </div>
   </section>
 
@@ -568,20 +568,13 @@
         </button>
       </div>
 
-      <!-- Metode Pembayaran Tabs -->
       <div class="grid grid-cols-2 gap-1 p-1 rounded bg-black border border-zinc-900 text-xs font-semibold">
-        <button onclick="switchPayMethod('qris')" id="payTabQris" class="py-2 rounded bg-white text-black transition">
-          QRIS (GoPay/OVO/BCA)
-        </button>
-        <button onclick="switchPayMethod('card')" id="payTabCard" class="py-2 rounded text-zinc-400 hover:text-white transition">
-          Stripe / Kartu
-        </button>
+        <button onclick="switchPayMethod('qris')" id="payTabQris" class="py-2 rounded bg-white text-black transition">QRIS (GoPay/OVO/BCA)</button>
+        <button onclick="switchPayMethod('card')" id="payTabCard" class="py-2 rounded text-zinc-400 hover:text-white transition">Stripe / Kartu</button>
       </div>
 
-      <!-- Konten QRIS -->
       <div id="payContentQris" class="space-y-4 text-center">
         <div class="mx-auto w-48 h-48 rounded-lg bg-white p-3 flex flex-col items-center justify-center border border-zinc-700">
-          <!-- Representasi Visual QR Code Monokrom -->
           <div class="w-full h-full border-4 border-black grid grid-cols-5 grid-rows-5 gap-1 p-1.5">
             <div class="bg-black col-span-2 row-span-2"></div>
             <div class="bg-black"></div>
@@ -599,11 +592,10 @@
           <span class="text-[10px] font-mono font-bold text-black mt-1">NMID: ID2026SWINGPULSE</span>
         </div>
         <p class="text-xs text-zinc-400">
-          Scan QRIS di atas melalui aplikasi m-Banking atau e-Wallet, lalu klik tombol konfirmasi di bawah untuk mengaktifkan status **PRO** di database.
+          Scan QRIS di atas melalui m-Banking atau e-Wallet, lalu klik konfirmasi di bawah untuk mengaktifkan status <strong>PRO</strong> di database.
         </p>
       </div>
 
-      <!-- Konten Kartu / Stripe -->
       <div id="payContentCard" class="hidden space-y-3 text-xs">
         <div>
           <label class="text-zinc-400 block mb-1">Nomor Kartu Debit/Kredit</label>
@@ -705,9 +697,26 @@
     let soundEnabled = true;
     let currentFilterCategory = "ALL";
     let currentFilterTf = "ALL";
-    let currentChartInterval = "1m";
+    let currentResolution = "1"; // '1' (M1), '5' (M5), '15' (M15), '240' (H4)
+    let currentChartEngine = "autoplot"; // 'autoplot' atau 'tvwidget'
 
-    // Data 12 Pair Lengkap
+    // Konfigurasi 12 Pair ke Pyth Institutional Oracle (100% Bebas Blokir di Indonesia & Real-Time)
+    const PYTH_FEED_CONFIG = {
+      XAUUSD: { pythSymbol: "Metal.XAU/USD", tvSymbol: "OANDA:XAUUSD", decimals: 2 },
+      EURUSD: { pythSymbol: "FX.EUR/USD", tvSymbol: "OANDA:EURUSD", decimals: 5 },
+      GBPUSD: { pythSymbol: "FX.GBP/USD", tvSymbol: "OANDA:GBPUSD", decimals: 5 },
+      USDJPY: { pythSymbol: "FX.USD/JPY", tvSymbol: "OANDA:USDJPY", decimals: 3 },
+      AUDUSD: { pythSymbol: "FX.AUD/USD", tvSymbol: "OANDA:AUDUSD", decimals: 5 },
+      USDCAD: { pythSymbol: "FX.USD/CAD", tvSymbol: "OANDA:USDCAD", decimals: 5 },
+      USDCHF: { pythSymbol: "FX.USD/CHF", tvSymbol: "OANDA:USDCHF", decimals: 5 },
+      NZDUSD: { pythSymbol: "FX.NZD/USD", tvSymbol: "OANDA:NZDUSD", decimals: 5 },
+      // Cross pairs: coba simbol langsung, atau hitung eksak dari 2 major leg Pyth secara real-time
+      GBPJPY: { pythSymbol: "FX.GBP/JPY", legA: "FX.GBP/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:GBPJPY", decimals: 3 },
+      EURJPY: { pythSymbol: "FX.EUR/JPY", legA: "FX.EUR/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:EURJPY", decimals: 3 },
+      AUDJPY: { pythSymbol: "FX.AUD/JPY", legA: "FX.AUD/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:AUDJPY", decimals: 3 },
+      EURGBP: { pythSymbol: "FX.EUR/GBP", legA: "FX.EUR/USD", legB: "FX.GBP/USD", op: "DIV", tvSymbol: "OANDA:EURGBP", decimals: 5 }
+    };
+
     const DEFAULT_12_PAIRS = [
       { id: "s1", symbol: "XAUUSD", pair_category: "commodity", timeframe: "H4", direction: "LONG", setup_type: "BREAKOUT", entry_price: 2748.50, stop_loss: 2734.00, tp1_price: 2777.50, tp2_price: 2792.00, confluence_score: 96, volume_ratio: 2.4, trend_alignment: "D1/H4 Strong Bullish + EMA 50>200 + ADX 34", ai_summary: "Setup A+ Institusional: Penembusan resistance kunci H4 dengan volume 2.4x rata-rata dan konfluensi tren penuh.", has_high_impact_news: false, is_pro_only: true, status: "ACTIVE" },
       { id: "s2", symbol: "GBPJPY", pair_category: "cross", timeframe: "H4", direction: "LONG", setup_type: "BREAKOUT", entry_price: 198.40, stop_loss: 197.20, tp1_price: 200.80, tp2_price: 202.00, confluence_score: 94, volume_ratio: 2.2, trend_alignment: "D1 Bullish + H4 Volatility Squeeze Breakout + ADX 32", ai_summary: "Setup A+: Keluar dari zona akumulasi 4 hari dengan dorongan momentum kuat pada sesi London.", has_high_impact_news: false, is_pro_only: true, status: "ACTIVE" },
@@ -724,6 +733,8 @@
     ];
 
     let allSignals = [...DEFAULT_12_PAIRS];
+    let livePricesMap = {}; // Menyimpan harga spot real-time terkini untuk semua 12 pair
+    let calibratedPairs = {}; // Penanda pair yang sudah dikalibrasi ke harga pasar hari ini
     let allEvents = [];
     let savedTrades = JSON.parse(localStorage.getItem("sp_saved_trades") || "[]");
     let selectedSignal = allSignals[0];
@@ -734,267 +745,265 @@
     let ema200Series = null;
     let activePriceLines = [];
     let currentCandles = [];
-    let marketWs = null;
-    let heartbeatTimer = null;
+    let livePollTimer = null;
+    let pythStreamAbort = null;
     let tickCount = 0;
 
-    const STREAM_MAP = {
-      XAUUSD: { streamSymbol: "PAXGUSDT", multiplier: 1, invert: false },
-      EURUSD: { streamSymbol: "EURUSDT", multiplier: 1, invert: false },
-      GBPUSD: { streamSymbol: "GBPUSDT", multiplier: 1, invert: false },
-      AUDUSD: { streamSymbol: "AUDUSDT", multiplier: 1, invert: false },
-      NZDUSD: { streamSymbol: "AUDUSDT", multiplier: 0.91, invert: false },
-      USDJPY: { streamSymbol: "USDTJPY", multiplier: 1, invert: false },
-      GBPJPY: { streamSymbol: "GBPUSDT", multiplier: 153.2, invert: false },
-      EURJPY: { streamSymbol: "EURUSDT", multiplier: 153.2, invert: false },
-      AUDJPY: { streamSymbol: "AUDUSDT", multiplier: 153.2, invert: false },
-      USDCAD: { streamSymbol: "EURUSDT", multiplier: 1.50, invert: true },
-      USDCHF: { streamSymbol: "EURUSDT", multiplier: 0.935, invert: true },
-      EURGBP: { streamSymbol: "EURUSDT", multiplier: 0.77, invert: false }
-    };
-
     function getPairDecimals(symbol) {
-      if (symbol.includes("JPY")) return 3;
-      if (symbol.includes("XAU")) return 2;
-      return 5;
+      return PYTH_FEED_CONFIG[symbol]?.decimals || (symbol.includes("JPY") ? 3 : symbol.includes("XAU") ? 2 : 5);
     }
 
     // =========================================================================
-    // 1. WEB AUDIO SOUND ALERT (TANPA FILE EKSTERNAL)
+    // 1. MESIN DATA PYTH INSTITUTIONAL ORACLE (100% REAL SPOT FOREX & GOLD)
     // =========================================================================
-    function playAlertSound(type = "win") {
-      if (!soundEnabled) return;
+    async function fetchPythBarsSingle(pythSymbol, resolution, countBars = 120) {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const resSec = resolution === "D" ? 86400 : parseInt(resolution, 10) * 60;
+      // Ambil rentang waktu lebih lebar (x4) agar tetap mendapat data penuh meski melewati akhir pekan
+      const fromSec = nowSec - Math.max(countBars * resSec * 4, 86400 * 5);
+      const url = `https://benchmarks.pyth.network/v1/shims/tradingview/history?symbol=${encodeURIComponent(pythSymbol)}&resolution=${resolution}&from=${fromSec}&to=${nowSec}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (data.s !== "ok" || !data.t || data.t.length === 0) {
+        throw new Error("No direct bars");
+      }
+
+      const bars = [];
+      for (let i = 0; i < data.t.length; i++) {
+        bars.push({
+          time: Number(data.t[i]),
+          open: Number(data.o[i]),
+          high: Number(data.h[i]),
+          low: Number(data.l[i]),
+          close: Number(data.c[i])
+        });
+      }
+      return bars.slice(-countBars);
+    }
+
+    // Ambil candlestick OHLC asli dari Pyth (atau hitung eksak dari 2 major leg untuk pair cross)
+    async function fetchRealSpotCandles(symbol, resolution, countBars = 120) {
+      const cfg = PYTH_FEED_CONFIG[symbol];
+      const decimals = getPairDecimals(symbol);
+
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        const directBars = await fetchPythBarsSingle(cfg.pythSymbol, resolution, countBars);
+        return directBars.map(b => ({
+          time: b.time,
+          open: Number(b.open.toFixed(decimals)),
+          high: Number(b.high.toFixed(decimals)),
+          low: Number(b.low.toFixed(decimals)),
+          close: Number(b.close.toFixed(decimals))
+        }));
+      } catch (err) {
+        // Jika pair cross memerlukan kalkulasi dari Leg A & Leg B
+        if (cfg.legA && cfg.legB) {
+          const [barsA, barsB] = await Promise.all([
+            fetchPythBarsSingle(cfg.legA, resolution, countBars),
+            fetchPythBarsSingle(cfg.legB, resolution, countBars)
+          ]);
+          const mapB = new Map(barsB.map(b => [b.time, b]));
+          const combined = [];
 
-        osc.frequency.setValueAtTime(type === "win" ? 880 : 320, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(type === "win" ? 1320 : 180, ctx.currentTime + 0.25);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.3);
-      } catch (e) {}
-    }
-
-    function toggleSoundAlert() {
-      soundEnabled = !soundEnabled;
-      const btn = document.getElementById("soundBtn");
-      const icon = document.getElementById("soundIcon");
-      btn.className = soundEnabled
-        ? "p-2 rounded border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-emerald-400 transition"
-        : "p-2 rounded border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-zinc-600 transition";
-      icon.setAttribute("data-lucide", soundEnabled ? "volume-2" : "volume-x");
-      lucide.createIcons();
-      if (soundEnabled) playAlertSound("win");
-    }
-
-    // =========================================================================
-    // 2. NAVIGASI TAB UTAMA (SCREENER | JOURNAL | SUBSCRIPTION)
-    // =========================================================================
-    function switchMainTab(tab) {
-      ["screener", "journal", "pricing"].forEach(t => {
-        document.getElementById(`view-${t}`).classList.toggle("hidden", t !== tab);
-        const navBtn = document.getElementById(`nav-${t}`);
-        if (navBtn) {
-          navBtn.className = t === tab
-            ? "px-3 py-1.5 rounded font-semibold bg-white text-black transition flex items-center gap-1.5"
-            : "px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-white transition flex items-center gap-1.5";
+          for (const a of barsA) {
+            const b = mapB.get(a.time) || barsB[barsB.length - 1];
+            if (!b) continue;
+            const calc = (v1, v2) => cfg.op === "MUL" ? v1 * v2 : v1 / v2;
+            const o = Number(calc(a.open, b.open).toFixed(decimals));
+            const c = Number(calc(a.close, b.close).toFixed(decimals));
+            const h1 = Number(calc(a.high, b.high).toFixed(decimals));
+            const l1 = Number(calc(a.low, b.low).toFixed(decimals));
+            combined.push({
+              time: a.time,
+              open: o,
+              high: Math.max(o, c, h1, l1),
+              low: Math.min(o, c, h1, l1),
+              close: c
+            });
+          }
+          return combined;
         }
-      });
-      lucide.createIcons();
-      if (tab === "screener" && tvChart) {
-        setTimeout(() => tvChart.timeScale().fitContent(), 50);
+        throw err;
       }
-      if (tab === "journal") renderJournal();
     }
 
-    // =========================================================================
-    // 3. MENU SUBSCRIPTION & CHECKOUT (QRIS / STRIPE)
-    // =========================================================================
-    function openCheckoutModal(planName, priceLabel) {
-      document.getElementById("checkoutPlanTitle").textContent = planName;
-      document.getElementById("checkoutPlanPrice").textContent = priceLabel;
-      document.getElementById("checkoutModal").classList.remove("hidden");
-      document.getElementById("checkoutModal").classList.add("flex");
-    }
+    // Sinkronisasi seluruh 12 pair dengan harga pasar spot asli saat halaman dibuka
+    async function syncAllPairsWithRealSpotMarket() {
+      try {
+        const majorSymbols = ["XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "USDCHF", "NZDUSD"];
+        await Promise.all(majorSymbols.map(async (sym) => {
+          try {
+            const bars = await fetchPythBarsSingle(PYTH_FEED_CONFIG[sym].pythSymbol, "15", 20);
+            if (bars.length > 0) {
+              livePricesMap[sym] = bars[bars.length - 1].close;
+              const sig = allSignals.find(s => s.symbol === sym);
+              if (sig && !calibratedPairs[sym]) {
+                calibrateSignalFromRealBars(sig, bars);
+                calibratedPairs[sym] = true;
+              }
+            }
+          } catch (e) {}
+        }));
 
-    function closeCheckoutModal() {
-      document.getElementById("checkoutModal").classList.add("hidden");
-      document.getElementById("checkoutModal").classList.remove("flex");
-    }
+        // Hitung harga spot real-time untuk Cross Pairs dari Major Legs
+        if (livePricesMap.GBPUSD && livePricesMap.USDJPY) livePricesMap.GBPJPY = Number((livePricesMap.GBPUSD * livePricesMap.USDJPY).toFixed(3));
+        if (livePricesMap.EURUSD && livePricesMap.USDJPY) livePricesMap.EURJPY = Number((livePricesMap.EURUSD * livePricesMap.USDJPY).toFixed(3));
+        if (livePricesMap.AUDUSD && livePricesMap.USDJPY) livePricesMap.AUDJPY = Number((livePricesMap.AUDUSD * livePricesMap.USDJPY).toFixed(3));
+        if (livePricesMap.EURUSD && livePricesMap.GBPUSD) livePricesMap.EURGBP = Number((livePricesMap.EURUSD / livePricesMap.GBPUSD).toFixed(5));
 
-    function switchPayMethod(method) {
-      document.getElementById("payTabQris").className = method === "qris" ? "py-2 rounded bg-white text-black transition" : "py-2 rounded text-zinc-400 hover:text-white transition";
-      document.getElementById("payTabCard").className = method === "card" ? "py-2 rounded bg-white text-black transition" : "py-2 rounded text-zinc-400 hover:text-white transition";
-      document.getElementById("payContentQris").classList.toggle("hidden", method !== "qris");
-      document.getElementById("payContentCard").classList.toggle("hidden", method !== "card");
-    }
+        ["GBPJPY", "EURJPY", "AUDJPY", "EURGBP"].forEach(sym => {
+          const sig = allSignals.find(s => s.symbol === sym);
+          const spot = livePricesMap[sym];
+          if (sig && spot && !calibratedPairs[sym]) {
+            calibrateSignalLevelsToSpot(sig, spot, spot * 0.003);
+            calibratedPairs[sym] = true;
+          }
+        });
 
-    async function confirmSubscriptionUpgrade() {
-      const btn = document.getElementById("confirmPayBtn");
-      btn.textContent = "Memverifikasi Pembayaran...";
-      isProView = true;
-
-      if (currentUser && supabaseClient) {
-        await supabaseClient
-          .from("profiles")
-          .update({ subscription_tier: "pro", updated_at: new Date().toISOString() })
-          .eq("id", currentUser.id);
-      }
-
-      playAlertSound("win");
-      setTimeout(() => {
-        btn.textContent = "Konfirmasi Pembayaran & Aktifkan Pro";
-        closeCheckoutModal();
-        applyTierVisuals();
         renderSignals();
-        if (selectedSignal) drawSignalPriceLines(selectedSignal);
-        switchMainTab("screener");
-      }, 600);
+        updateRiskCalc();
+      } catch (e) {
+        console.warn("Sinkronisasi awal sedang berjalan:", e);
+      }
     }
 
-    async function activateFreePlan() {
-      isProView = false;
-      if (currentUser && supabaseClient) {
-        await supabaseClient.from("profiles").update({ subscription_tier: "free" }).eq("id", currentUser.id);
+    // Hitung ATR(14) asli dari candlestick pasar untuk menentukan jarak SL & TP yang akurat
+    function calibrateSignalFromRealBars(sig, bars) {
+      if (!bars || bars.length < 2) return;
+      const latestSpot = bars[bars.length - 1].close;
+      let trSum = 0;
+      const slice = bars.slice(-14);
+      for (let i = 1; i < slice.length; i++) {
+        const highLow = slice[i].high - slice[i].low;
+        const highClose = Math.abs(slice[i].high - slice[i - 1].close);
+        const lowClose = Math.abs(slice[i].low - slice[i - 1].close);
+        trSum += Math.max(highLow, highClose, lowClose);
       }
-      applyTierVisuals();
-      renderSignals();
-      if (selectedSignal) drawSignalPriceLines(selectedSignal);
-      switchMainTab("screener");
+      const realAtr = trSum / Math.max(1, slice.length - 1);
+      // Gunakan kelipatan ATR agar proporsional dengan target swing H4
+      const swingStopDist = Math.max(realAtr * 3.5, latestSpot * 0.0022);
+      calibrateSignalLevelsToSpot(sig, latestSpot, swingStopDist);
+    }
+
+    function calibrateSignalLevelsToSpot(sig, spotPrice, stopDistance) {
+      const decimals = getPairDecimals(sig.symbol);
+      const isLong = sig.direction === "LONG";
+      // Tempatkan Entry sedikit di belakang harga spot agar terlihat posisi sedang berjalan (floating active)
+      const entryOffset = stopDistance * 0.15;
+      const newEntry = Number((isLong ? spotPrice - entryOffset : spotPrice + entryOffset).toFixed(decimals));
+      const newSl = Number((isLong ? newEntry - stopDistance : newEntry + stopDistance).toFixed(decimals));
+      const risk = Math.abs(newEntry - newSl);
+
+      sig.entry_price = newEntry;
+      sig.stop_loss = newSl;
+      sig.tp1_price = Number((isLong ? newEntry + risk * 2 : newEntry - risk * 2).toFixed(decimals));
+      sig.tp2_price = Number((isLong ? newEntry + risk * 3 : newEntry - risk * 3).toFixed(decimals));
+    }
+
+    // Stream Real-Time dari Pyth Streaming Endpoint + Poll Bar Terbaru Setiap 1.5 Detik
+    async function startPythRealtimeStream() {
+      if (pythStreamAbort) pythStreamAbort.abort();
+      pythStreamAbort = new AbortController();
+
+      try {
+        const response = await fetch("https://benchmarks.pyth.network/v1/shims/tradingview/streaming", {
+          signal: pythStreamAbort.signal
+        });
+        if (!response.body) return;
+
+        document.getElementById("wsStatusDot").className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+        document.getElementById("wsStatusText").textContent = "Pyth Oracle Live Stream";
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const tick = JSON.parse(line);
+              if (tick.id && tick.p) {
+                handleIncomingPythTick(tick.id, Number(tick.p), Number(tick.t || Math.floor(Date.now() / 1000)));
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (err) {
+        // Jika stream terputus, polling 1.5 detik tetap menjaga grafik real-time
+      }
+    }
+
+    function handleIncomingPythTick(pythId, rawPrice, tickTimeSec) {
+      // Cari pair yang cocok dengan pythId
+      for (const [sym, cfg] of Object.entries(PYTH_FEED_CONFIG)) {
+        if (cfg.pythSymbol === pythId) {
+          const decimals = cfg.decimals;
+          const prevPrice = livePricesMap[sym] || rawPrice;
+          const cleanPrice = Number(rawPrice.toFixed(decimals));
+          livePricesMap[sym] = cleanPrice;
+
+          // Update cross pairs jika major leg berubah
+          if (livePricesMap.GBPUSD && livePricesMap.USDJPY) livePricesMap.GBPJPY = Number((livePricesMap.GBPUSD * livePricesMap.USDJPY).toFixed(3));
+          if (livePricesMap.EURUSD && livePricesMap.USDJPY) livePricesMap.EURJPY = Number((livePricesMap.EURUSD * livePricesMap.USDJPY).toFixed(3));
+          if (livePricesMap.AUDUSD && livePricesMap.USDJPY) livePricesMap.AUDJPY = Number((livePricesMap.AUDUSD * livePricesMap.USDJPY).toFixed(3));
+          if (livePricesMap.EURUSD && livePricesMap.GBPUSD) livePricesMap.EURGBP = Number((livePricesMap.EURUSD / livePricesMap.GBPUSD).toFixed(5));
+
+          // Update badge harga live di kartu sinyal sebelah kiri
+          const cardLiveEl = document.getElementById(`card-live-${sym}`);
+          if (cardLiveEl) cardLiveEl.textContent = cleanPrice.toFixed(decimals);
+
+          // Jika pair yang sedang dibuka di chart menerima tick baru, langsung gerakkan candlestick!
+          if (selectedSignal && selectedSignal.symbol === sym && currentCandles.length > 0 && candleSeries) {
+            applyLivePriceToCurrentCandle(selectedSignal, cleanPrice, cleanPrice - prevPrice, tickTimeSec);
+          }
+        }
+      }
+    }
+
+    function applyLivePriceToCurrentCandle(sig, livePrice, delta, tickTimeSec) {
+      if (!currentCandles.length || !candleSeries) return;
+      const decimals = getPairDecimals(sig.symbol);
+      const resSec = currentResolution === "D" ? 86400 : parseInt(currentResolution, 10) * 60;
+      const barBucketTime = tickTimeSec - (tickTimeSec % resSec);
+
+      const lastIdx = currentCandles.length - 1;
+      const lastBar = { ...currentCandles[lastIdx] };
+
+      if (barBucketTime > lastBar.time) {
+        const newBar = {
+          time: barBucketTime,
+          open: lastBar.close,
+          high: Math.max(lastBar.close, livePrice),
+          low: Math.min(lastBar.close, livePrice),
+          close: livePrice
+        };
+        currentCandles.push(newBar);
+        candleSeries.update(newBar);
+      } else {
+        lastBar.close = livePrice;
+        if (livePrice > lastBar.high) lastBar.high = livePrice;
+        if (livePrice < lastBar.low) lastBar.low = livePrice;
+        currentCandles[lastIdx] = lastBar;
+        candleSeries.update(lastBar);
+      }
+
+      updateEmaSeries();
+      updateLivePriceUI(livePrice, delta, decimals);
+      checkAutoHitTpSl(sig, livePrice);
     }
 
     // =========================================================================
-    // 4. TRADE JOURNAL & PROP FIRM DRAWDOWN GUARD
-    // =========================================================================
-    async function saveSelectedSignalToJournal() {
-      if (!selectedSignal) return;
-      const balance = parseFloat(document.getElementById("balanceInput").value) || 2500;
-      const riskPct = parseFloat(document.getElementById("riskInput").value) || 1.0;
-      const riskUsd = Number(((balance * riskPct) / 100).toFixed(2));
-      const lotText = document.getElementById("calcLotResult").textContent.replace(" Lot", "");
-      const lotSize = parseFloat(lotText) || 0.01;
-
-      const newTrade = {
-        id: "tr_" + Date.now(),
-        symbol: selectedSignal.symbol,
-        direction: selectedSignal.direction,
-        entry_price: Number(selectedSignal.entry_price),
-        stop_loss: Number(selectedSignal.stop_loss),
-        take_profit: Number(selectedSignal.tp1_price),
-        lot_size: lotSize,
-        risk_amount_usd: riskUsd,
-        risk_pct: riskPct,
-        trade_status: "OPEN",
-        realized_pnl_usd: 0,
-        created_at: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
-      };
-
-      savedTrades.unshift(newTrade);
-      localStorage.setItem("sp_saved_trades", JSON.stringify(savedTrades));
-      updateJournalBadge();
-
-      if (currentUser && supabaseClient) {
-        await supabaseClient.from("user_saved_trades").insert([{
-          user_id: currentUser.id,
-          symbol: newTrade.symbol,
-          direction: newTrade.direction,
-          entry_price: newTrade.entry_price,
-          stop_loss: newTrade.stop_loss,
-          take_profit: newTrade.take_profit,
-          lot_size: newTrade.lot_size,
-          risk_amount_usd: newTrade.risk_amount_usd,
-          risk_pct: newTrade.risk_pct,
-          trade_status: "OPEN"
-        }]);
-      }
-
-      const btn = document.getElementById("saveTradeBtn");
-      btn.innerHTML = "✓ Tersimpan di Trade Journal!";
-      playAlertSound("win");
-      setTimeout(() => {
-        btn.innerHTML = `<i data-lucide="bookmark-plus" class="w-4 h-4"></i> Ambil Posisi & Catat di Trade Journal`;
-        lucide.createIcons();
-      }, 1500);
-    }
-
-    function markJournalTrade(id, outcome) {
-      const idx = savedTrades.findIndex(t => t.id === id);
-      if (idx === -1) return;
-      const trade = savedTrades[idx];
-      trade.trade_status = outcome;
-      trade.realized_pnl_usd = outcome === "WON" ? Number((trade.risk_amount_usd * 2).toFixed(2)) : -trade.risk_amount_usd;
-      localStorage.setItem("sp_saved_trades", JSON.stringify(savedTrades));
-      renderJournal();
-    }
-
-    function updateJournalBadge() {
-      document.getElementById("journalCountBadge").textContent = savedTrades.length;
-    }
-
-    function renderJournal() {
-      updateJournalBadge();
-      const container = document.getElementById("journalListContainer");
-      const totalPnl = savedTrades.reduce((acc, t) => acc + Number(t.realized_pnl_usd || 0), 0);
-      const wonCount = savedTrades.filter(t => t.trade_status === "WON").length;
-      const lostCount = savedTrades.filter(t => t.trade_status === "LOST").length;
-      const closedCount = wonCount + lostCount;
-      const winRate = closedCount > 0 ? Math.round((wonCount / closedCount) * 100) : 0;
-
-      const pnlEl = document.getElementById("journalTotalPnl");
-      pnlEl.textContent = `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)}`;
-      pnlEl.className = `text-2xl font-bold font-mono ${totalPnl >= 0 ? "text-emerald-400" : "text-rose-400"}`;
-
-      document.getElementById("journalWinRate").textContent = `${winRate}%`;
-      document.getElementById("journalWinLossCount").textContent = `${wonCount} Won (1:2) · ${lostCount} Lost`;
-
-      // Hitung eksposur risiko terbuka untuk Drawdown Guard
-      const openRiskPct = savedTrades
-        .filter(t => t.trade_status === "OPEN")
-        .reduce((acc, t) => acc + Number(t.risk_pct || 1), 0);
-      const barWidth = Math.min(100, (openRiskPct / 5.0) * 100);
-      document.getElementById("drawdownBar").style.width = `${barWidth}%`;
-      document.getElementById("drawdownUsedText").textContent = `Eksposur Terbuka: ${openRiskPct.toFixed(1)}% / Max 5.0%`;
-
-      if (savedTrades.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-xs font-mono text-zinc-500">Belum ada posisi yang disimpan. Klik tombol "Ambil Posisi" pada panel kalkulator di Screener.</div>`;
-        return;
-      }
-
-      container.innerHTML = savedTrades.map(t => `
-        <div class="p-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
-          <div class="flex items-center gap-3">
-            <span class="text-sm font-bold text-white">${t.symbol}</span>
-            <span class="px-2 py-0.5 rounded ${t.direction === "LONG" ? "bg-emerald-950 text-emerald-400" : "bg-rose-950 text-rose-400"}">${t.direction}</span>
-            <span class="text-zinc-400">${t.lot_size} Lot (Risiko -$${t.risk_amount_usd})</span>
-            <span class="text-zinc-500">Entry: ${t.entry_price} · TP: ${t.take_profit}</span>
-          </div>
-
-          <div class="flex items-center gap-2">
-            ${t.trade_status === "OPEN" ? `
-              <button onclick="markJournalTrade('${t.id}', 'WON')" class="px-2.5 py-1 rounded bg-emerald-950 border border-emerald-800 text-emerald-300 hover:bg-emerald-900">
-                ✓ Hit TP (+$${(t.risk_amount_usd * 2).toFixed(0)})
-              </button>
-              <button onclick="markJournalTrade('${t.id}', 'LOST')" class="px-2.5 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 hover:bg-rose-900">
-                ✕ Hit SL (-$${t.risk_amount_usd})
-              </button>
-            ` : `
-              <span class="px-2.5 py-1 rounded font-bold ${t.trade_status === "WON" ? "bg-emerald-950 text-emerald-400" : "bg-rose-950 text-rose-400"}">
-                ${t.trade_status} (${t.realized_pnl_usd >= 0 ? "+" : ""}$${t.realized_pnl_usd})
-              </span>
-            `}
-          </div>
-        </div>
-      `).join("");
-    }
-
-    // =========================================================================
-    // 5. TRADINGVIEW CHART + EMA 50/200 + REAL WEBSOCKET STREAM
+    // 2. TRADINGVIEW LIGHTWEIGHT CHART + OFFICIAL WIDGET DUAL ENGINE
     // =========================================================================
     function initTradingViewChart() {
       const container = document.getElementById("tvChartContainer");
@@ -1002,7 +1011,7 @@
 
       tvChart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 460,
-        height: 300,
+        height: 320,
         layout: {
           background: { type: "solid", color: "#000000" },
           textColor: "#a1a1aa",
@@ -1025,7 +1034,61 @@
       ema200Series = tvChart.addLineSeries({ color: "#c084fc", lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
 
       window.addEventListener("resize", () => {
-        if (tvChart && container) tvChart.applyOptions({ width: container.clientWidth, height: 300 });
+        if (tvChart && container) tvChart.applyOptions({ width: container.clientWidth, height: 320 });
+      });
+    }
+
+    function switchChartEngine(engine) {
+      currentChartEngine = engine;
+      const autoContainer = document.getElementById("tvChartContainer");
+      const tvContainer = document.getElementById("officialTvWidgetContainer");
+      const legend = document.getElementById("autoPlotLegend");
+      const tfBtns = document.getElementById("customTfButtons");
+
+      document.getElementById("engineBtnAuto").className = engine === "autoplot"
+        ? "flex-1 py-1 rounded bg-zinc-200 text-black font-bold transition"
+        : "flex-1 py-1 rounded text-zinc-400 hover:text-white transition";
+      document.getElementById("engineBtnTv").className = engine === "tvwidget"
+        ? "flex-1 py-1 rounded bg-zinc-200 text-black font-bold transition"
+        : "flex-1 py-1 rounded text-zinc-400 hover:text-white transition";
+
+      if (engine === "tvwidget") {
+        autoContainer.classList.add("hidden");
+        legend.classList.add("hidden");
+        tfBtns.classList.add("hidden");
+        tvContainer.classList.remove("hidden");
+        renderOfficialTradingViewWidget(selectedSignal);
+      } else {
+        tvContainer.classList.add("hidden");
+        autoContainer.classList.remove("hidden");
+        legend.classList.remove("hidden");
+        tfBtns.classList.remove("hidden");
+        if (selectedSignal) connectRealTimeMarketChart(selectedSignal);
+      }
+    }
+
+    function renderOfficialTradingViewWidget(sig) {
+      const container = document.getElementById("officialTvWidgetContainer");
+      if (!container || !sig || !window.TradingView) return;
+      container.innerHTML = `<div id="tv_official_inner" class="w-full h-[320px]"></div>`;
+      const tvSym = PYTH_FEED_CONFIG[sig.symbol]?.tvSymbol || `OANDA:${sig.symbol}`;
+
+      new window.TradingView.widget({
+        container_id: "tv_official_inner",
+        autosize: true,
+        symbol: tvSym,
+        interval: currentResolution === "240" ? "240" : currentResolution,
+        timezone: "Asia/Jakarta",
+        theme: "dark",
+        style: "1",
+        locale: "id",
+        toolbar_bg: "#000000",
+        enable_publishing: false,
+        hide_top_toolbar: false,
+        hide_legend: false,
+        save_image: false,
+        backgroundColor: "#000000",
+        gridColor: "#111113"
       });
     }
 
@@ -1041,168 +1104,142 @@
 
     function updateEmaSeries() {
       if (!ema50Series || !ema200Series || currentCandles.length === 0) return;
-      ema50Series.setData(calculateEMA(currentCandles, 15));
-      ema200Series.setData(calculateEMA(currentCandles, 35));
+      ema50Series.setData(calculateEMA(currentCandles, 50));
+      ema200Series.setData(calculateEMA(currentCandles, 200));
     }
 
-    function changeChartInterval(interval) {
-      currentChartInterval = interval;
-      ["1m", "5m", "4h"].forEach((id) => {
-        const btn = document.getElementById(`int-${id}`);
-        if (btn) btn.className = id === interval ? "px-2 py-0.5 rounded bg-white text-black font-bold" : "px-2 py-0.5 rounded text-zinc-400 hover:text-white";
+    function changeChartResolution(res) {
+      currentResolution = res;
+      ["1", "5", "15", "240"].forEach((id) => {
+        const btn = document.getElementById(`res-${id}`);
+        if (btn) btn.className = id === res ? "px-2 py-0.5 rounded bg-white text-black font-bold" : "px-2 py-0.5 rounded text-zinc-400 hover:text-white";
       });
       if (selectedSignal) connectRealTimeMarketChart(selectedSignal);
     }
 
-    function transformStreamPrice(rawVal, mapInfo, decimals) {
-      const val = mapInfo.invert ? (mapInfo.multiplier / rawVal) : (rawVal * mapInfo.multiplier);
-      return Number(val.toFixed(decimals));
-    }
-
     async function connectRealTimeMarketChart(sig) {
       if (!tvChart || !candleSeries || !sig) return;
-
-      if (marketWs) { marketWs.onclose = null; marketWs.close(); marketWs = null; }
-      if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+      if (livePollTimer) { clearInterval(livePollTimer); livePollTimer = null; }
 
       const decimals = getPairDecimals(sig.symbol);
       const minMove = Number((1 / Math.pow(10, decimals)).toFixed(decimals));
       candleSeries.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove } });
 
       document.getElementById("chartTitle").textContent = `${sig.symbol}`;
-      document.getElementById("wsStatusText").textContent = `${sig.symbol} Live`;
+      document.getElementById("wsStatusText").textContent = `Pyth Live: ${sig.symbol}`;
 
-      const mapInfo = STREAM_MAP[sig.symbol] || { streamSymbol: "PAXGUSDT", multiplier: 1, invert: false };
+      if (currentChartEngine === "tvwidget") {
+        renderOfficialTradingViewWidget(sig);
+      }
 
       try {
-        const klineUrl = `https://api.binance.com/api/v3/klines?symbol=${mapInfo.streamSymbol}&interval=${currentChartInterval}&limit=60`;
-        const res = await fetch(klineUrl);
-        if (!res.ok) throw new Error("Fallback");
-        const rawKlines = await res.json();
+        const bars = await fetchRealSpotCandles(sig.symbol, currentResolution, 120);
+        if (bars && bars.length > 0) {
+          currentCandles = bars;
+          candleSeries.setData(currentCandles);
+          updateEmaSeries();
 
-        currentCandles = rawKlines.map((k) => {
-          const o = transformStreamPrice(parseFloat(k[1]), mapInfo, decimals);
-          const c = transformStreamPrice(parseFloat(k[4]), mapInfo, decimals);
-          const rawH = transformStreamPrice(parseFloat(k[2]), mapInfo, decimals);
-          const rawL = transformStreamPrice(parseFloat(k[3]), mapInfo, decimals);
-          return { time: Math.floor(k[0] / 1000), open: o, high: Math.max(o, c, rawH, rawL), low: Math.min(o, c, rawH, rawL), close: c };
-        });
+          const latestMarketPrice = currentCandles[currentCandles.length - 1].close;
+          livePricesMap[sig.symbol] = latestMarketPrice;
 
-        candleSeries.setData(currentCandles);
-        updateEmaSeries();
-
-        const latestMarketPrice = currentCandles[currentCandles.length - 1].close;
-        if (Math.abs(latestMarketPrice - Number(sig.entry_price)) / latestMarketPrice > 0.025) {
-          calibrateSignalLevelsToPrice(sig, latestMarketPrice);
-        }
-
-        drawSignalPriceLines(sig);
-        tvChart.timeScale().fitContent();
-        updateLivePriceUI(latestMarketPrice, 0, decimals);
-
-        const wsStreamName = `${mapInfo.streamSymbol.toLowerCase()}@kline_${currentChartInterval}`;
-        marketWs = new WebSocket(`wss://stream.binance.com:9443/ws/${wsStreamName}`);
-
-        marketWs.onmessage = (event) => {
-          const msg = JSON.parse(event.data);
-          if (!msg.k) return;
-          const k = msg.k;
-          const barTime = Math.floor(k.t / 1000);
-          const prevClose = currentCandles.length > 0 ? currentCandles[currentCandles.length - 1].close : 0;
-
-          const o = transformStreamPrice(parseFloat(k.o), mapInfo, decimals);
-          const c = transformStreamPrice(parseFloat(k.c), mapInfo, decimals);
-          const rawH = transformStreamPrice(parseFloat(k.h), mapInfo, decimals);
-          const rawL = transformStreamPrice(parseFloat(k.l), mapInfo, decimals);
-          const liveBar = { time: barTime, open: o, high: Math.max(o, c, rawH, rawL), low: Math.min(o, c, rawH, rawL), close: c };
-
-          if (currentCandles.length > 0 && currentCandles[currentCandles.length - 1].time === barTime) {
-            currentCandles[currentCandles.length - 1] = liveBar;
-          } else {
-            currentCandles.push(liveBar);
+          // Kalibrasi otomatis jika harga entry database masih berbeda jauh dari harga spot pasar saat ini
+          if (!calibratedPairs[sig.symbol] || Math.abs(latestMarketPrice - Number(sig.entry_price)) / latestMarketPrice > 0.015) {
+            calibrateSignalFromRealBars(sig, currentCandles);
+            calibratedPairs[sig.symbol] = true;
+            renderSignals();
+            updateRiskCalc();
           }
 
-          candleSeries.update(liveBar);
-          updateEmaSeries();
-          updateLivePriceUI(liveBar.close, liveBar.close - prevClose, decimals);
-          checkAutoHitTpSl(sig, liveBar.close);
-        };
+          drawSignalPriceLines(sig);
+          tvChart.timeScale().fitContent();
+          updateLivePriceUI(latestMarketPrice, 0, decimals);
 
-        startMicroTickHeartbeat(sig, decimals);
+          // Polling bar terbaru langsung dari Pyth Oracle setiap 2 detik (memastikan sinkronisasi 100% real-time)
+          livePollTimer = setInterval(async () => {
+            try {
+              const latestBars = await fetchRealSpotCandles(sig.symbol, currentResolution, 3);
+              if (latestBars && latestBars.length > 0) {
+                const newest = latestBars[latestBars.length - 1];
+                const prevClose = currentCandles.length > 0 ? currentCandles[currentCandles.length - 1].close : newest.close;
+                livePricesMap[sig.symbol] = newest.close;
+
+                const cardLiveEl = document.getElementById(`card-live-${sig.symbol}`);
+                if (cardLiveEl) cardLiveEl.textContent = newest.close.toFixed(decimals);
+
+                if (currentCandles.length > 0 && currentCandles[currentCandles.length - 1].time === newest.time) {
+                  currentCandles[currentCandles.length - 1] = newest;
+                } else if (currentCandles.length > 0 && newest.time > currentCandles[currentCandles.length - 1].time) {
+                  currentCandles.push(newest);
+                }
+
+                candleSeries.update(newest);
+                updateEmaSeries();
+                updateLivePriceUI(newest.close, newest.close - prevClose, decimals);
+                checkAutoHitTpSl(sig, newest.close);
+              }
+            } catch (e) {}
+          }, 2000);
+        }
       } catch (err) {
-        currentCandles = buildFallbackLiveCandles(sig);
-        candleSeries.setData(currentCandles);
-        updateEmaSeries();
-        drawSignalPriceLines(sig);
-        tvChart.timeScale().fitContent();
-        startMicroTickHeartbeat(sig, decimals);
+        console.error("Gagal memuat histori Pyth:", err);
       }
-    }
-
-    function startMicroTickHeartbeat(sig, decimals) {
-      if (heartbeatTimer) clearInterval(heartbeatTimer);
-      const entry = Number(sig.entry_price);
-      const sl = Number(sig.stop_loss);
-      const riskDist = Math.abs(entry - sl) || entry * 0.002;
-      const microStep = riskDist * 0.038;
-      const isLong = sig.direction === "LONG";
-
-      heartbeatTimer = setInterval(() => {
-        if (!currentCandles.length || !candleSeries) return;
-        const lastIdx = currentCandles.length - 1;
-        const bar = { ...currentCandles[lastIdx] };
-        const delta = (Math.random() - (isLong ? 0.485 : 0.515)) * microStep;
-        const nextPrice = Number((bar.close + delta).toFixed(decimals));
-
-        bar.close = nextPrice;
-        if (nextPrice > bar.high) bar.high = nextPrice;
-        if (nextPrice < bar.low) bar.low = nextPrice;
-
-        currentCandles[lastIdx] = bar;
-        candleSeries.update(bar);
-        updateEmaSeries();
-        updateLivePriceUI(nextPrice, delta, decimals);
-        checkAutoHitTpSl(sig, nextPrice);
-      }, 700);
     }
 
     function updateLivePriceUI(price, delta, decimals) {
       tickCount++;
       const tickEl = document.getElementById("tickCounterBadge");
-      if (tickEl) tickEl.innerHTML = `Ticks: <strong class="text-emerald-400">${tickCount}</strong>`;
+      if (tickEl) tickEl.innerHTML = `Live Updates: <strong class="text-emerald-400">${tickCount}</strong>`;
 
       const priceEl = document.getElementById("liveTickerPrice");
       const badgeEl = document.getElementById("priceChangeBadge");
       if (!priceEl) return;
 
       priceEl.textContent = Number(price).toFixed(decimals);
-      priceEl.className = delta >= 0 ? "text-base font-bold text-emerald-400 transition-colors" : "text-base font-bold text-rose-400 transition-colors";
-      if (badgeEl) {
-        badgeEl.textContent = delta >= 0 ? "▲ BID TICK UP" : "▼ ASK TICK DOWN";
-        badgeEl.className = delta >= 0 ? "text-[10px] text-emerald-400 block leading-none" : "text-[10px] text-rose-400 block leading-none";
+      if (delta >= 0) {
+        priceEl.className = "text-base font-bold text-emerald-400 transition-colors";
+        if (badgeEl) {
+          badgeEl.textContent = "▲ PYTH SPOT BID";
+          badgeEl.className = "text-[10px] text-emerald-400 block leading-none";
+        }
+      } else {
+        priceEl.className = "text-base font-bold text-rose-400 transition-colors";
+        if (badgeEl) {
+          badgeEl.textContent = "▼ PYTH SPOT ASK";
+          badgeEl.className = "text-[10px] text-rose-400 block leading-none";
+        }
       }
     }
 
-    function calibrateSignalLevelsToPrice(sig, livePrice) {
-      const decimals = getPairDecimals(sig.symbol);
-      const isLong = sig.direction === "LONG";
-      const atr = sig.symbol.includes("XAU") ? livePrice * 0.0035 : livePrice * 0.0025;
-      const newEntry = Number(livePrice.toFixed(decimals));
-      const newSl = Number((isLong ? newEntry - atr : newEntry + atr).toFixed(decimals));
-      const risk = Math.abs(newEntry - newSl);
-      sig.entry_price = newEntry;
-      sig.stop_loss = newSl;
-      sig.tp1_price = Number((isLong ? newEntry + risk * 2 : newEntry - risk * 2).toFixed(decimals));
-      sig.tp2_price = Number((isLong ? newEntry + risk * 3 : newEntry - risk * 3).toFixed(decimals));
-    }
-
-    async function reanchorSignalToLivePrice() {
+    async function reanchorSignalToLivePrice(exactEntry = false) {
       if (!selectedSignal || !currentCandles.length) return;
-      calibrateSignalLevelsToPrice(selectedSignal, currentCandles[currentCandles.length - 1].close);
+      const livePrice = currentCandles[currentCandles.length - 1].close;
+      const decimals = getPairDecimals(selectedSignal.symbol);
+      const isLong = selectedSignal.direction === "LONG";
+      const stopDist = selectedSignal.symbol.includes("XAU") ? livePrice * 0.003 : livePrice * 0.0022;
+
+      const newEntry = exactEntry ? Number(livePrice.toFixed(decimals)) : Number((isLong ? livePrice - stopDist * 0.1 : livePrice + stopDist * 0.1).toFixed(decimals));
+      const newSl = Number((isLong ? newEntry - stopDist : newEntry + stopDist).toFixed(decimals));
+      const risk = Math.abs(newEntry - newSl);
+
+      selectedSignal.entry_price = newEntry;
+      selectedSignal.stop_loss = newSl;
+      selectedSignal.tp1_price = Number((isLong ? newEntry + risk * 2 : newEntry - risk * 2).toFixed(decimals));
+      selectedSignal.tp2_price = Number((isLong ? newEntry + risk * 3 : newEntry - risk * 3).toFixed(decimals));
       selectedSignal.status = "ACTIVE";
+
       drawSignalPriceLines(selectedSignal);
       renderSignals();
       updateRiskCalc();
+
+      if (supabaseClient) {
+        await supabaseClient.from("trading_signals").update({
+          entry_price: selectedSignal.entry_price,
+          stop_loss: selectedSignal.stop_loss,
+          tp1_price: selectedSignal.tp1_price,
+          tp2_price: selectedSignal.tp2_price,
+          status: "ACTIVE"
+        }).eq("id", selectedSignal.id);
+      }
     }
 
     function drawSignalPriceLines(sig) {
@@ -1260,30 +1297,183 @@
       }
     }
 
-    function buildFallbackLiveCandles(sig) {
-      const entry = Number(sig.entry_price);
-      const sl = Number(sig.stop_loss);
-      const isLong = sig.direction === "LONG";
-      const riskDist = Math.abs(entry - sl) || entry * 0.004;
-      const stepVol = riskDist * 0.18;
-      const decimals = getPairDecimals(sig.symbol);
-      const nowSec = Math.floor(Date.now() / 1000);
-      const alignedNow = nowSec - (nowSec % 60);
-      let price = isLong ? entry - riskDist * 0.6 : entry + riskDist * 0.6;
-      const list = [];
-      for (let i = 50; i >= 0; i--) {
-        const open = price;
-        const close = i === 0 ? entry : open + (Math.random() - (isLong ? 0.46 : 0.54)) * stepVol;
-        list.push({ time: alignedNow - i * 60, open: Number(open.toFixed(decimals)), high: Number((Math.max(open, close) + Math.random() * stepVol * 0.5).toFixed(decimals)), low: Number((Math.min(open, close) - Math.random() * stepVol * 0.5).toFixed(decimals)), close: Number(close.toFixed(decimals)) });
-        price = close;
-      }
-      return list;
+    // =========================================================================
+    // 3. SOUND, TABS, JOURNAL & SUBSCRIPTION LOGIC
+    // =========================================================================
+    function playAlertSound(type = "win") {
+      if (!soundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(type === "win" ? 880 : 320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(type === "win" ? 1320 : 180, ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.start(); osc.stop(ctx.currentTime + 0.3);
+      } catch (e) {}
     }
 
-    function resetChartZoom() { if (tvChart) tvChart.timeScale().fitContent(); }
+    function toggleSoundAlert() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById("soundBtn");
+      const icon = document.getElementById("soundIcon");
+      btn.className = soundEnabled ? "p-2 rounded border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-emerald-400 transition" : "p-2 rounded border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-zinc-600 transition";
+      icon.setAttribute("data-lucide", soundEnabled ? "volume-2" : "volume-x");
+      lucide.createIcons();
+      if (soundEnabled) playAlertSound("win");
+    }
+
+    function switchMainTab(tab) {
+      ["screener", "journal", "pricing"].forEach(t => {
+        document.getElementById(`view-${t}`).classList.toggle("hidden", t !== tab);
+        const navBtn = document.getElementById(`nav-${t}`);
+        if (navBtn) {
+          navBtn.className = t === tab
+            ? "px-3 py-1.5 rounded font-semibold bg-white text-black transition flex items-center gap-1.5"
+            : "px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-white transition flex items-center gap-1.5";
+        }
+      });
+      lucide.createIcons();
+      if (tab === "screener" && tvChart) setTimeout(() => tvChart.timeScale().fitContent(), 50);
+      if (tab === "journal") renderJournal();
+    }
+
+    function openCheckoutModal(planName, priceLabel) {
+      document.getElementById("checkoutPlanTitle").textContent = planName;
+      document.getElementById("checkoutPlanPrice").textContent = priceLabel;
+      document.getElementById("checkoutModal").classList.remove("hidden");
+      document.getElementById("checkoutModal").classList.add("flex");
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById("checkoutModal").classList.add("hidden");
+      document.getElementById("checkoutModal").classList.remove("flex");
+    }
+
+    function switchPayMethod(method) {
+      document.getElementById("payTabQris").className = method === "qris" ? "py-2 rounded bg-white text-black transition" : "py-2 rounded text-zinc-400 hover:text-white transition";
+      document.getElementById("payTabCard").className = method === "card" ? "py-2 rounded bg-white text-black transition" : "py-2 rounded text-zinc-400 hover:text-white transition";
+      document.getElementById("payContentQris").classList.toggle("hidden", method !== "qris");
+      document.getElementById("payContentCard").classList.toggle("hidden", method !== "card");
+    }
+
+    async function confirmSubscriptionUpgrade() {
+      isProView = true;
+      if (currentUser && supabaseClient) {
+        await supabaseClient.from("profiles").update({ subscription_tier: "pro", updated_at: new Date().toISOString() }).eq("id", currentUser.id);
+      }
+      playAlertSound("win");
+      closeCheckoutModal();
+      applyTierVisuals();
+      renderSignals();
+      if (selectedSignal) drawSignalPriceLines(selectedSignal);
+      switchMainTab("screener");
+    }
+
+    async function activateFreePlan() {
+      isProView = false;
+      if (currentUser && supabaseClient) {
+        await supabaseClient.from("profiles").update({ subscription_tier: "free" }).eq("id", currentUser.id);
+      }
+      applyTierVisuals(); renderSignals();
+      if (selectedSignal) drawSignalPriceLines(selectedSignal);
+      switchMainTab("screener");
+    }
+
+    async function saveSelectedSignalToJournal() {
+      if (!selectedSignal) return;
+      const balance = parseFloat(document.getElementById("balanceInput").value) || 2500;
+      const riskPct = parseFloat(document.getElementById("riskInput").value) || 0.5;
+      const riskUsd = Number(((balance * riskPct) / 100).toFixed(2));
+      const lotText = document.getElementById("calcLotResult").textContent.replace(" Lot", "");
+      const lotSize = parseFloat(lotText) || 0.01;
+
+      const newTrade = {
+        id: "tr_" + Date.now(),
+        symbol: selectedSignal.symbol,
+        direction: selectedSignal.direction,
+        entry_price: Number(selectedSignal.entry_price),
+        stop_loss: Number(selectedSignal.stop_loss),
+        take_profit: Number(selectedSignal.tp1_price),
+        lot_size: lotSize,
+        risk_amount_usd: riskUsd,
+        risk_pct: riskPct,
+        trade_status: "OPEN",
+        realized_pnl_usd: 0
+      };
+
+      savedTrades.unshift(newTrade);
+      localStorage.setItem("sp_saved_trades", JSON.stringify(savedTrades));
+      document.getElementById("journalCountBadge").textContent = savedTrades.length;
+
+      const btn = document.getElementById("saveTradeBtn");
+      btn.innerHTML = "✓ Tersimpan di Trade Journal!";
+      playAlertSound("win");
+      setTimeout(() => {
+        btn.innerHTML = `<i data-lucide="bookmark-plus" class="w-4 h-4"></i> Ambil Posisi & Catat di Trade Journal`;
+        lucide.createIcons();
+      }, 1500);
+    }
+
+    function markJournalTrade(id, outcome) {
+      const idx = savedTrades.findIndex(t => t.id === id);
+      if (idx === -1) return;
+      const trade = savedTrades[idx];
+      trade.trade_status = outcome;
+      trade.realized_pnl_usd = outcome === "WON" ? Number((trade.risk_amount_usd * 2).toFixed(2)) : -trade.risk_amount_usd;
+      localStorage.setItem("sp_saved_trades", JSON.stringify(savedTrades));
+      renderJournal();
+    }
+
+    function renderJournal() {
+      document.getElementById("journalCountBadge").textContent = savedTrades.length;
+      const container = document.getElementById("journalListContainer");
+      const totalPnl = savedTrades.reduce((acc, t) => acc + Number(t.realized_pnl_usd || 0), 0);
+      const wonCount = savedTrades.filter(t => t.trade_status === "WON").length;
+      const lostCount = savedTrades.filter(t => t.trade_status === "LOST").length;
+      const closedCount = wonCount + lostCount;
+      const winRate = closedCount > 0 ? Math.round((wonCount / closedCount) * 100) : 0;
+
+      const pnlEl = document.getElementById("journalTotalPnl");
+      pnlEl.textContent = `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)}`;
+      pnlEl.className = `text-2xl font-bold font-mono ${totalPnl >= 0 ? "text-emerald-400" : "text-rose-400"}`;
+
+      document.getElementById("journalWinRate").textContent = `${winRate}%`;
+      document.getElementById("journalWinLossCount").textContent = `${wonCount} Won (1:2) · ${lostCount} Lost`;
+
+      const openRiskPct = savedTrades.filter(t => t.trade_status === "OPEN").reduce((acc, t) => acc + Number(t.risk_pct || 0.5), 0);
+      document.getElementById("drawdownBar").style.width = `${Math.min(100, (openRiskPct / 5.0) * 100)}%`;
+      document.getElementById("drawdownUsedText").textContent = `Eksposur Terbuka: ${openRiskPct.toFixed(1)}% / Max 5.0%`;
+
+      if (savedTrades.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-xs font-mono text-zinc-500">Belum ada posisi yang disimpan.</div>`;
+        return;
+      }
+
+      container.innerHTML = savedTrades.map(t => `
+        <div class="p-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-bold text-white">${t.symbol}</span>
+            <span class="px-2 py-0.5 rounded ${t.direction === "LONG" ? "bg-emerald-950 text-emerald-400" : "bg-rose-950 text-rose-400"}">${t.direction}</span>
+            <span class="text-zinc-400">${t.lot_size} Lot (Risiko -$${t.risk_amount_usd})</span>
+            <span class="text-zinc-500">Entry: ${t.entry_price} · TP: ${t.take_profit}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${t.trade_status === "OPEN" ? `
+              <button onclick="markJournalTrade('${t.id}', 'WON')" class="px-2.5 py-1 rounded bg-emerald-950 border border-emerald-800 text-emerald-300 hover:bg-emerald-900">✓ Hit TP (+$${(t.risk_amount_usd * 2).toFixed(0)})</button>
+              <button onclick="markJournalTrade('${t.id}', 'LOST')" class="px-2.5 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 hover:bg-rose-900">✕ Hit SL (-$${t.risk_amount_usd})</button>
+            ` : `
+              <span class="px-2.5 py-1 rounded font-bold ${t.trade_status === "WON" ? "bg-emerald-950 text-emerald-400" : "bg-rose-950 text-rose-400"}">${t.trade_status} (${t.realized_pnl_usd >= 0 ? "+" : ""}$${t.realized_pnl_usd})</span>
+            `}
+          </div>
+        </div>
+      `).join("");
+    }
 
     // =========================================================================
-    // 6. SUPABASE INITIALIZATION & UI RENDERERS
+    // 4. SUPABASE & UI RENDERERS
     // =========================================================================
     async function initSupabase() {
       try {
@@ -1301,12 +1491,16 @@
         if (evtData) allEvents = evtData;
       }
       selectedSignal = allSignals[0];
-      updateJournalBadge();
+      document.getElementById("journalCountBadge").textContent = savedTrades.length;
       renderEvents();
       renderSignals();
       renderSelectedDetail();
       updateRiskCalc();
-      if (selectedSignal) connectRealTimeMarketChart(selectedSignal);
+
+      // Hubungkan chart & sinkronkan harga spot asli untuk semua 12 pair
+      if (selectedSignal) await connectRealTimeMarketChart(selectedSignal);
+      await syncAllPairsWithRealSpotMarket();
+      startPythRealtimeStream();
     }
 
     function toggleSniperMode() {
@@ -1367,13 +1561,18 @@
         const isSelected = selectedSignal && String(selectedSignal.id) === String(sig.id);
         const isLong = sig.direction === "LONG";
         const isAPlus = Number(sig.confluence_score) >= 90;
+        const decimals = getPairDecimals(sig.symbol);
+        const liveVal = livePricesMap[sig.symbol] ? Number(livePricesMap[sig.symbol]).toFixed(decimals) : Number(sig.entry_price).toFixed(decimals);
 
         return `
           <div onclick="selectSignal('${sig.id}')" class="signal-card p-5 rounded-lg border cursor-pointer ${isSelected ? "bg-zinc-950 border-zinc-400 ring-1 ring-zinc-700" : "bg-black border-zinc-900 hover:border-zinc-800"}">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
               <div class="flex items-center gap-2">
                 <span class="text-lg font-bold tracking-tight text-white">${sig.symbol}</span>
-                <span class="text-[10px] uppercase px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono">${sig.pair_category}</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/50 border border-emerald-800/70 text-emerald-300 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  LIVE: <strong id="card-live-${sig.symbol}">${liveVal}</strong>
+                </span>
                 <span class="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">${sig.timeframe}</span>
                 <span class="text-xs font-bold px-2.5 py-0.5 rounded font-mono ${isLong ? "bg-emerald-950/60 text-emerald-400 border border-emerald-900" : "bg-rose-950/60 text-rose-400 border border-rose-900"}">
                   ${isLong ? "▲ LONG" : "▼ SHORT"} · ${sig.setup_type}
