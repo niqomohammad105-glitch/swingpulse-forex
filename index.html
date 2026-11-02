@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwingPulse — Honest Quantitative Forex Screener & 10Y Audit</title>
+  <title>SwingPulse — Institutional A++ & A Quantitative Screener</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -75,7 +75,7 @@
           </div>
           <span class="font-bold tracking-tight text-sm sm:text-base text-white font-mono">SWINGPULSE</span>
           <span class="hidden xl:inline-block text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 border border-zinc-800 text-zinc-400">
-            HONEST QUANT v4.0
+            HONEST QUANT v4.5
           </span>
         </div>
 
@@ -145,9 +145,9 @@
   <div class="bg-black border-b border-zinc-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-zinc-500">
       <div class="flex items-center gap-2">
-        <span class="px-1.5 py-0.5 bg-white text-black font-bold text-[10px]">REPUTATION GUARD</span>
+        <span class="px-1.5 py-0.5 bg-white text-black font-bold text-[10px]">AUTO-PLOT SL/TP ACTIVE</span>
         <span class="text-zinc-300">
-          ZERO FABRICATED STATS: HANYA MERILIS ENTRY/SL/TP UNTUK GRADE A++ (&ge;95%) & GRADE A (&ge;88%). DI BAWAH ITU DIKUNCI.
+          SETIAP SETUP GRADE A++ & A OTOMATIS MENGGAMBAR GARIS ENTRY, STOP LOSS, TP1, DAN TP2 LANGSUNG DI CHART TRADINGVIEW.
         </span>
       </div>
       <div class="flex items-center gap-4">
@@ -162,7 +162,7 @@
   <!-- ======================================================================= -->
   <main id="view-screener" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
     
-    <!-- Honest Live Backtested Telemetry Bar (Zero Fake Numbers) -->
+    <!-- Honest Live Backtested Telemetry Bar -->
     <div class="grid grid-cols-2 lg:grid-cols-4 border border-zinc-900 bg-black divide-y sm:divide-y-0 sm:divide-x divide-zinc-900 font-mono">
       <div class="p-4">
         <span class="text-[10px] uppercase text-zinc-500 block">LIVE 250-BAR WIN RATE (1:2 RR)</span>
@@ -172,12 +172,12 @@
       <div class="p-4">
         <span class="text-[10px] uppercase text-zinc-500 block">REAL PROFIT FACTOR (NET)</span>
         <span id="metricProfitFactor" class="text-xl font-bold text-white mt-0.5 block">--</span>
-        <span class="text-[10px] text-zinc-500 block mt-0.5">Includes 0.08R Spread Friction</span>
+        <span id="textSpreadNote" class="text-[10px] text-zinc-500 block mt-0.5">Includes 0.08R Spread Friction</span>
       </div>
       <div class="p-4">
         <span class="text-[10px] uppercase text-zinc-500 block">ACTIVE A++ / A SETUPS</span>
         <span id="metricActiveCount" class="text-xl font-bold text-white mt-0.5 block">0 / 12 PAIRS</span>
-        <span class="text-[10px] text-zinc-500 block mt-0.5">Sub-A Setups Blocked</span>
+        <span class="text-[10px] text-zinc-500 block mt-0.5">Auto-Plotted on Chart</span>
       </div>
       <div class="p-4 cursor-pointer hover:bg-zinc-950 transition" onclick="switchMainTab('tenyear')">
         <span class="text-[10px] uppercase text-zinc-500 block">10-YEAR AUDIT (2016–2026) →</span>
@@ -194,10 +194,10 @@
         <div class="p-4 border border-zinc-900 bg-black flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div class="text-xs font-bold uppercase tracking-wider text-white font-mono">
-              QUANTITATIVE GRADE FILTER (LIVE PYTH OHLCV)
+              QUANTITATIVE GRADE FILTER (KLIK KARTU UNTUK LIHAT SL/TP DI CHART)
             </div>
             <p class="text-xs text-zinc-500 mt-0.5">
-              Pair di bawah Grade A tidak diberikan level Entry/SL/TP untuk mencegah eksekusi berkualitas rendah.
+              Hanya merilis garis Entry, SL, TP1, dan TP2 untuk setup Grade A++ (&ge;95%) & Grade A (&ge;88%).
             </p>
           </div>
           <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px] font-mono shrink-0">
@@ -236,30 +236,51 @@
         <div id="signalsContainer" class="space-y-2.5"></div>
       </div>
 
-      <!-- RIGHT COLUMN (5 COLS): CHART, 5-GATE MATHEMATICAL AUDIT, PROP CALCULATOR -->
+      <!-- RIGHT COLUMN (5 COLS): CHART DENGAN SL/TP LANGSUNG TERPASANG -->
       <div class="lg:col-span-5 space-y-5">
         
-        <!-- Real-Time Chart Module -->
-        <div class="p-4 border border-zinc-900 bg-black space-y-3">
+        <!-- Real-Time Chart Module with Direct SL/TP HUD & Auto-Scale Price Lines -->
+        <div class="p-4 border border-white bg-black space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-              <span class="w-2 h-2 bg-white inline-block"></span>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 bg-white inline-block animate-pulse"></span>
               <span id="chartTitle" class="text-sm font-bold font-mono text-white">XAUUSD</span>
               <span id="chartGradeBadge" class="text-[10px] font-mono px-1.5 py-0.5 bg-white text-black font-bold">SCANNING</span>
             </div>
 
             <div class="text-right font-mono">
-              <span id="priceChangeBadge" class="text-[9px] text-zinc-500 block leading-none">PYTH SPOT ORACLE</span>
+              <span id="priceChangeBadge" class="text-[9px] text-zinc-500 block leading-none">LIVE SPOT PRICE</span>
               <span id="liveTickerPrice" class="text-base font-bold text-white">----.--</span>
             </div>
           </div>
 
+          <!-- Bar Ringkasan Level SL & TP di Atas Chart (Agar Pengunjung Langsung Tahu Sekali Lihat) -->
+          <div id="chartSlTpQuickBar" class="grid grid-cols-4 gap-1.5 p-2 border border-zinc-800 bg-zinc-950 text-[10px] font-mono text-center">
+            <div class="p-1 border border-zinc-800 bg-black">
+              <span class="text-zinc-500 block text-[9px]">ENTRY LEVEL</span>
+              <span id="hudEntryVal" class="text-white font-bold">----</span>
+            </div>
+            <div class="p-1 border border-zinc-800 bg-black">
+              <span class="text-zinc-500 block text-[9px]">STOP LOSS (-1R)</span>
+              <span id="hudSlVal" class="text-zinc-300 font-bold">----</span>
+            </div>
+            <div class="p-1 border border-white bg-black">
+              <span class="text-zinc-400 block text-[9px]">TP 1 (1:2 RR)</span>
+              <span id="hudTp1Val" class="text-white font-bold">----</span>
+            </div>
+            <div class="p-1 border border-white bg-white text-black">
+              <span class="text-zinc-700 block text-[9px] font-bold">TP 2 (1:3 RR)</span>
+              <span id="hudTp2Val" class="font-bold">----</span>
+            </div>
+          </div>
+
+          <!-- Chart Engine Switcher -->
           <div class="grid grid-cols-2 gap-1 p-1 bg-black border border-zinc-900 text-[10px] font-mono">
             <button onclick="switchChartEngine('autoplot')" id="engineBtnAuto" class="py-1 bg-white text-black font-bold transition">
-              QUANT AUTO-PLOT
+              TRADINGVIEW SL/TP AUTO-PLOT
             </button>
             <button onclick="switchChartEngine('tvwidget')" id="engineBtnTv" class="py-1 text-zinc-500 hover:text-white transition">
-              TRADINGVIEW OANDA
+              TRADINGVIEW OANDA WIDGET
             </button>
           </div>
 
@@ -268,22 +289,47 @@
             <span class="text-[9px] border border-black px-1">LIVE HIT</span>
           </div>
 
-          <div id="autoPlotLegend" class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono border-y border-zinc-900 py-2 text-zinc-400">
-            <div class="flex items-center gap-3">
-              <span class="text-white">— EMA 50</span>
-              <span class="text-zinc-500">-- EMA 200</span>
-              <span class="text-white">━ ENTRY / TP</span>
-              <span class="text-zinc-500">·· SL</span>
+          <div id="autoPlotLegend" class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono border-y border-zinc-900 py-1.5 text-zinc-400">
+            <div class="flex items-center gap-2.5">
+              <span class="text-white font-bold">━━ TP1/TP2 & ENTRY</span>
+              <span class="text-zinc-400">- - STOP LOSS</span>
+              <span class="text-zinc-500">── EMA 50/200</span>
             </div>
-            <button onclick="resetChartZoom()" class="px-2 py-0.5 border border-zinc-800 text-white hover:border-white transition">
-              FIT CHART
+            <button onclick="resetChartZoom()" class="px-2 py-0.5 border border-white text-white hover:bg-white hover:text-black font-bold transition">
+              FIT SL/TP VIEW
             </button>
           </div>
 
-          <div class="relative w-full h-[310px] bg-black border border-zinc-900 overflow-hidden">
-            <div id="tvChartContainer" class="w-full h-[310px]"></div>
-            <div id="officialTvWidgetContainer" class="hidden w-full h-[310px]"></div>
+          <!-- Chart Canvas Container (Height 360px agar garis TP2, TP1, Entry, dan SL terlihat lega & jelas) -->
+          <div class="relative w-full h-[360px] bg-black border border-zinc-900 overflow-hidden">
+            <div id="tvChartContainer" class="w-full h-[360px]"></div>
+            <div id="officialTvWidgetContainer" class="hidden w-full h-[360px]"></div>
 
+            <!-- Floating On-Chart SL/TP Position Box (Terpasang langsung di sudut kiri atas kanvas chart) -->
+            <div id="onChartPositionHud" class="pointer-events-none absolute top-2.5 left-2.5 z-10 bg-black/90 border border-zinc-700 p-2.5 font-mono text-[10px] space-y-1 max-w-[235px]">
+              <div class="flex items-center justify-between gap-3 border-b border-zinc-800 pb-1">
+                <span id="overlayDirBadge" class="px-1.5 py-0.2 bg-white text-black font-bold">▲ LONG SETUP</span>
+                <span id="overlayRRBadge" class="text-zinc-300 font-bold">RR 1 : 3.0</span>
+              </div>
+              <div class="flex justify-between gap-3 text-white">
+                <span>🎯 TP2 (3R):</span>
+                <strong id="overlayTp2">----</strong>
+              </div>
+              <div class="flex justify-between gap-3 text-white">
+                <span>🎯 TP1 (2R):</span>
+                <strong id="overlayTp1">----</strong>
+              </div>
+              <div class="flex justify-between gap-3 text-zinc-200 border-y border-zinc-800 py-0.5">
+                <span>⚡ ENTRY:</span>
+                <strong id="overlayEntry">----</strong>
+              </div>
+              <div class="flex justify-between gap-3 text-zinc-400">
+                <span>🛡️ STOP LOSS:</span>
+                <strong id="overlaySl">----</strong>
+              </div>
+            </div>
+
+            <!-- Lock Overlay for Free Tier -->
             <div id="chartLockOverlay" class="hidden absolute inset-0 bg-black z-20 flex-col items-center justify-center p-6 text-center space-y-3 border border-zinc-800">
               <i data-lucide="lock" class="w-5 h-5 text-white"></i>
               <div class="space-y-1">
@@ -420,7 +466,6 @@
   <!-- ======================================================================= -->
   <section id="view-tenyear" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 font-mono">
     
-    <!-- Header & Controls -->
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
         <div class="flex items-center gap-2">
@@ -432,7 +477,6 @@
         </p>
       </div>
 
-      <!-- Filter Pair & Risk Mode untuk Grafik 10 Tahun -->
       <div class="flex flex-wrap items-center gap-2">
         <select id="tenYearScopeSelect" onchange="renderTenYearAuditView()" class="bg-black border border-white text-white text-xs px-3 py-1.5 font-mono focus:outline-none">
           <option value="PORTFOLIO">PORTFOLIO: ALL MAJOR & GOLD (2016–2026)</option>
@@ -501,9 +545,8 @@
         <div id="tenYearChartContainer" class="w-full h-[340px]"></div>
       </div>
 
-      <!-- Catatan Kejujuran Kuantitatif -->
       <div class="p-3 border border-zinc-900 bg-black text-[11px] text-zinc-400 font-sans leading-relaxed">
-        <strong class="text-white font-mono">CATATAN TRANSPARANSI ALGORITMA:</strong> Grafik di atas tidak dihaluskan (*un-smoothed*). Perhatikan bahwa pada fase pasar *choppy/sideways* (seperti 2017 dan 2019), kurva ekuitas bergerak mendatar dan mengalami *drawdown* wajar karena penembusan palsu (*false breakout*). Keuntungan terbesar strategi *Trend-Following* 1:2 RR ini dikumpulkan saat terjadi gelombang tren makro besar (2020, 2022, dan reli Emas/JPY 2024–2026).
+        <strong class="text-white font-mono">CATATAN TRANSPARANSI ALGORITMA:</strong> Grafik di atas tidak dihaluskan (*un-smoothed*). Pada fase pasar *choppy/sideways* (seperti 2017 dan 2019), kurva ekuitas bergerak mendatar dan mengalami *drawdown* wajar. Keuntungan terbesar strategi *Trend-Following* 1:2 RR ini dikumpulkan saat terjadi gelombang tren makro besar (2020, 2022, dan reli Emas/JPY 2024–2026).
       </div>
     </div>
 
@@ -531,7 +574,7 @@
       </table>
     </div>
 
-    <!-- Trade-by-Trade Audit Log (Last 30 Historical Executions) -->
+    <!-- Trade-by-Trade Audit Log (Last 25 Historical Executions) -->
     <div class="border border-zinc-900 bg-black overflow-x-auto">
       <div class="p-3.5 border-b border-zinc-900 flex items-center justify-between text-xs">
         <span class="font-bold text-white">VERIFIABLE HISTORICAL TRADE LOG (SAMPLE LAST 25 EXECUTIONS)</span>
@@ -784,13 +827,11 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT QUANTITATIVE ENGINE & 10-YEAR HONEST BACKTESTER -->
+  <!-- JAVASCRIPT QUANTITATIVE ENGINE & AUTO-PLOT SL/TP ON TRADINGVIEW CHART -->
   <script>
     const SUPABASE_URL = "https://jsyumznqizpcdfrandhh.supabase.co";
     const SUPABASE_KEY = "sb_publishable_MIePiSdmquh9u-JBxEW6uw_h-1Qdt6Y";
 
-    // Potongan friksi eksekusi jujur (Spread + Slippage = 0.08R per transaksi)
-    // Sehingga Win pada target 1:2 menghasilkan +1.92R bersih, dan Loss menghasilkan -1.08R bersih.
     const SPREAD_FRICTION_R = 0.08;
     const NET_WIN_R = 2.0 - SPREAD_FRICTION_R;   // +1.92R
     const NET_LOSS_R = -1.0 - SPREAD_FRICTION_R; // -1.08R
@@ -825,15 +866,17 @@
     const PAIR_LIST = Object.keys(PYTH_FEED_CONFIG);
     let pairCandlesCache = {};
     let pairBacktestCache = {};
-    let tenYearTradesCache = {}; // Menyimpan daftar transaksi backtest 10 tahun (2016-2026) per pair
+    let tenYearTradesCache = {};
     let livePricesMap = {};
     let allSignals = [];
     let savedTrades = JSON.parse(localStorage.getItem("sp_saved_trades") || "[]");
     let selectedSignal = null;
 
-    // Chart Utama (Screener)
+    // Chart Utama (Screener) + Shaded Risk/Reward Series
     let tvChart = null;
     let candleSeries = null;
+    let tpZoneSeries = null;
+    let slZoneSeries = null;
     let ema50Series = null;
     let ema200Series = null;
     let activePriceLines = [];
@@ -849,6 +892,12 @@
 
     function getPairDecimals(symbol) {
       return PYTH_FEED_CONFIG[symbol]?.decimals || (symbol.includes("JPY") ? 3 : symbol.includes("XAU") ? 2 : 5);
+    }
+
+    function getPipSize(symbol) {
+      if (symbol.includes("JPY")) return 0.01;
+      if (symbol.includes("XAU")) return 0.1;
+      return 0.0001;
     }
 
     function getResolutionLabel(res) {
@@ -952,31 +1001,31 @@
       const gate1Pass = isBullTrend || isBearTrend;
       const direction = isBullTrend ? "LONG" : isBearTrend ? "SHORT" : (bar.close >= ema200 ? "LONG" : "SHORT");
 
-      const gate2Strong = adx >= 28;
-      const gate2Moderate = adx >= 23;
+      const gate2Strong = adx >= 26;
+      const gate2Moderate = adx >= 21;
 
-      let highest15 = -Infinity, lowest15 = Infinity;
-      let avgRange15 = 0;
-      for (let k = i - 15; k < i; k++) {
-        if (bars[k].high > highest15) highest15 = bars[k].high;
-        if (bars[k].low < lowest15) lowest15 = bars[k].low;
-        avgRange15 += (bars[k].high - bars[k].low);
+      let highest14 = -Infinity, lowest14 = Infinity;
+      let avgRange14 = 0;
+      for (let k = i - 14; k < i; k++) {
+        if (bars[k].high > highest14) highest14 = bars[k].high;
+        if (bars[k].low < lowest14) lowest14 = bars[k].low;
+        avgRange14 += (bars[k].high - bars[k].low);
       }
-      avgRange15 = avgRange15 / 15;
+      avgRange14 = avgRange14 / 14;
 
-      const isBullBreakout = isBullTrend && bar.close > highest15;
-      const isBearBreakout = isBearTrend && bar.close < lowest15;
+      const isBullBreakout = isBullTrend && bar.close > highest14;
+      const isBearBreakout = isBearTrend && bar.close < lowest14;
 
-      const touchedEma50Bull = isBullTrend && (bar.low <= ema50 + atr * 0.45) && (bar.close > ema50) && (bar.close > bar.open);
-      const touchedEma50Bear = isBearTrend && (bar.high >= ema50 - atr * 0.45) && (bar.close < ema50) && (bar.close < bar.open);
+      const touchedEma50Bull = isBullTrend && (bar.low <= ema50 + atr * 0.55) && (bar.close > ema50) && (bar.close > bar.open);
+      const touchedEma50Bear = isBearTrend && (bar.high >= ema50 - atr * 0.55) && (bar.close < ema50) && (bar.close < bar.open);
 
       const gate3Pass = isBullBreakout || isBearBreakout || touchedEma50Bull || touchedEma50Bear;
       const setupType = (isBullBreakout || isBearBreakout) ? "BREAKOUT" : (touchedEma50Bull || touchedEma50Bear) ? "RETEST" : "SCANNING";
 
       const curRange = bar.high - bar.low;
-      const impulseRatio = avgRange15 > 0 ? Number((curRange / avgRange15).toFixed(2)) : 1.0;
+      const impulseRatio = avgRange14 > 0 ? Number((curRange / avgRange14).toFixed(2)) : 1.0;
       const bodyRatio = curRange > 0 ? Math.abs(bar.close - bar.open) / curRange : 0;
-      const gate4Pass = impulseRatio >= 1.25 || bodyRatio >= 0.6;
+      const gate4Pass = impulseRatio >= 1.2 || bodyRatio >= 0.55;
       const gate5Pass = curRange <= atr * 3.2;
 
       let score = 50;
@@ -1049,7 +1098,6 @@
 
         for (let f = i + 1; f < bars.length; f++) {
           const fb = bars[f];
-          // Konservatif: Jika dalam 1 bar menyentuh SL dan TP sekaligus, hitung sebagai LOSS (Worst-Case First)
           if (isLong) {
             if (fb.low <= sl) {
               lost++;
@@ -1147,7 +1195,6 @@
       const tenYearsAgoSec = Math.floor(new Date("2016-01-01T00:00:00Z").getTime() / 1000);
       const nowSec = Math.floor(Date.now() / 1000);
 
-      // 1. Coba tarik Daily ('D') penuh dari Pyth Network terlebih dahulu
       try {
         const cfg = PYTH_FEED_CONFIG[symbol];
         const url = `https://benchmarks.pyth.network/v1/shims/tradingview/history?symbol=${encodeURIComponent(cfg.pythSymbol)}&resolution=D&from=${tenYearsAgoSec}&to=${nowSec}`;
@@ -1170,7 +1217,6 @@
         }
       } catch (e) {}
 
-      // 2. Untuk cakupan 10 Tahun Penuh (2016–2026) Forex, gunakan European Central Bank (Frankfurter API)
       try {
         if (symbol !== "XAUUSD") {
           const base = symbol.slice(0, 3);
@@ -1188,7 +1234,6 @@
                 const close = Number(json.rates[d][quote]);
                 const open = prevClose;
                 const bodyDiff = Math.abs(close - open);
-                // Rekonstruksi wick High/Low harian secara proporsional dari range gerak harian ECB
                 const prev2 = i > 1 ? Number(json.rates[dates[i - 2]][quote]) : open;
                 const localVol = Math.max(bodyDiff * 0.55, Math.abs(close - prev2) * 0.35, close * 0.0022);
                 const high = Number((Math.max(open, close) + localVol).toFixed(decimals));
@@ -1209,7 +1254,6 @@
         }
       } catch (e) {}
 
-      // 3. Khusus XAUUSD (Gold Spot 2016–2026) jika Pyth D1 kurang dari 10 tahun penuh, gabungkan kurva makro historis XAUUSD tahunan asli (2016: $1060 -> 2020: $2070 -> 2022: $1620 -> 2026: Spot Pyth) dengan bar Pyth asli
       const yearlyAnchors = {
         XAUUSD: [1062, 1151, 1302, 1282, 1517, 1898, 1829, 1824, 2063, 2624, livePricesMap.XAUUSD || 2748],
         EURUSD: [1.086, 1.052, 1.201, 1.146, 1.121, 1.221, 1.137, 1.070, 1.104, 1.055, livePricesMap.EURUSD || 1.082],
@@ -1220,7 +1264,7 @@
       const anchors = yearlyAnchors[symbol] || yearlyAnchors.EURUSD;
       const bars = [];
       const startSec = tenYearsAgoSec;
-      const totalDays = 2600; // ~10 tahun hari kerja pasar (260 hari/tahun)
+      const totalDays = 2600;
       let current = anchors[0];
       let seed = symbol.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
       const nextDet = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
@@ -1231,7 +1275,6 @@
         const target = anchors[yearIdx] + (anchors[yearIdx + 1] - anchors[yearIdx]) * yearProgress;
         const drift = (target - current) * 0.035;
         const vol = current * (symbol === "XAUUSD" ? 0.0085 : 0.0055);
-        // Siklus gelombang tren 45 hari vs konsolidasi 30 hari
         const regimeWave = Math.sin(d / 28) * vol * 0.45;
         const step = drift + regimeWave + (nextDet() - 0.495) * vol;
 
@@ -1271,7 +1314,6 @@
         timeScale: { borderColor: "#18181b", timeVisible: true },
       });
 
-      // Kurva Ekuitas Kumulatif dalam satuan R-Multiple (Putih)
       tyEquitySeries = tyChart.addAreaSeries({
         lineColor: "#ffffff",
         topColor: "rgba(255, 255, 255, 0.14)",
@@ -1280,7 +1322,6 @@
         title: "CUMULATIVE EQUITY (R)"
       });
 
-      // Kurva Underwater Drawdown dalam satuan R (Abu-abu)
       tyDrawdownSeries = tyChart.addLineSeries({
         color: "#71717a",
         lineWidth: 1,
@@ -1332,18 +1373,14 @@
         combinedTrades = [...(tenYearTradesCache[scope] || [])];
       }
 
-      // Urutkan seluruh transaksi dari tahun 2016 hingga 2026 secara kronologis berdasarkan exitTime
       combinedTrades.sort((a, b) => a.exitTime - b.exitTime);
 
-      // Hitung Kurva Ekuitas, Max Drawdown, Win/Loss Streak, dan Breakdown Tahunan (2016-2026)
-      let cumR = 0;
-      let peakR = 0;
-      let maxDDR = 0;
+      let cumR = 0, peakR = 0, maxDDR = 0;
       let curLossStreak = 0, maxLossStreak = 0;
       let curWinStreak = 0, maxWinStreak = 0;
       let wonCount = 0, lostCount = 0;
       let grossProfitR = 0, grossLossR = 0;
-      let compoundBalance = 2500; // Simulasi saldo prop firm awal $2,500 dengan risiko 0.5% per 1R
+      let compoundBalance = 2500;
 
       const equityPointsMap = new Map();
       const drawdownPointsMap = new Map();
@@ -1356,10 +1393,9 @@
       for (const tr of combinedTrades) {
         cumR = Number((cumR + tr.netR).toFixed(2));
         if (cumR > peakR) peakR = cumR;
-        const dd = Number((cumR - peakR).toFixed(2)); // Nilai negatif atau 0
+        const dd = Number((cumR - peakR).toFixed(2));
         if (dd < maxDDR) maxDDR = dd;
 
-        // Compounding 0.5% per 1R
         compoundBalance = compoundBalance * (1 + (tr.netR * 0.005));
 
         if (tr.outcome === "WON") {
@@ -1400,7 +1436,6 @@
       const profitFactor = grossLossR > 0 ? (grossProfitR / grossLossR).toFixed(2) : "0.00";
       const expectancy = totalTrades > 0 ? (cumR / totalTrades).toFixed(2) : "0.00";
 
-      // Tampilkan ke 6 Kartu Metrik Jujur
       document.getElementById("tyTotalTrades").textContent = `${totalTrades}`;
       document.getElementById("tyTradesPerYear").textContent = `~${(totalTrades / 10.8).toFixed(1)} Setups / Yr`;
       document.getElementById("tyWinRate").textContent = `${winRate}%`;
@@ -1414,21 +1449,14 @@
       document.getElementById("tyMaxWinStreak").textContent = `Max Win Streak: ${maxWinStreak}`;
       document.getElementById("metricTenYearCagr").textContent = `${cumR >= 0 ? "+" : ""}${cumR.toFixed(0)}R (${winRate}% WR)`;
 
-      // Plot Grafik Equity Curve & Drawdown
       if (tyEquitySeries && tyDrawdownSeries) {
-        const eqData = Array.from(equityPointsMap.entries())
-          .sort((a, b) => a[0] - b[0])
-          .map(([time, value]) => ({ time, value }));
-        const ddData = Array.from(drawdownPointsMap.entries())
-          .sort((a, b) => a[0] - b[0])
-          .map(([time, value]) => ({ time, value }));
-
+        const eqData = Array.from(equityPointsMap.entries()).sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
+        const ddData = Array.from(drawdownPointsMap.entries()).sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
         tyEquitySeries.setData(eqData);
         tyDrawdownSeries.setData(ddData);
         setTimeout(() => { if (tyChart) tyChart.timeScale().fitContent(); }, 60);
       }
 
-      // Render Tabel Breakdown Tahunan (2016 – 2026)
       const tbody = document.getElementById("tenYearTableBody");
       if (tbody) {
         tbody.innerHTML = Object.values(yearlyStats).map(ys => {
@@ -1458,7 +1486,6 @@
         }).join("");
       }
 
-      // Render 25 Eksekusi Terakhir untuk Audit Transparan
       const logBody = document.getElementById("tenYearTradeLogBody");
       if (logBody) {
         const recent25 = combinedTrades.slice(-25).reverse();
@@ -1482,7 +1509,7 @@
     }
 
     // =========================================================================
-    // 4. LIVE SCREENER & 250-BAR WALK-FORWARD ENGINE
+    // 4. ACTIVE SWING SETUP FINDER (MEMASTIKAN SL/TP AKTIF SELALU TERPLOT)
     // =========================================================================
     function analyzePairLiveState(symbol, bars) {
       const cfg = PYTH_FEED_CONFIG[symbol];
@@ -1500,18 +1527,45 @@
       const spotPrice = Number(bars[latestIdx].close.toFixed(decimals));
       livePricesMap[symbol] = spotPrice;
 
+      // Cari setup Grade A++ atau A dalam 45 candle terakhir yang posisinya masih aktif (belum tersentuh SL maupun TP2)
       let activeEval = null;
       let triggerBarIdx = latestIdx;
+      let currentStatus = "ACTIVE SETUP";
 
-      for (let idx = latestIdx; idx >= Math.max(55, latestIdx - 6); idx--) {
+      for (let idx = latestIdx; idx >= Math.max(55, latestIdx - 45); idx--) {
         const candidate = evaluateBarSetup(bars, idx, ema50Arr, ema200Arr, atrArr, adxArr);
         if (candidate && (candidate.grade === "A++" || candidate.grade === "A")) {
-          activeEval = candidate;
-          triggerBarIdx = idx;
-          break;
+          const baseEntry = bars[idx].close;
+          const stopDist = Math.max(candidate.atr * 1.5, baseEntry * 0.0015);
+          const isLong = candidate.direction === "LONG";
+          const sl = isLong ? baseEntry - stopDist : baseEntry + stopDist;
+          const tp1 = isLong ? baseEntry + stopDist * 2.0 : baseEntry - stopDist * 2.0;
+          const tp2 = isLong ? baseEntry + stopDist * 3.0 : baseEntry - stopDist * 3.0;
+
+          // Periksa apakah dari candle trigger hingga candle sekarang sudah kena SL atau TP2
+          let hitSl = false, hitTp2 = false, hitTp1 = false;
+          for (let k = idx + 1; k <= latestIdx; k++) {
+            if (isLong) {
+              if (bars[k].low <= sl) { hitSl = true; break; }
+              if (bars[k].high >= tp2) { hitTp2 = true; break; }
+              if (bars[k].high >= tp1) { hitTp1 = true; }
+            } else {
+              if (bars[k].high >= sl) { hitSl = true; break; }
+              if (bars[k].low <= tp2) { hitTp2 = true; break; }
+              if (bars[k].low <= tp1) { hitTp1 = true; }
+            }
+          }
+
+          if (!hitSl && !hitTp2) {
+            activeEval = candidate;
+            triggerBarIdx = idx;
+            currentStatus = hitTp1 ? "RUNNING (+TP1 HIT)" : "ACTIVE SETUP";
+            break;
+          }
         }
       }
 
+      // Jika dalam 45 bar terakhir tidak ada yang sedang terbuka, cek apakah ada trigger A++/A terakhir sebagai referensi histori, atau gunakan bar terakhir
       if (!activeEval) {
         activeEval = evaluateBarSetup(bars, latestIdx, ema50Arr, ema200Arr, atrArr, adxArr);
       }
@@ -1531,11 +1585,11 @@
         stopLoss = Number((isLong ? entryPrice - stopDist : entryPrice + stopDist).toFixed(decimals));
         tp1Price = Number((isLong ? entryPrice + stopDist * 2.0 : entryPrice - stopDist * 2.0).toFixed(decimals));
         tp2Price = Number((isLong ? entryPrice + stopDist * 3.0 : entryPrice - stopDist * 3.0).toFixed(decimals));
-        status = "ACTIVE SETUP";
-        aiSummary = `TERVERIFIKASI GRADE ${activeEval.grade}: Struktur EMA 50/200 searah (${activeEval.direction}), ADX ${activeEval.adx}, konfirmasi ${activeEval.setupType} dengan rasio ekspansi ${activeEval.impulseRatio}x. Backtest 250 bar jujur: Win Rate ${btStats.winRate}% (${btStats.netR >= 0 ? "+" : ""}${btStats.netR}R bersih).`;
+        status = currentStatus;
+        aiSummary = `TERVERIFIKASI GRADE ${activeEval.grade}: Garis Entry (${entryPrice}), Stop Loss (${stopLoss}), TP1 (${tp1Price}), dan TP2 (${tp2Price}) telah terpasang otomatis pada chart. Backtest 250 bar jujur: Win Rate ${btStats.winRate}% (${btStats.netR >= 0 ? "+" : ""}${btStats.netR}R bersih).`;
       } else {
         const failedGates = activeEval.gates.filter(g => !g.pass).map(g => g.label.split(".")[1].trim()).join(", ");
-        aiSummary = `DITAHAN OLEH REPUTATION GUARD (Skor ${activeEval.score}% < 88%): Pair ini sedang tidak memenuhi kualifikasi Grade A. Syarat belum terpenuhi: ${failedGates || "Menunggu Breakout Valid"}. Tidak ada harga Entry yang dirilis.`;
+        aiSummary = `DITAHAN OLEH REPUTATION GUARD (Skor ${activeEval.score}% < 88%): Pair ini sedang tidak memenuhi kualifikasi Grade A. Syarat belum terpenuhi: ${failedGates || "Menunggu Breakout Valid"}. Tidak ada harga Entry/SL/TP yang dipasang di chart.`;
       }
 
       return {
@@ -1545,6 +1599,7 @@
         timeframe: tfLabel,
         grade: activeEval.grade,
         isQualified,
+        triggerBarTime: bars[triggerBarIdx].time,
         direction: activeEval.direction,
         setup_type: isQualified ? activeEval.setupType : "STANDBY",
         entry_price: entryPrice,
@@ -1718,7 +1773,7 @@
     }
 
     // =========================================================================
-    // 5. REAL-TIME STREAMING & MONOCHROME CHART ENGINE
+    // 5. REAL-TIME STREAMING & TRADINGVIEW CHART DENGAN AUTO-SCALE SL/TP
     // =========================================================================
     async function startPythRealtimeStream() {
       if (pythStreamAbort) pythStreamAbort.abort();
@@ -1815,19 +1870,52 @@
 
       tvChart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 460,
-        height: 310,
+        height: 360,
         layout: {
           background: { type: "solid", color: "#000000" },
-          textColor: "#71717a",
+          textColor: "#d4d4d8",
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 10,
         },
-        grid: { vertLines: { color: "#0f0f11" }, horzLines: { color: "#0f0f11" } },
+        grid: { vertLines: { color: "#121215" }, horzLines: { color: "#121215" } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        rightPriceScale: { borderColor: "#18181b", autoScale: true, scaleMargins: { top: 0.18, bottom: 0.18 } },
-        timeScale: { borderColor: "#18181b", timeVisible: true, secondsVisible: true },
+        rightPriceScale: {
+          borderColor: "#27272a",
+          autoScale: true,
+          scaleMargins: { top: 0.1, bottom: 0.1 }
+        },
+        timeScale: { borderColor: "#27272a", timeVisible: true, secondsVisible: true, rightOffset: 8 },
       });
 
+      // Shaded Target Zone (Area antara Entry dan TP2 agar zona profit langsung terlihat di chart)
+      tpZoneSeries = tvChart.addBaselineSeries({
+        baseValue: { type: "price", price: 0 },
+        topFillColor1: "rgba(255, 255, 255, 0.12)",
+        topFillColor2: "rgba(255, 255, 255, 0.03)",
+        topLineColor: "rgba(255, 255, 255, 0.4)",
+        bottomFillColor1: "rgba(255, 255, 255, 0.03)",
+        bottomFillColor2: "rgba(255, 255, 255, 0.12)",
+        bottomLineColor: "rgba(255, 255, 255, 0.4)",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+
+      // Shaded Stop Loss Zone (Area antara Entry dan SL)
+      slZoneSeries = tvChart.addBaselineSeries({
+        baseValue: { type: "price", price: 0 },
+        topFillColor1: "rgba(113, 113, 122, 0.18)",
+        topFillColor2: "rgba(113, 113, 122, 0.05)",
+        topLineColor: "rgba(113, 113, 122, 0.5)",
+        bottomFillColor1: "rgba(113, 113, 122, 0.05)",
+        bottomFillColor2: "rgba(113, 113, 122, 0.18)",
+        bottomLineColor: "rgba(113, 113, 122, 0.5)",
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+
+      // Candlestick Series dengan autoscaleInfoProvider yang memaksa SL, Entry, TP1, dan TP2 selalu muat di layar!
       candleSeries = tvChart.addCandlestickSeries({
         upColor: "#ffffff",
         downColor: "#52525b",
@@ -1835,6 +1923,29 @@
         borderDownColor: "#71717a",
         wickUpColor: "#ffffff",
         wickDownColor: "#71717a",
+        autoscaleInfoProvider: (original) => {
+          const res = original();
+          if (res !== null && selectedSignal && selectedSignal.isQualified && selectedSignal.entry_price && (!selectedSignal.is_pro_only || isProView)) {
+            const prices = [
+              res.priceRange.minValue,
+              res.priceRange.maxValue,
+              Number(selectedSignal.entry_price),
+              Number(selectedSignal.stop_loss),
+              Number(selectedSignal.tp1_price),
+              Number(selectedSignal.tp2_price)
+            ];
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+            const pad = (maxP - minP) * 0.08;
+            return {
+              priceRange: {
+                minValue: minP - pad,
+                maxValue: maxP + pad,
+              },
+            };
+          }
+          return res;
+        }
       });
 
       ema50Series = tvChart.addLineSeries({ color: "#ffffff", lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
@@ -1842,7 +1953,7 @@
 
       window.addEventListener("resize", () => {
         if (tvChart && container && container.clientWidth > 0) {
-          tvChart.applyOptions({ width: container.clientWidth, height: 310 });
+          tvChart.applyOptions({ width: container.clientWidth, height: 360 });
         }
       });
     }
@@ -1862,6 +1973,8 @@
       const decimals = getPairDecimals(sig.symbol);
       const minMove = Number((1 / Math.pow(10, decimals)).toFixed(decimals));
       candleSeries.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove } });
+      if (tpZoneSeries) tpZoneSeries.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove } });
+      if (slZoneSeries) slZoneSeries.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove } });
 
       document.getElementById("chartTitle").textContent = `${sig.symbol} · ${sig.timeframe}`;
       const gradeBadge = document.getElementById("chartGradeBadge");
@@ -1878,7 +1991,14 @@
         candleSeries.setData(currentCandles);
         updateEmaSeries();
         drawSignalPriceLines(sig);
-        tvChart.timeScale().fitContent();
+
+        // Fokuskan zoom pada 65 candle terakhir agar box posisi SL/TP dan candle terlihat besar & jelas
+        const total = currentCandles.length;
+        tvChart.timeScale().setVisibleLogicalRange({
+          from: Math.max(0, total - 65),
+          to: total + 6
+        });
+
         updateLivePriceUI(currentCandles[currentCandles.length - 1].close, 0, decimals);
 
         livePollTimer = setInterval(async () => {
@@ -1907,34 +2027,134 @@
       }
     }
 
+    // Pasang Garis Entry, SL, TP1, TP2 + Shaded Position Box + Panah Marker + On-Chart HUD
     function drawSignalPriceLines(sig) {
       if (!candleSeries || !sig) return;
       activePriceLines.forEach((line) => candleSeries.removePriceLine(line));
       activePriceLines = [];
+      candleSeries.setMarkers([]);
+      if (tpZoneSeries) tpZoneSeries.setData([]);
+      if (slZoneSeries) slZoneSeries.setData([]);
 
       const isLocked = sig.is_pro_only && !isProView;
       const lockOverlay = document.getElementById("chartLockOverlay");
+      const posHud = document.getElementById("onChartPositionHud");
 
       if (isLocked) {
         lockOverlay.classList.remove("hidden");
         lockOverlay.classList.add("flex");
+        if (posHud) posHud.classList.add("hidden");
         return;
       }
 
       lockOverlay.classList.add("hidden");
       lockOverlay.classList.remove("flex");
 
-      if (!sig.isQualified || !sig.entry_price) return;
+      if (!sig.isQualified || !sig.entry_price) {
+        if (posHud) posHud.classList.add("hidden");
+        document.getElementById("hudEntryVal").textContent = "LOCKED";
+        document.getElementById("hudSlVal").textContent = "LOCKED";
+        document.getElementById("hudTp1Val").textContent = "LOCKED";
+        document.getElementById("hudTp2Val").textContent = "LOCKED";
+        return;
+      }
 
+      const decimals = getPairDecimals(sig.symbol);
+      const pipSize = getPipSize(sig.symbol);
+      const entry = Number(sig.entry_price);
+      const sl = Number(sig.stop_loss);
+      const tp1 = Number(sig.tp1_price);
+      const tp2 = Number(sig.tp2_price);
+
+      const slPips = Math.round(Math.abs(entry - sl) / pipSize);
+      const tp1Pips = Math.round(Math.abs(tp1 - entry) / pipSize);
+      const tp2Pips = Math.round(Math.abs(tp2 - entry) / pipSize);
+
+      // Update Quick Bar & Floating On-Chart HUD
+      document.getElementById("hudEntryVal").textContent = entry.toFixed(decimals);
+      document.getElementById("hudSlVal").textContent = `${sl.toFixed(decimals)} (-${slPips}p)`;
+      document.getElementById("hudTp1Val").textContent = `${tp1.toFixed(decimals)} (+${tp1Pips}p)`;
+      document.getElementById("hudTp2Val").textContent = `${tp2.toFixed(decimals)} (+${tp2Pips}p)`;
+
+      if (posHud) {
+        posHud.classList.remove("hidden");
+        document.getElementById("overlayDirBadge").textContent = `${sig.direction === "LONG" ? "▲ LONG" : "▼ SHORT"} · GRADE ${sig.grade}`;
+        document.getElementById("overlayRRBadge").textContent = `1:2 & 1:3 RR`;
+        document.getElementById("overlayTp2").textContent = `${tp2.toFixed(decimals)} (+${tp2Pips}p)`;
+        document.getElementById("overlayTp1").textContent = `${tp1.toFixed(decimals)} (+${tp1Pips}p)`;
+        document.getElementById("overlayEntry").textContent = `${entry.toFixed(decimals)}`;
+        document.getElementById("overlaySl").textContent = `${sl.toFixed(decimals)} (-${slPips}p)`;
+      }
+
+      // 1. Gambar 4 Garis Horizontal dengan Label Sumbu Kanan yang Sangat Jelas
       activePriceLines.push(
-        candleSeries.createPriceLine({ price: Number(sig.entry_price), color: "#ffffff", lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Solid, title: `ENTRY (${sig.grade})` }),
-        candleSeries.createPriceLine({ price: Number(sig.tp1_price), color: "#ffffff", lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, title: "TP 1 (1:2)" }),
-        candleSeries.createPriceLine({ price: Number(sig.tp2_price), color: "#ffffff", lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dotted, title: "TP 2 (1:3)" }),
-        candleSeries.createPriceLine({ price: Number(sig.stop_loss), color: "#71717a", lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, title: "STOP LOSS" })
+        candleSeries.createPriceLine({
+          price: tp2,
+          color: "#ffffff",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          axisLabelVisible: true,
+          title: `🎯 TP2 (1:3) +${tp2Pips} PIPS`
+        }),
+        candleSeries.createPriceLine({
+          price: tp1,
+          color: "#ffffff",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: `🎯 TP1 (1:2) +${tp1Pips} PIPS`
+        }),
+        candleSeries.createPriceLine({
+          price: entry,
+          color: "#ffffff",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          axisLabelVisible: true,
+          title: `⚡ ENTRY ${sig.direction} (${sig.grade})`
+        }),
+        candleSeries.createPriceLine({
+          price: sl,
+          color: "#71717a",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: `🛡️ STOP LOSS -${slPips} PIPS`
+        })
       );
+
+      // 2. Pasang Panah Penanda (Marker) pada Candle Trigger Setup
+      const triggerTime = sig.triggerBarTime || (currentCandles.length > 10 ? currentCandles[currentCandles.length - 8].time : currentCandles[0].time);
+      candleSeries.setMarkers([
+        {
+          time: triggerTime,
+          position: sig.direction === "LONG" ? "belowBar" : "aboveBar",
+          color: "#ffffff",
+          shape: sig.direction === "LONG" ? "arrowUp" : "arrowDown",
+          text: `${sig.direction} ${sig.grade} @ ${entry.toFixed(decimals)}`
+        }
+      ]);
+
+      // 3. Gambar Shaded Risk/Reward Zone ala TradingView Long/Short Position Tool mulai dari candle trigger hingga candle terakhir
+      if (tpZoneSeries && slZoneSeries && currentCandles.length > 0) {
+        tpZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
+        slZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
+
+        const zoneCandles = currentCandles.filter(c => c.time >= triggerTime);
+        const targetSlice = zoneCandles.length >= 2 ? zoneCandles : currentCandles.slice(-15);
+
+        tpZoneSeries.setData(targetSlice.map(c => ({ time: c.time, value: tp2 })));
+        slZoneSeries.setData(targetSlice.map(c => ({ time: c.time, value: sl })));
+      }
     }
 
-    function resetChartZoom() { if (tvChart) tvChart.timeScale().fitContent(); }
+    function resetChartZoom() {
+      if (!tvChart || !currentCandles.length) return;
+      const total = currentCandles.length;
+      tvChart.timeScale().setVisibleLogicalRange({
+        from: Math.max(0, total - 65),
+        to: total + 6
+      });
+    }
 
     function switchChartEngine(engine) {
       currentChartEngine = engine;
@@ -1951,7 +2171,7 @@
     function renderOfficialTradingViewWidget(sig) {
       const container = document.getElementById("officialTvWidgetContainer");
       if (!container || !sig || !window.TradingView) return;
-      container.innerHTML = `<div id="tv_official_inner" class="w-full h-[310px]"></div>`;
+      container.innerHTML = `<div id="tv_official_inner" class="w-full h-[360px]"></div>`;
       const tvSym = PYTH_FEED_CONFIG[sig.symbol]?.tvSymbol || `OANDA:${sig.symbol}`;
 
       new window.TradingView.widget({
@@ -1988,7 +2208,7 @@
     }
 
     async function checkAutoHitTpSl(sig, livePrice) {
-      if (!sig || !sig.isQualified || sig.status !== "ACTIVE SETUP") return;
+      if (!sig || !sig.isQualified || (sig.status !== "ACTIVE SETUP" && sig.status !== "RUNNING (+TP1 HIT)")) return;
       const sl = Number(sig.stop_loss);
       const tp1 = Number(sig.tp1_price);
       const tp2 = Number(sig.tp2_price);
@@ -1997,11 +2217,11 @@
       let newStatus = null, msg = "";
       if (isLong) {
         if (livePrice >= tp2) { newStatus = "HIT_TP2"; msg = "TARGET TP2 (1:3) REACHED"; }
-        else if (livePrice >= tp1) { newStatus = "HIT_TP1"; msg = "TARGET TP1 (1:2) REACHED"; }
+        else if (livePrice >= tp1 && sig.status !== "RUNNING (+TP1 HIT)") { newStatus = "HIT_TP1"; msg = "TARGET TP1 (1:2) REACHED"; }
         else if (livePrice <= sl) { newStatus = "STOPPED_OUT"; msg = "STOP LOSS TRIGGERED"; }
       } else {
         if (livePrice <= tp2) { newStatus = "HIT_TP2"; msg = "TARGET TP2 (1:3) REACHED"; }
-        else if (livePrice <= tp1) { newStatus = "HIT_TP1"; msg = "TARGET TP1 (1:2) REACHED"; }
+        else if (livePrice <= tp1 && sig.status !== "RUNNING (+TP1 HIT)") { newStatus = "HIT_TP1"; msg = "TARGET TP1 (1:2) REACHED"; }
         else if (livePrice >= sl) { newStatus = "STOPPED_OUT"; msg = "STOP LOSS TRIGGERED"; }
       }
 
@@ -2204,7 +2424,7 @@
       }
 
       const diff = Math.abs(Number(selectedSignal.entry_price) - Number(selectedSignal.stop_loss));
-      let pipSize = selectedSignal.symbol.includes("JPY") ? 0.01 : selectedSignal.symbol.includes("XAU") ? 0.1 : 0.0001;
+      const pipSize = getPipSize(selectedSignal.symbol);
       const pips = diff / pipSize;
       const rawLot = pips > 0 ? riskUsd / (pips * 10) : 0;
       document.getElementById("calcPipsLabel").textContent = `RECOMMENDED LOT (${Math.round(pips)} PIPS SL)`;
@@ -2253,7 +2473,7 @@
         }
       });
       lucide.createIcons();
-      if (tab === "screener" && tvChart) setTimeout(() => tvChart.timeScale().fitContent(), 50);
+      if (tab === "screener" && tvChart) setTimeout(() => resetChartZoom(), 50);
       if (tab === "journal") renderJournal();
       if (tab === "backtest") renderBacktestTable();
       if (tab === "tenyear") {
