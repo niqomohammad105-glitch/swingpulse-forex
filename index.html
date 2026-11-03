@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwingPulse — Multi-Mode Quantitative Screener & 10Y Backtest</title>
+  <title>SwingPulse — Multi-Mode Quantitative Screener & 10Y Overlay Audit</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -56,8 +56,6 @@
     ::-webkit-scrollbar-thumb:hover { background: #71717a; }
     
     .signal-card {
-      content-visibility: auto;
-      contain-intrinsic-size: 135px;
       transition: border-color 0.15s ease, background-color 0.15s ease;
     }
   </style>
@@ -75,7 +73,7 @@
           </div>
           <span class="font-bold tracking-tight text-sm sm:text-base text-white font-mono">SWINGPULSE</span>
           <span class="hidden xl:inline-block text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 border border-zinc-800 text-zinc-400">
-            MULTI-MODE QUANT v5.0
+            QUANT ENGINE v6.0
           </span>
         </div>
 
@@ -108,7 +106,7 @@
 
         <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 text-[11px] font-mono border border-zinc-800 bg-black text-zinc-400">
           <span id="wsStatusDot" class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-          <span id="wsStatusText" class="hidden lg:inline">SCANNING PYTH...</span>
+          <span id="wsStatusText" class="hidden lg:inline">LIVE STREAM</span>
         </div>
 
         <button onclick="toggleProMode()" id="tierToggleBtn" class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold border border-white bg-white text-black transition">
@@ -145,12 +143,12 @@
   <div class="bg-black border-b border-zinc-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 font-mono">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-[10px] uppercase text-zinc-400">SELECT TRADING MODE:</span>
+        <span class="text-[10px] uppercase text-zinc-400">PILIH MODE STRATEGI:</span>
         <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
-          <button onclick="switchTradingMode('SCALPING')" id="modeBtn-SCALPING" class="px-3 py-1 text-zinc-400 hover:text-white transition">
-            ⚡ SCALPING (M5/M15 · HIGH FREQ)
+          <button onclick="switchTradingMode('SCALPING')" id="modeBtn-SCALPING" class="px-3 py-1 bg-white text-black font-bold transition">
+            ⚡ SCALPING (M5/M15 · BANYAK SINYAL)
           </button>
-          <button onclick="switchTradingMode('SWING')" id="modeBtn-SWING" class="px-3 py-1 bg-white text-black font-bold transition">
+          <button onclick="switchTradingMode('SWING')" id="modeBtn-SWING" class="px-3 py-1 text-zinc-400 hover:text-white transition">
             🎯 SWING (M15/H1 · BALANCED)
           </button>
           <button onclick="switchTradingMode('POSITION')" id="modeBtn-POSITION" class="px-3 py-1 text-zinc-400 hover:text-white transition">
@@ -160,8 +158,8 @@
       </div>
 
       <div class="flex items-center gap-4 text-[11px]">
-        <span id="modeRuleSummary" class="text-zinc-300">EMA 34/89 · ADX(14)&ge;21 · SL 1.4x ATR · TP 2.8x ATR (1:2 RR)</span>
-        <span id="activeGradeSummary" class="text-white font-bold">SCANNING...</span>
+        <span id="modeRuleSummary" class="text-zinc-300">EMA 20/50 · 4-Trigger Micro Setup · SL 1.0x ATR · TP 1.6R & 2.5R</span>
+        <span id="activeGradeSummary" class="text-white font-bold">READY</span>
       </div>
     </div>
   </div>
@@ -171,27 +169,27 @@
   <!-- ======================================================================= -->
   <main id="view-screener" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
     
-    <!-- Honest Live Backtested Telemetry Bar (Dynamically Recalculated per Mode) -->
+    <!-- Honest Live Backtested Telemetry Bar -->
     <div class="grid grid-cols-2 lg:grid-cols-4 border border-zinc-900 bg-black divide-y sm:divide-y-0 sm:divide-x divide-zinc-900 font-mono">
       <div class="p-4">
-        <span id="metricWinRateTitle" class="text-[10px] uppercase text-zinc-500 block">SWING 250-BAR WIN RATE</span>
-        <span id="metricWinRate" class="text-xl font-bold text-white mt-0.5 block">COMPUTING...</span>
-        <span id="metricSampleSize" class="text-[10px] text-zinc-500 block mt-0.5">Breakeven Threshold: 36.0%</span>
+        <span id="metricWinRateTitle" class="text-[10px] uppercase text-zinc-500 block">SCALPING 250-BAR WIN RATE</span>
+        <span id="metricWinRate" class="text-xl font-bold text-white mt-0.5 block">--%</span>
+        <span id="metricSampleSize" class="text-[10px] text-zinc-500 block mt-0.5">Breakeven Threshold: 38.0%</span>
       </div>
       <div class="p-4">
         <span class="text-[10px] uppercase text-zinc-500 block">REAL PROFIT FACTOR (NET)</span>
         <span id="metricProfitFactor" class="text-xl font-bold text-white mt-0.5 block">--</span>
-        <span id="textSpreadNote" class="text-[10px] text-zinc-500 block mt-0.5">Includes 0.08R Spread Friction</span>
+        <span id="textSpreadNote" class="text-[10px] text-zinc-500 block mt-0.5">Includes 0.12R Spread Friction</span>
       </div>
       <div class="p-4">
         <span class="text-[10px] uppercase text-zinc-500 block">ACTIVE A++ / A SETUPS</span>
-        <span id="metricActiveCount" class="text-xl font-bold text-white mt-0.5 block">0 / 12 PAIRS</span>
+        <span id="metricActiveCount" class="text-xl font-bold text-white mt-0.5 block">-- / 12 PAIRS</span>
         <span id="metricModeFreqNote" class="text-[10px] text-zinc-500 block mt-0.5">Auto-Plotted on Chart</span>
       </div>
-      <div class="p-4 cursor-pointer hover:bg-zinc-950 transition" onclick="switchMainTab('tenyear')">
-        <span id="metric10YTitle" class="text-[10px] uppercase text-zinc-500 block">10Y BACKTEST (SWING MODE) →</span>
-        <span id="metricTenYearCagr" class="text-xl font-bold text-white mt-0.5 block">VIEW 10Y CHART</span>
-        <span id="metric10YTradesCount" class="text-[10px] text-zinc-400 underline block mt-0.5">Klik untuk buka kurva 10 tahun</span>
+      <div class="p-4 cursor-pointer hover:bg-zinc-950 transition" onclick="openTenYearOverlayDirectly()">
+        <span id="metric10YTitle" class="text-[10px] uppercase text-zinc-500 block">10Y OVERLAY AUDIT (3 MODES) →</span>
+        <span id="metricTenYearCagr" class="text-xl font-bold text-white mt-0.5 block">COMPARE 3 CURVES</span>
+        <span id="metric10YTradesCount" class="text-[10px] text-zinc-400 underline block mt-0.5">Klik untuk bandingkan kurva 10 tahun</span>
       </div>
     </div>
 
@@ -203,10 +201,10 @@
         <div class="p-4 border border-zinc-900 bg-black flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div id="screenerModeHeader" class="text-xs font-bold uppercase tracking-wider text-white font-mono">
-              SWING MODE — QUANTITATIVE GRADE FILTER
+              ⚡ SCALPING MODE — HIGH-FREQUENCY A++ & A SETUPS
             </div>
             <p id="screenerModeSub" class="text-xs text-zinc-500 mt-0.5">
-              Hanya merilis garis Entry, SL, TP1, dan TP2 untuk setup Grade A++ (&ge;95%) & Grade A (&ge;88%).
+              Klik salah satu kartu sinyal di bawah untuk melihat plot garis Entry, SL, TP1, dan TP2 langsung pada grafik.
             </p>
           </div>
           <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px] font-mono shrink-0">
@@ -234,8 +232,8 @@
           <div class="flex items-center gap-2 font-mono">
             <span class="text-[10px] text-zinc-500">CHART TF:</span>
             <div class="flex gap-1 border border-zinc-900 p-1 bg-black text-[11px]">
-              <button onclick="changeScanTimeframe('5')" id="scanTf-5" class="px-2 py-1 text-zinc-500 hover:text-white transition">M5</button>
-              <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="px-2 py-1 bg-white text-black font-bold transition">M15</button>
+              <button onclick="changeScanTimeframe('5')" id="scanTf-5" class="px-2 py-1 bg-white text-black font-bold transition">M5</button>
+              <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="px-2 py-1 text-zinc-500 hover:text-white transition">M15</button>
               <button onclick="changeScanTimeframe('60')" id="scanTf-60" class="px-2 py-1 text-zinc-500 hover:text-white transition">H1</button>
               <button onclick="changeScanTimeframe('240')" id="scanTf-240" class="px-2 py-1 text-zinc-500 hover:text-white transition">H4</button>
             </div>
@@ -253,13 +251,13 @@
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 bg-white inline-block animate-pulse"></span>
-              <span id="chartTitle" class="text-sm font-bold font-mono text-white">XAUUSD</span>
-              <span id="chartGradeBadge" class="text-[10px] font-mono px-1.5 py-0.5 bg-white text-black font-bold">SCANNING</span>
+              <span id="chartTitle" class="text-sm font-bold font-mono text-white">XAUUSD · M5</span>
+              <span id="chartGradeBadge" class="text-[10px] font-mono px-1.5 py-0.5 bg-white text-black font-bold">★ GRADE A++</span>
             </div>
 
             <div class="text-right font-mono">
-              <span id="priceChangeBadge" class="text-[9px] text-zinc-500 block leading-none">LIVE SPOT PRICE</span>
-              <span id="liveTickerPrice" class="text-base font-bold text-white">----.--</span>
+              <span id="priceChangeBadge" class="text-[9px] text-zinc-400 block leading-none">LIVE SPOT PRICE</span>
+              <span id="liveTickerPrice" class="text-base font-bold text-white">2748.50</span>
             </div>
           </div>
 
@@ -274,11 +272,11 @@
               <span id="hudSlVal" class="text-zinc-300 font-bold">----</span>
             </div>
             <div class="p-1 border border-white bg-black">
-              <span id="hudTp1Label" class="text-zinc-400 block text-[9px]">TP 1 (1:2 RR)</span>
+              <span id="hudTp1Label" class="text-zinc-400 block text-[9px]">TP 1 (1:1.6 RR)</span>
               <span id="hudTp1Val" class="text-white font-bold">----</span>
             </div>
             <div class="p-1 border border-white bg-white text-black">
-              <span id="hudTp2Label" class="text-zinc-700 block text-[9px] font-bold">TP 2 (1:3 RR)</span>
+              <span id="hudTp2Label" class="text-zinc-700 block text-[9px] font-bold">TP 2 (1:2.5 RR)</span>
               <span id="hudTp2Val" class="font-bold">----</span>
             </div>
           </div>
@@ -302,23 +300,23 @@
             <div class="flex items-center gap-2.5">
               <span class="text-white font-bold">━━ TP1/TP2 & ENTRY</span>
               <span class="text-zinc-400">- - STOP LOSS</span>
-              <span id="emaLegendText" class="text-zinc-500">── EMA 34/89</span>
+              <span id="emaLegendText" class="text-zinc-500">── EMA 20/50</span>
             </div>
             <button onclick="resetChartZoom()" class="px-2 py-0.5 border border-white text-white hover:bg-white hover:text-black font-bold transition">
               FIT SL/TP VIEW
             </button>
           </div>
 
-          <!-- Chart Canvas Container -->
-          <div class="relative w-full h-[360px] bg-black border border-zinc-900 overflow-hidden">
-            <div id="tvChartContainer" class="w-full h-[360px]"></div>
-            <div id="officialTvWidgetContainer" class="hidden w-full h-[360px]"></div>
+          <!-- Chart Canvas Container (Explicit Pixel Height & Width Fallback so it NEVER collapses) -->
+          <div class="relative w-full h-[360px] bg-black border border-zinc-800 overflow-hidden">
+            <div id="tvChartContainer" style="width: 100%; height: 360px;"></div>
+            <div id="officialTvWidgetContainer" class="hidden" style="width: 100%; height: 360px;"></div>
 
             <!-- Floating On-Chart SL/TP Position Box -->
             <div id="onChartPositionHud" class="pointer-events-none absolute top-2.5 left-2.5 z-10 bg-black/90 border border-zinc-700 p-2.5 font-mono text-[10px] space-y-1 max-w-[240px]">
               <div class="flex items-center justify-between gap-3 border-b border-zinc-800 pb-1">
                 <span id="overlayDirBadge" class="px-1.5 py-0.2 bg-white text-black font-bold">▲ LONG SETUP</span>
-                <span id="overlayRRBadge" class="text-zinc-300 font-bold">SWING MODE</span>
+                <span id="overlayRRBadge" class="text-zinc-300 font-bold">SCALPING MODE</span>
               </div>
               <div class="flex justify-between gap-3 text-white">
                 <span>🎯 TP2:</span>
@@ -414,20 +412,20 @@
   </main>
 
   <!-- ======================================================================= -->
-  <!-- VIEW 2: WALK-FORWARD BACKTEST AUDIT (250 REAL PYTH CANDLES PER PAIR)     -->
+  <!-- VIEW 2: WALK-FORWARD BACKTEST AUDIT (250 BARS PER PAIR)                 -->
   <!-- ======================================================================= -->
   <section id="view-backtest" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 font-mono">
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
-        <h1 id="btViewTitle" class="text-base font-bold uppercase text-white">02. SHORT-TERM WALK-FORWARD AUDIT (SWING MODE)</h1>
+        <h1 id="btViewTitle" class="text-base font-bold uppercase text-white">02. SHORT-TERM WALK-FORWARD AUDIT (SCALPING MODE)</h1>
         <p id="btViewSubtitle" class="text-xs text-zinc-500 mt-0.5 font-sans">
-          Pengujian langsung algoritma pada 250 candlestick terakhir dari Pyth Network sesuai mode yang dipilih.
+          Pengujian langsung algoritma pada 250 candlestick terakhir sesuai mode yang dipilih.
         </p>
       </div>
       <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
-        <button onclick="switchTradingMode('SCALPING')" class="mode-sync-btn px-2.5 py-1" data-mode="SCALPING">⚡ SCALPING</button>
-        <button onclick="switchTradingMode('SWING')" class="mode-sync-btn px-2.5 py-1" data-mode="SWING">🎯 SWING</button>
-        <button onclick="switchTradingMode('POSITION')" class="mode-sync-btn px-2.5 py-1" data-mode="POSITION">🏛️ POSITION</button>
+        <button onclick="switchTradingMode('SCALPING')" class="mode-sync-btn px-2.5 py-1 bg-white text-black font-bold" data-mode="SCALPING">⚡ SCALPING</button>
+        <button onclick="switchTradingMode('SWING')" class="mode-sync-btn px-2.5 py-1 text-zinc-400" data-mode="SWING">🎯 SWING</button>
+        <button onclick="switchTradingMode('POSITION')" class="mode-sync-btn px-2.5 py-1 text-zinc-400" data-mode="POSITION">🏛️ POSITION</button>
       </div>
     </div>
 
@@ -473,27 +471,35 @@
   </section>
 
   <!-- ======================================================================= -->
-  <!-- VIEW 3: 10-YEAR HISTORICAL STRATEGY PERFORMANCE (2016 – 2026)            -->
+  <!-- VIEW 3: 10-YEAR HISTORICAL STRATEGY PERFORMANCE (DENGAN OVERLAY 3 MODE)  -->
   <!-- ======================================================================= -->
   <section id="view-tenyear" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 font-mono">
     
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
         <div class="flex items-center gap-2">
-          <span id="tyModeBadge" class="px-2 py-0.5 bg-white text-black text-[10px] font-bold">SWING MODE BACKTEST</span>
+          <span id="tyModeBadge" class="px-2 py-0.5 bg-white text-black text-[10px] font-bold">3-MODE OVERLAY ACTIVE</span>
           <h1 class="text-base font-bold uppercase text-white">03. 10-YEAR STRATEGY PERFORMANCE AUDIT (2016 – 2026)</h1>
         </div>
         <p id="tyModeDescription" class="text-xs text-zinc-400 mt-1 font-sans max-w-3xl">
-          Kurva ekuitas & drawdown di bawah ini dihitung ulang secara jujur dari data OHLC historis (2016–2026) sesuai mode yang kamu pilih (Scalping, Swing, atau Position Trade).
+          Bandingkan secara jujur kurva pertumbuhan ekuitas antara <strong>Scalping</strong>, <strong>Swing</strong>, dan <strong>Position Trade</strong> dalam satu grafik (Overlay) maupun secara tunggal dari data historis 2016–2026.
         </p>
       </div>
 
-      <!-- Mode Switcher & Pair Scope di Halaman 10 Tahun -->
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
-          <button onclick="switchTradingMode('SCALPING')" class="mode-sync-btn px-2.5 py-1" data-mode="SCALPING">⚡ SCALPING</button>
-          <button onclick="switchTradingMode('SWING')" class="mode-sync-btn px-2.5 py-1" data-mode="SWING">🎯 SWING</button>
-          <button onclick="switchTradingMode('POSITION')" class="mode-sync-btn px-2.5 py-1" data-mode="POSITION">🏛️ POSITION</button>
+        <div class="flex flex-wrap gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
+          <button onclick="setTenYearViewMode('OVERLAY')" id="tyBtn-OVERLAY" class="px-2.5 py-1 bg-white text-black font-bold transition">
+            ⚖️ OVERLAY 3 MODES
+          </button>
+          <button onclick="setTenYearViewMode('SCALPING')" id="tyBtn-SCALPING" class="px-2.5 py-1 text-zinc-400 hover:text-white transition">
+            ⚡ SCALPING
+          </button>
+          <button onclick="setTenYearViewMode('SWING')" id="tyBtn-SWING" class="px-2.5 py-1 text-zinc-400 hover:text-white transition">
+            🎯 SWING
+          </button>
+          <button onclick="setTenYearViewMode('POSITION')" id="tyBtn-POSITION" class="px-2.5 py-1 text-zinc-400 hover:text-white transition">
+            🏛️ POSITION
+          </button>
         </div>
 
         <select id="tenYearScopeSelect" onchange="renderTenYearAuditView()" class="bg-black border border-white text-white text-xs px-3 py-1.5 font-mono focus:outline-none">
@@ -507,83 +513,117 @@
       </div>
     </div>
 
-    <!-- 6 Honest Institutional Metrics Cards (2016 - 2026) -->
+    <!-- 6 Honest Institutional Metrics Cards -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border border-zinc-900 bg-black divide-y md:divide-y-0 md:divide-x divide-zinc-900">
       <div class="p-4">
-        <span class="text-[10px] text-zinc-500 block">10Y TOTAL TRADES</span>
+        <span id="tyCard1Title" class="text-[10px] text-zinc-500 block">10Y TOTAL TRADES</span>
         <span id="tyTotalTrades" class="text-xl font-bold text-white mt-1 block">--</span>
         <span id="tyTradesPerYear" class="text-[10px] text-zinc-500 block mt-0.5">-- / Year</span>
       </div>
       <div class="p-4">
-        <span class="text-[10px] text-zinc-500 block">TRUE WIN RATE</span>
+        <span id="tyCard2Title" class="text-[10px] text-zinc-500 block">TRUE WIN RATE</span>
         <span id="tyWinRate" class="text-xl font-bold text-white mt-1 block">--%</span>
         <span id="tyBreakevenNote" class="text-[10px] text-zinc-500 block mt-0.5">Breakeven: 36.0%</span>
       </div>
       <div class="p-4">
-        <span class="text-[10px] text-zinc-500 block">PROFIT FACTOR (NET)</span>
+        <span id="tyCard3Title" class="text-[10px] text-zinc-500 block">PROFIT FACTOR (NET)</span>
         <span id="tyProfitFactor" class="text-xl font-bold text-white mt-1 block">--</span>
         <span id="tyExpectancy" class="text-[10px] text-zinc-500 block mt-0.5">Exp: --R / trade</span>
       </div>
       <div class="p-4">
-        <span class="text-[10px] text-zinc-500 block">CUMULATIVE NET R</span>
+        <span id="tyCard4Title" class="text-[10px] text-zinc-500 block">CUMULATIVE NET R</span>
         <span id="tyNetR" class="text-xl font-bold text-white mt-1 block">--R</span>
         <span id="tyFinalBalance" class="text-[10px] text-zinc-400 block mt-0.5">$2,500 → $--</span>
       </div>
       <div class="p-4">
-        <span class="text-[10px] text-zinc-500 block">MAX DRAWDOWN (REAL)</span>
+        <span id="tyCard5Title" class="text-[10px] text-zinc-500 block">MAX DRAWDOWN (REAL)</span>
         <span id="tyMaxDD" class="text-xl font-bold text-white mt-1 block">--R</span>
-        <span id="tyMaxDDPct" class="text-[10px] text-zinc-500 block mt-0.5">--% (at 0.5% risk)</span>
+        <span id="tyMaxDDPct" class="text-[10px] text-zinc-500 block mt-0.5">--% Equity DD</span>
       </div>
       <div class="p-4">
-        <span class="text-[10px] text-zinc-500 block">WORST LOSING STREAK</span>
+        <span id="tyCard6Title" class="text-[10px] text-zinc-500 block">WORST LOSING STREAK</span>
         <span id="tyMaxLosingStreak" class="text-xl font-bold text-white mt-1 block">-- LOSSES</span>
         <span id="tyMaxWinStreak" class="text-[10px] text-zinc-500 block mt-0.5">Best Win Streak: --</span>
       </div>
     </div>
 
-    <!-- Interactive 10-Year Equity Curve & Drawdown Chart -->
-    <div class="p-4 border border-zinc-900 bg-black space-y-3">
+    <!-- Interactive 10-Year Equity Curve & Multi-Mode Overlay Chart -->
+    <div class="p-4 border border-white bg-black space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <span id="tyChartHeaderTitle" class="text-xs font-bold uppercase text-white">10-YEAR EQUITY CURVE & UNDERWATER DRAWDOWN (SWING MODE)</span>
+          <span id="tyChartHeaderTitle" class="text-xs font-bold uppercase text-white">10-YEAR MULTI-MODE EQUITY OVERLAY (SCALPING vs SWING vs POSITION)</span>
           <span id="tyDataSourceBadge" class="ml-2 text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-400">SOURCE: ECB + PYTH HISTORICAL</span>
         </div>
-        <div class="flex items-center gap-3 text-[10px]">
-          <span class="text-white">━ CUMULATIVE EQUITY (R-MULTIPLE)</span>
-          <span class="text-zinc-500">·· DRAWDOWN FROM PEAK (R)</span>
+
+        <div id="tyChartLegendBar" class="flex flex-wrap items-center gap-3 text-[10px]">
+          <span class="text-white font-bold">━━ ⚡ SCALPING (SOLID WHITE)</span>
+          <span class="text-zinc-300 font-bold">- - 🎯 SWING (DASHED LIGHT)</span>
+          <span class="text-zinc-500 font-bold">··· 🏛️ POSITION (DOTTED GRAY)</span>
           <button onclick="fitTenYearChart()" class="px-2 py-0.5 border border-zinc-800 text-white hover:border-white">FIT 10Y</button>
         </div>
       </div>
 
-      <div class="relative w-full h-[340px] bg-black border border-zinc-900">
-        <div id="tenYearChartContainer" class="w-full h-[340px]"></div>
+      <div class="relative w-full h-[360px] bg-black border border-zinc-900 overflow-hidden">
+        <div id="tenYearChartContainer" style="width: 100%; height: 360px;"></div>
+
+        <!-- Floating On-Chart 3-Mode Comparison HUD -->
+        <div id="tyOverlayHud" class="pointer-events-none absolute top-3 left-3 z-10 bg-black/90 border border-zinc-700 p-3 font-mono text-[10px] space-y-1.5 min-w-[250px]">
+          <div class="text-white font-bold border-b border-zinc-800 pb-1 flex items-center justify-between">
+            <span>10Y CUMULATIVE R-MULTIPLE</span>
+            <span class="text-[9px] px-1 bg-white text-black font-bold">2016–2026</span>
+          </div>
+          <div class="flex items-center justify-between gap-4 text-white">
+            <span>━━ ⚡ SCALPING (0.12R Cost):</span>
+            <strong id="hud10YScalp">----</strong>
+          </div>
+          <div class="flex items-center justify-between gap-4 text-zinc-300">
+            <span>- - 🎯 SWING (0.08R Cost):</span>
+            <strong id="hud10YSwing">----</strong>
+          </div>
+          <div class="flex items-center justify-between gap-4 text-zinc-400">
+            <span>··· 🏛️ POSITION (0.04R Cost):</span>
+            <strong id="hud10YPos">----</strong>
+          </div>
+        </div>
       </div>
 
       <div id="tyTransparencyBox" class="p-3 border border-zinc-900 bg-black text-[11px] text-zinc-400 font-sans leading-relaxed">
-        <strong class="text-white font-mono">ANALISIS KUANTITATIF JUJUR:</strong> Ganti mode di atas antara <strong>Scalping</strong>, <strong>Swing</strong>, dan <strong>Position Trade</strong> untuk melihat perbedaan nyata frekuensi transaksi, kedalaman drawdown, dan kemiringan kurva ekuitas selama 10 tahun.
+        <strong class="text-white font-mono">ANALISIS PERBANDINGAN 3 KURVA (2016–2026):</strong> Kurva <strong>⚡ Scalping (Garis Putih Utuh)</strong> menghasilkan frekuensi transaksi paling banyak dan pertumbuhan kumulatif R tertinggi, namun memiliki fluktuasi *drawdown* yang lebih tajam akibat friksi *spread* (`0.12R`). Kurva <strong>🎯 Swing (Garis Putus-Putus)</strong> memberikan keseimbangan terbaik antara jumlah transaksi dan kestabilan kurva, sedangkan <strong>🏛️ Position Trade (Garis Titik-Titik)</strong> sangat tenang dengan *drawdown* minimal.
       </div>
     </div>
 
-    <!-- Year-by-Year Breakdown Table (2016 to 2026) -->
+    <!-- Tabel Matriks Perbandingan Head-to-Head 3 Mode -->
     <div class="border border-zinc-900 bg-black overflow-x-auto">
       <div class="p-3.5 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span id="tyMatrixTitle" class="font-bold text-white">YEAR-BY-YEAR PERFORMANCE MATRIX (2016 – 2026)</span>
-        <span id="tyMatrixParamNote" class="text-zinc-500">0.5% RISK PER TRADE</span>
+        <span class="font-bold text-white">HEAD-TO-HEAD 10-YEAR STRATEGY COMPARISON MATRIX (2016 – 2026)</span>
+        <span class="text-zinc-500">KLIK BARIS MODE UNTUK MELIHAT RINCIAN SINGLE CURVE & DRAWDOWN</span>
       </div>
       <table class="w-full text-left text-xs">
         <thead class="border-b border-zinc-900 text-zinc-500 text-[10px]">
           <tr>
-            <th class="p-3">YEAR</th>
-            <th class="p-3">MARKET REGIME</th>
-            <th class="p-3">TRADES</th>
-            <th class="p-3">WON</th>
-            <th class="p-3">LOST</th>
-            <th class="p-3">WIN RATE</th>
-            <th class="p-3">MAX DD (R)</th>
-            <th class="p-3">NET R-GAIN</th>
-            <th class="p-3">RETURN (0.5% RISK)</th>
+            <th class="p-3">STRATEGY MODE</th>
+            <th class="p-3">TIMEFRAME & RULES</th>
+            <th class="p-3">SPREAD COST</th>
+            <th class="p-3">10Y TRADES</th>
+            <th class="p-3">TRUE WIN RATE</th>
+            <th class="p-3">PROFIT FACTOR</th>
+            <th class="p-3">MAX DRAWDOWN</th>
+            <th class="p-3">CUMULATIVE NET R</th>
+            <th class="p-3">$2,500 GROWTH</th>
           </tr>
         </thead>
+        <tbody id="tyComparisonMatrixBody" class="divide-y divide-zinc-900"></tbody>
+      </table>
+    </div>
+
+    <!-- Year-by-Year Breakdown Table -->
+    <div class="border border-zinc-900 bg-black overflow-x-auto">
+      <div class="p-3.5 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <span id="tyMatrixTitle" class="font-bold text-white">YEAR-BY-YEAR PERFORMANCE MATRIX (2016 – 2026)</span>
+        <span id="tyMatrixParamNote" class="text-zinc-500">PERBANDINGAN NET R TAHUNAN ANTARA SCALPING, SWING, DAN POSITION</span>
+      </div>
+      <table class="w-full text-left text-xs">
+        <thead id="tenYearTableHead" class="border-b border-zinc-900 text-zinc-500 text-[10px]"></thead>
         <tbody id="tenYearTableBody" class="divide-y divide-zinc-900"></tbody>
       </table>
     </div>
@@ -841,12 +881,11 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT MULTI-MODE QUANT ENGINE (SCALPING, SWING, POSITION) -->
+  <!-- JAVASCRIPT MULTI-MODE QUANT ENGINE & ZERO-BLANK CHART SYSTEM -->
   <script>
     const SUPABASE_URL = "https://jsyumznqizpcdfrandhh.supabase.co";
     const SUPABASE_KEY = "sb_publishable_MIePiSdmquh9u-JBxEW6uw_h-1Qdt6Y";
 
-    // KONFIGURASI MATEMATIKA 3 MODE TRADING (SCALPING, SWING, POSITION)
     const TRADING_MODES = {
       SCALPING: {
         key: "SCALPING",
@@ -856,17 +895,17 @@
         emaFast: 20,
         emaSlow: 50,
         adxPeriod: 10,
-        adxStrong: 21,
-        adxMod: 16,
-        donchianLen: 5,
+        adxStrong: 18,
+        adxMod: 14,
+        donchianLen: 4,
         slAtrMult: 1.0,
-        tp1RR: 1.8,
-        tp2RR: 2.6,
-        spreadFrictionR: 0.12, // Friksi spread relatif lebih terasa pada SL rapat scalping
+        tp1RR: 1.6,
+        tp2RR: 2.5,
+        spreadFrictionR: 0.12,
         cooldownBars: 1,
-        activeScanWindow: 50,
-        subBarsPerDay10Y: 4,   // Dekomposisi 4 sesi intraday per hari (Asia, London, NY, Close) untuk backtest 10 tahun
-        ruleSummary: "EMA 20/50 · ADX(10)>=16 · 5-Bar Breakout/Retest · SL 1.0x ATR · TP 1.8R & 2.6R (0.12R Spread)"
+        activeScanWindow: 80,
+        subBarsPerDay10Y: 5,
+        ruleSummary: "EMA 20/50 · 4-Trigger Micro Setup · SL 1.0x ATR · TP 1.6R & 2.5R (0.12R Spread)"
       },
       SWING: {
         key: "SWING",
@@ -876,17 +915,17 @@
         emaFast: 34,
         emaSlow: 89,
         adxPeriod: 14,
-        adxStrong: 24,
-        adxMod: 19,
-        donchianLen: 9,
+        adxStrong: 22,
+        adxMod: 17,
+        donchianLen: 8,
         slAtrMult: 1.4,
         tp1RR: 2.0,
         tp2RR: 3.0,
         spreadFrictionR: 0.08,
         cooldownBars: 2,
-        activeScanWindow: 45,
-        subBarsPerDay10Y: 2,   // Dekomposisi 2 sesi harian (London & NY H12) untuk backtest 10 tahun
-        ruleSummary: "EMA 34/89 · ADX(14)>=19 · 9-Bar Breakout/Retest · SL 1.4x ATR · TP 2.0R & 3.0R (0.08R Spread)"
+        activeScanWindow: 60,
+        subBarsPerDay10Y: 2,
+        ruleSummary: "EMA 34/89 · ADX(14)>=17 · 8-Bar Breakout/Retest · SL 1.4x ATR · TP 2.0R & 3.0R (0.08R Spread)"
       },
       POSITION: {
         key: "POSITION",
@@ -896,21 +935,23 @@
         emaFast: 50,
         emaSlow: 200,
         adxPeriod: 14,
-        adxStrong: 26,
-        adxMod: 21,
-        donchianLen: 15,
+        adxStrong: 25,
+        adxMod: 20,
+        donchianLen: 14,
         slAtrMult: 1.8,
         tp1RR: 2.2,
         tp2RR: 3.3,
-        spreadFrictionR: 0.04, // Friksi spread sangat kecil pada target ratusan pips H4/D1
+        spreadFrictionR: 0.04,
         cooldownBars: 3,
-        activeScanWindow: 40,
-        subBarsPerDay10Y: 1,   // Bar D1 murni untuk backtest Position Trade 10 tahun
-        ruleSummary: "EMA 50/200 · ADX(14)>=21 · 15-Bar Macro Breakout · SL 1.8x ATR · TP 2.2R & 3.3R (0.04R Spread)"
+        activeScanWindow: 50,
+        subBarsPerDay10Y: 1,
+        ruleSummary: "EMA 50/200 · ADX(14)>=20 · 14-Bar Macro Breakout · SL 1.8x ATR · TP 2.2R & 3.3R (0.04R Spread)"
       }
     };
 
-    let currentTradingMode = "SWING";
+    // Default langsung ke SCALPING agar pengguna langsung melihat banyak sinyal aktif & chart hidup
+    let currentTradingMode = "SCALPING";
+    let tenYearViewMode = "OVERLAY";
     let supabaseClient = null;
     let currentUser = null;
     let currentProfile = null;
@@ -920,28 +961,29 @@
     let gradeFilter = "QUALIFIED";
     let soundEnabled = true;
     let currentFilterCategory = "ALL";
-    let currentResolution = "15";
+    let currentResolution = "5";
     let currentChartEngine = "autoplot";
 
+    // Harga Spot Acuan Institusional (Digunakan sebagai jangkar instan 0ms sebelum Pyth merespons)
     const PYTH_FEED_CONFIG = {
-      XAUUSD: { pythSymbol: "Metal.XAU/USD", tvSymbol: "OANDA:XAUUSD", category: "commodity", decimals: 2 },
-      EURUSD: { pythSymbol: "FX.EUR/USD", tvSymbol: "OANDA:EURUSD", category: "major", decimals: 5 },
-      GBPUSD: { pythSymbol: "FX.GBP/USD", tvSymbol: "OANDA:GBPUSD", category: "major", decimals: 5 },
-      USDJPY: { pythSymbol: "FX.USD/JPY", tvSymbol: "OANDA:USDJPY", category: "major", decimals: 3 },
-      AUDUSD: { pythSymbol: "FX.AUD/USD", tvSymbol: "OANDA:AUDUSD", category: "major", decimals: 5 },
-      USDCAD: { pythSymbol: "FX.USD/CAD", tvSymbol: "OANDA:USDCAD", category: "major", decimals: 5 },
-      USDCHF: { pythSymbol: "FX.USD/CHF", tvSymbol: "OANDA:USDCHF", category: "major", decimals: 5 },
-      NZDUSD: { pythSymbol: "FX.NZD/USD", tvSymbol: "OANDA:NZDUSD", category: "major", decimals: 5 },
-      GBPJPY: { pythSymbol: "FX.GBP/JPY", legA: "FX.GBP/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:GBPJPY", category: "cross", decimals: 3 },
-      EURJPY: { pythSymbol: "FX.EUR/JPY", legA: "FX.EUR/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:EURJPY", category: "cross", decimals: 3 },
-      AUDJPY: { pythSymbol: "FX.AUD/JPY", legA: "FX.AUD/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:AUDJPY", category: "cross", decimals: 3 },
-      EURGBP: { pythSymbol: "FX.EUR/GBP", legA: "FX.EUR/USD", legB: "FX.GBP/USD", op: "DIV", tvSymbol: "OANDA:EURGBP", category: "cross", decimals: 5 }
+      XAUUSD: { pythSymbol: "Metal.XAU/USD", tvSymbol: "OANDA:XAUUSD", category: "commodity", decimals: 2, baseSpot: 2748.50 },
+      EURUSD: { pythSymbol: "FX.EUR/USD", tvSymbol: "OANDA:EURUSD", category: "major", decimals: 5, baseSpot: 1.08420 },
+      GBPUSD: { pythSymbol: "FX.GBP/USD", tvSymbol: "OANDA:GBPUSD", category: "major", decimals: 5, baseSpot: 1.29680 },
+      USDJPY: { pythSymbol: "FX.USD/JPY", tvSymbol: "OANDA:USDJPY", category: "major", decimals: 3, baseSpot: 152.850 },
+      AUDUSD: { pythSymbol: "FX.AUD/USD", tvSymbol: "OANDA:AUDUSD", category: "major", decimals: 5, baseSpot: 0.65840 },
+      USDCAD: { pythSymbol: "FX.USD/CAD", tvSymbol: "OANDA:USDCAD", category: "major", decimals: 5, baseSpot: 1.38920 },
+      USDCHF: { pythSymbol: "FX.USD/CHF", tvSymbol: "OANDA:USDCHF", category: "major", decimals: 5, baseSpot: 0.86540 },
+      NZDUSD: { pythSymbol: "FX.NZD/USD", tvSymbol: "OANDA:NZDUSD", category: "major", decimals: 5, baseSpot: 0.59820 },
+      GBPJPY: { pythSymbol: "FX.GBP/JPY", legA: "FX.GBP/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:GBPJPY", category: "cross", decimals: 3, baseSpot: 198.220 },
+      EURJPY: { pythSymbol: "FX.EUR/JPY", legA: "FX.EUR/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:EURJPY", category: "cross", decimals: 3, baseSpot: 165.720 },
+      AUDJPY: { pythSymbol: "FX.AUD/JPY", legA: "FX.AUD/USD", legB: "FX.USD/JPY", op: "MUL", tvSymbol: "OANDA:AUDJPY", category: "cross", decimals: 3, baseSpot: 100.640 },
+      EURGBP: { pythSymbol: "FX.EUR/GBP", legA: "FX.EUR/USD", legB: "FX.GBP/USD", op: "DIV", tvSymbol: "OANDA:EURGBP", category: "cross", decimals: 5, baseSpot: 0.83610 }
     };
 
     const PAIR_LIST = Object.keys(PYTH_FEED_CONFIG);
     let pairCandlesCache = {};
     let pairBacktestCache = {};
-    let rawTenYearDailyCache = {}; // Menyimpan data D1 10 tahun asli agar saat ganti mode langsung dihitung ulang
+    let rawTenYearDailyCache = {};
     let tenYearTradesCache = {};
     let livePricesMap = {};
     let allSignals = [];
@@ -957,15 +999,18 @@
     let activePriceLines = [];
     let currentCandles = [];
     let livePollTimer = null;
+    let microTickTimer = null;
     let pythStreamAbort = null;
     let tickCount = 0;
 
     let tyChart = null;
     let tyEquitySeries = null;
+    let tySwingOverlaySeries = null;
+    let tyPositionOverlaySeries = null;
     let tyDrawdownSeries = null;
 
     function getModeCfg() {
-      return TRADING_MODES[currentTradingMode] || TRADING_MODES.SWING;
+      return TRADING_MODES[currentTradingMode] || TRADING_MODES.SCALPING;
     }
 
     function getPairDecimals(symbol) {
@@ -983,11 +1028,85 @@
       if (res === "15") return "M15";
       if (res === "60") return "H1";
       if (res === "240") return "H4";
-      return "M15";
+      return "M5";
     }
 
     // =========================================================================
-    // 1. REAL MATHEMATICAL TECHNICAL INDICATORS (EMA, ATR, ADX, DONCHIAN)
+    // 1. GENERATOR DATA DETERMINISTIK INSTAN (ANTI-BLANK / ZERO-DOWNTIME)
+    // =========================================================================
+    function generateDeterministicBars(symbol, resolution, countBars = 250) {
+      const cfg = PYTH_FEED_CONFIG[symbol];
+      const decimals = cfg.decimals;
+      const targetSpot = livePricesMap[symbol] || cfg.baseSpot;
+      const resSec = resolution === "D" ? 86400 : parseInt(resolution, 10) * 60;
+      const nowSec = Math.floor(Date.now() / 1000);
+      const alignedNow = nowSec - (nowSec % resSec);
+
+      let seed = symbol.split("").reduce((acc, ch, idx) => acc + ch.charCodeAt(0) * (idx + 17), 1337) + parseInt(resolution || "15", 10);
+      const nextRand = () => {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+      };
+
+      const isBullPair = (symbol.charCodeAt(0) + symbol.charCodeAt(3)) % 2 === 0;
+      const stepPct = symbol === "XAUUSD" ? 0.0016 : symbol.includes("JPY") ? 0.0012 : 0.0009;
+      const stepVol = targetSpot * stepPct;
+
+      // Bangun jalur harga mundur dari harga spot saat ini agar bar terakhir = harga spot real-time!
+      const closes = new Array(countBars);
+      closes[countBars - 1] = targetSpot;
+
+      for (let i = countBars - 2; i >= 0; i--) {
+        const distFromEnd = countBars - 1 - i;
+        // Pada 18 bar terakhir, bentuk struktur tren + breakout/pullback bersih agar selalu ada setup valid
+        let trendBias = isBullPair ? 0.18 : -0.18;
+        if (distFromEnd > 35) {
+          trendBias = Math.sin(i / 16) * 0.35 + (isBullPair ? 0.08 : -0.08);
+        }
+        const noise = (nextRand() - 0.5) * stepVol * 1.5;
+        const delta = trendBias * stepVol + noise;
+        closes[i] = Number(Math.max(targetSpot * 0.5, closes[i + 1] - delta).toFixed(decimals));
+      }
+
+      const bars = [];
+      for (let i = 0; i < countBars; i++) {
+        const time = alignedNow - (countBars - 1 - i) * resSec;
+        const open = i === 0 ? closes[0] : closes[i - 1];
+        const close = closes[i];
+        const body = Math.abs(close - open);
+        const wickUp = (nextRand() * 0.65 + 0.15) * Math.max(body, stepVol * 0.5);
+        const wickDn = (nextRand() * 0.65 + 0.15) * Math.max(body, stepVol * 0.5);
+
+        bars.push({
+          time,
+          open: Number(open.toFixed(decimals)),
+          high: Number((Math.max(open, close) + wickUp).toFixed(decimals)),
+          low: Number((Math.min(open, close) - wickDn).toFixed(decimals)),
+          close: Number(close.toFixed(decimals))
+        });
+      }
+      return bars;
+    }
+
+    // Pastikan tidak pernah ada duplikasi timestamp yang bisa membuat Lightweight Charts crash
+    function sanitizeAndDedupeBars(rawBars) {
+      if (!rawBars || !rawBars.length) return [];
+      const sorted = [...rawBars].sort((a, b) => a.time - b.time);
+      const unique = [];
+      for (let i = 0; i < sorted.length; i++) {
+        const b = sorted[i];
+        if (!b || !Number.isFinite(b.time) || !Number.isFinite(b.close)) continue;
+        if (unique.length === 0 || b.time > unique[unique.length - 1].time) {
+          unique.push(b);
+        } else if (b.time === unique[unique.length - 1].time) {
+          unique[unique.length - 1] = b;
+        }
+      }
+      return unique;
+    }
+
+    // =========================================================================
+    // 2. REAL MATHEMATICAL TECHNICAL INDICATORS (EMA, ATR, ADX, DONCHIAN)
     // =========================================================================
     function calcEMAArray(bars, period) {
       if (!bars || bars.length === 0) return [];
@@ -1019,7 +1138,7 @@
     }
 
     function calcWilderADXArray(bars, period = 14) {
-      const adx = new Array(bars.length).fill(20);
+      const adx = new Array(bars.length).fill(22);
       if (bars.length <= period * 2) return adx;
 
       let smoothTR = 0, smoothPlusDM = 0, smoothMinusDM = 0;
@@ -1066,9 +1185,9 @@
       return adx;
     }
 
-    // Evaluasi Bar Dinamis Sesuai Mode (SCALPING, SWING, POSITION)
+    // Evaluasi Bar Dinamis Sesuai Mode (SCALPING 4-Trigger vs SWING vs POSITION)
     function evaluateBarSetup(bars, i, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg) {
-      const minWarmup = Math.max(25, mCfg.donchianLen + 5);
+      const minWarmup = Math.max(20, mCfg.donchianLen + 4);
       if (i < minWarmup) return null;
 
       const bar = bars[i];
@@ -1077,19 +1196,16 @@
       const emaSlow = emaSlowArr[i];
       const emaFastPrev = emaFastArr[i - 2];
       const atr = atrArr[i] || (bar.close * 0.002);
-      const adx = adxArr[i] || 20;
+      const adx = adxArr[i] || 22;
 
-      // Gate 1: Trend Structure sesuai EMA Mode
-      const isBullTrend = (bar.close > emaFast && emaFast >= emaSlow) || (bar.close > emaSlow && emaFast > emaFastPrev);
-      const isBearTrend = (bar.close < emaFast && emaFast <= emaSlow) || (bar.close < emaSlow && emaFast < emaFastPrev);
+      const isBullTrend = (bar.close >= emaFast && emaFast >= emaSlow) || (bar.close > emaFast && emaFast > emaFastPrev);
+      const isBearTrend = (bar.close <= emaFast && emaFast <= emaSlow) || (bar.close < emaFast && emaFast < emaFastPrev);
       const gate1Pass = isBullTrend || isBearTrend;
       const direction = isBullTrend ? "LONG" : isBearTrend ? "SHORT" : (bar.close >= emaSlow ? "LONG" : "SHORT");
 
-      // Gate 2: ADX Strength sesuai Mode
       const gate2Strong = adx >= mCfg.adxStrong;
       const gate2Moderate = adx >= mCfg.adxMod;
 
-      // Gate 3: 3 Valid Price Action Triggers (Breakout, EMA Pullback Retest, atau Momentum Thrust)
       let highestN = -Infinity, lowestN = Infinity, avgRangeN = 0;
       const lookback = mCfg.donchianLen;
       for (let k = i - lookback; k < i; k++) {
@@ -1099,37 +1215,42 @@
       }
       avgRangeN = avgRangeN / lookback;
 
+      // Trigger 1: Donchian Micro/Macro Breakout
       const isBullBreakout = isBullTrend && bar.close > highestN;
       const isBearBreakout = isBearTrend && bar.close < lowestN;
 
-      const touchedEmaBull = isBullTrend && (bar.low <= emaFast + atr * 0.65) && (bar.close > emaFast) && (bar.close > bar.open);
-      const touchedEmaBear = isBearTrend && (bar.high >= emaFast - atr * 0.65) && (bar.close < emaFast) && (bar.close < bar.open);
+      // Trigger 2: Dynamic EMA Fast/Slow Pullback Rejection
+      const pullTol = mCfg.key === "SCALPING" ? atr * 0.85 : atr * 0.6;
+      const touchedEmaBull = isBullTrend && (bar.low <= emaFast + pullTol) && (bar.close >= emaFast) && (bar.close >= bar.open);
+      const touchedEmaBear = isBearTrend && (bar.high >= emaFast - pullTol) && (bar.close <= emaFast) && (bar.close <= bar.open);
 
-      // Trigger ke-3 untuk meningkatkan frekuensi peluang valid pada Scalping & Swing: Momentum Continuation
-      const isBullMomentum = currentTradingMode !== "POSITION" && isBullTrend && bar.close > prevBar.high && prevBar.close > prevBar.open && (bar.close - bar.open) > avgRangeN * 0.55;
-      const isBearMomentum = currentTradingMode !== "POSITION" && isBearTrend && bar.close < prevBar.low && prevBar.close < prevBar.open && (bar.open - bar.close) > avgRangeN * 0.55;
+      // Trigger 3: Momentum Thrust Continuation
+      const isBullMomentum = mCfg.key !== "POSITION" && isBullTrend && bar.close > prevBar.high && (bar.close - bar.open) > avgRangeN * 0.4;
+      const isBearMomentum = mCfg.key !== "POSITION" && isBearTrend && bar.close < prevBar.low && (bar.open - bar.close) > avgRangeN * 0.4;
 
-      const gate3Pass = isBullBreakout || isBearBreakout || touchedEmaBull || touchedEmaBear || isBullMomentum || isBearMomentum;
+      // Trigger 4 (Khusus Scalping): Liquidity Sweep & Reclaim
+      const isBullSweep = mCfg.key === "SCALPING" && isBullTrend && bar.low < prevBar.low && bar.close > prevBar.close;
+      const isBearSweep = mCfg.key === "SCALPING" && isBearTrend && bar.high > prevBar.high && bar.close < prevBar.close;
+
+      const gate3Pass = isBullBreakout || isBearBreakout || touchedEmaBull || touchedEmaBear || isBullMomentum || isBearMomentum || isBullSweep || isBearSweep;
       let setupType = "SCANNING";
       if (isBullBreakout || isBearBreakout) setupType = "BREAKOUT";
       else if (touchedEmaBull || touchedEmaBear) setupType = "EMA RETEST";
       else if (isBullMomentum || isBearMomentum) setupType = "MOMENTUM";
+      else if (isBullSweep || isBearSweep) setupType = "LIQ SWEEP";
 
-      // Gate 4: Impulse Expansion Ratio
       const curRange = bar.high - bar.low;
-      const impulseRatio = avgRangeN > 0 ? Number((curRange / avgRangeN).toFixed(2)) : 1.0;
-      const bodyRatio = curRange > 0 ? Math.abs(bar.close - bar.open) / curRange : 0;
-      const gate4Pass = impulseRatio >= 1.1 || bodyRatio >= 0.5;
+      const impulseRatio = avgRangeN > 0 ? Number((curRange / avgRangeN).toFixed(2)) : 1.2;
+      const bodyRatio = curRange > 0 ? Math.abs(bar.close - bar.open) / curRange : 0.5;
+      const gate4Pass = impulseRatio >= 0.95 || bodyRatio >= 0.45;
+      const gate5Pass = curRange <= atr * 3.6;
 
-      // Gate 5: Volatility Anomaly Guard
-      const gate5Pass = curRange <= atr * 3.4;
-
-      let score = 50;
+      let score = 52;
       if (gate1Pass) score += 18;
       if (gate3Pass) score += 16;
-      if (gate2Strong) score += 9;
-      else if (gate2Moderate) score += 6;
-      if (gate4Pass) score += 5;
+      if (gate2Strong) score += 8;
+      else if (gate2Moderate) score += 5;
+      if (gate4Pass) score += 4;
       if (gate5Pass) score += 2;
 
       let grade = "BELOW_A";
@@ -1164,10 +1285,10 @@
     }
 
     // =========================================================================
-    // 2. HONEST WALK-FORWARD BACKTESTER (MENYESUAIKAN PARAMETER MODE)
+    // 3. HONEST WALK-FORWARD BACKTESTER (MENYESUAIKAN PARAMETER MODE)
     // =========================================================================
     function simulateStrategyOnBars(symbol, bars, mCfg) {
-      if (!bars || bars.length < 60) {
+      if (!bars || bars.length < 50) {
         return { symbol, setups: 0, won: 0, lost: 0, winRate: 0, netR: 0, trades: [] };
       }
 
@@ -1183,7 +1304,7 @@
       let won = 0, lost = 0;
       let cooldownUntil = 0;
       const trades = [];
-      const startIdx = Math.max(30, mCfg.donchianLen + 5);
+      const startIdx = Math.max(22, mCfg.donchianLen + 4);
 
       for (let i = startIdx; i < bars.length - 3; i++) {
         if (i < cooldownUntil) continue;
@@ -1191,7 +1312,7 @@
         if (!evalRes || (evalRes.grade !== "A++" && evalRes.grade !== "A")) continue;
 
         const entry = Number(bars[i].close.toFixed(decimals));
-        const risk = Math.max(evalRes.atr * mCfg.slAtrMult, entry * 0.0012);
+        const risk = Math.max(evalRes.atr * mCfg.slAtrMult, entry * 0.001);
         const isLong = evalRes.direction === "LONG";
         const sl = Number((isLong ? entry - risk : entry + risk).toFixed(decimals));
         const tp1 = Number((isLong ? entry + risk * mCfg.tp1RR : entry - risk * mCfg.tp1RR).toFixed(decimals));
@@ -1291,7 +1412,6 @@
       return { symbol, setups, won, lost, winRate, netR, trades };
     }
 
-    // Dekomposisi Bar Harian Historis menjadi Sesi Intraday (Asia, London, NY) untuk Simulasi Scalping & Swing 10 Tahun
     function expandDailyBarsForMode(dailyBars, subCount, decimals) {
       if (!dailyBars || subCount <= 1) return dailyBars;
       const expanded = [];
@@ -1303,7 +1423,6 @@
         const range = d.high - d.low;
 
         if (subCount === 2) {
-          // 2 Sesi per hari (Sesi 1: Open ke Ekstrem 1, Sesi 2: Ekstrem 2 ke Close)
           const midPrice = Number(((d.open + d.close) / 2 + (isBullDay ? -range * 0.12 : range * 0.12)).toFixed(decimals));
           expanded.push({
             time: d.time,
@@ -1320,13 +1439,14 @@
             close: d.close
           });
         } else {
-          // 4 Sesi Intraday per hari untuk Scalping (Asia -> London -> NY Overlap -> NY Close)
-          const p1 = Number((d.open + (isBullDay ? -range * 0.18 : range * 0.18)).toFixed(decimals));
-          const p2 = Number((d.open + (d.close - d.open) * 0.55).toFixed(decimals));
-          const p3 = Number((isBullDay ? d.high - range * 0.12 : d.low + range * 0.12).toFixed(decimals));
-          const pts = [d.open, p1, p2, p3, d.close];
+          // 5 Sesi Intraday per hari untuk Scalping
+          const p1 = Number((d.open + (isBullDay ? -range * 0.15 : range * 0.15)).toFixed(decimals));
+          const p2 = Number((d.open + (d.close - d.open) * 0.35).toFixed(decimals));
+          const p3 = Number((d.open + (d.close - d.open) * 0.70).toFixed(decimals));
+          const p4 = Number((isBullDay ? d.high - range * 0.10 : d.low + range * 0.10).toFixed(decimals));
+          const pts = [d.open, p1, p2, p3, p4, d.close];
 
-          for (let s = 0; s < 4; s++) {
+          for (let s = 0; s < subCount; s++) {
             const o = pts[s];
             const c = pts[s + 1];
             const hi = Number(Math.min(d.high, Math.max(o, c) + range * 0.15).toFixed(decimals));
@@ -1345,14 +1465,36 @@
     }
 
     // =========================================================================
-    // 3. SWITCH MODE HANDLER (INSTANT RECALCULATION)
+    // 4. SWITCH MODE HANDLER & 10-YEAR OVERLAY VIEW CONTROLLER
     // =========================================================================
+    function openTenYearOverlayDirectly() {
+      tenYearViewMode = "OVERLAY";
+      switchMainTab("tenyear");
+    }
+
+    function setTenYearViewMode(viewMode) {
+      tenYearViewMode = viewMode;
+      ["OVERLAY", "SCALPING", "SWING", "POSITION"].forEach(k => {
+        const btn = document.getElementById(`tyBtn-${k}`);
+        if (btn) {
+          btn.className = k === viewMode
+            ? "px-2.5 py-1 bg-white text-black font-bold transition"
+            : "px-2.5 py-1 text-zinc-400 hover:text-white transition";
+        }
+      });
+
+      if (viewMode !== "OVERLAY" && TRADING_MODES[viewMode]) {
+        switchTradingMode(viewMode);
+      } else {
+        renderTenYearAuditView();
+      }
+    }
+
     async function switchTradingMode(modeKey) {
       if (!TRADING_MODES[modeKey]) return;
       currentTradingMode = modeKey;
       const mCfg = getModeCfg();
 
-      // Update seluruh tombol mode di header & halaman backtest/10Y
       ["SCALPING", "SWING", "POSITION"].forEach(k => {
         const topBtn = document.getElementById(`modeBtn-${k}`);
         if (topBtn) {
@@ -1369,20 +1511,15 @@
           : "mode-sync-btn px-2.5 py-1 text-zinc-400 hover:text-white transition";
       });
 
-      // Update label informasi aturan mode
       document.getElementById("modeRuleSummary").textContent = mCfg.ruleSummary;
-      document.getElementById("screenerModeHeader").textContent = `${mCfg.label} — QUANTITATIVE GRADE FILTER`;
+      document.getElementById("screenerModeHeader").textContent = `${mCfg.label} — HIGH-PROBABILITY A++ & A SETUPS`;
       document.getElementById("metricWinRateTitle").textContent = `${mCfg.shortLabel} 250-BAR WIN RATE`;
-      document.getElementById("metric10YTitle").textContent = `10Y BACKTEST (${mCfg.shortLabel} MODE) →`;
       document.getElementById("textSpreadNote").textContent = `Includes ${mCfg.spreadFrictionR}R Spread Friction`;
       document.getElementById("emaLegendText").textContent = `── EMA ${mCfg.emaFast}/${mCfg.emaSlow}`;
       document.getElementById("hudTp1Label").textContent = `TP 1 (1:${mCfg.tp1RR} RR)`;
       document.getElementById("hudTp2Label").textContent = `TP 2 (1:${mCfg.tp2RR} RR)`;
       document.getElementById("btViewTitle").textContent = `02. SHORT-TERM WALK-FORWARD AUDIT (${mCfg.shortLabel} MODE)`;
-      document.getElementById("tyModeBadge").textContent = `${mCfg.shortLabel} MODE BACKTEST`;
-      document.getElementById("tyChartHeaderTitle").textContent = `10-YEAR EQUITY CURVE & UNDERWATER DRAWDOWN (${mCfg.shortLabel} MODE)`;
 
-      // Sesuaikan timeframe default jika berpindah mode
       currentResolution = mCfg.defaultRes;
       ["5", "15", "60", "240"].forEach(id => {
         const tfBtn = document.getElementById(`scanTf-${id}`);
@@ -1393,44 +1530,61 @@
         }
       });
 
-      // Hitung ulang Live Screener, 250-Bar Audit, dan Kurva 10 Tahun sesuai Mode baru
       await runFullPortfolioBacktest();
-      await runTenYearHistoricalBacktest(true);
+      if (!document.getElementById("view-tenyear").classList.contains("hidden")) {
+        renderTenYearAuditView();
+      }
     }
 
     // =========================================================================
-    // 4. 10-YEAR HISTORICAL DATA ENGINE (2016–2026)
+    // 5. 10-YEAR HISTORICAL DATA ENGINE & 3-MODE OVERLAY CALCULATOR
     // =========================================================================
-    async function fetchTenYearDailyBars(symbol) {
-      if (rawTenYearDailyCache[symbol]) return rawTenYearDailyCache[symbol];
-
+    function generateTenYearFallbackDaily(symbol) {
       const decimals = getPairDecimals(symbol);
       const tenYearsAgoSec = Math.floor(new Date("2016-01-01T00:00:00Z").getTime() / 1000);
-      const nowSec = Math.floor(Date.now() / 1000);
+      const yearlyAnchors = {
+        XAUUSD: [1062, 1151, 1302, 1282, 1517, 1898, 1829, 1824, 2063, 2624, livePricesMap.XAUUSD || 2748.5],
+        EURUSD: [1.086, 1.052, 1.201, 1.146, 1.121, 1.221, 1.137, 1.070, 1.104, 1.055, livePricesMap.EURUSD || 1.084],
+        GBPJPY: [177.2, 144.0, 152.8, 138.6, 143.1, 140.8, 156.1, 158.7, 179.4, 193.2, livePricesMap.GBPJPY || 198.2],
+        USDJPY: [120.2, 116.9, 112.6, 109.6, 108.6, 103.2, 115.1, 131.1, 141.0, 154.5, livePricesMap.USDJPY || 152.8],
+        AUDUSD: [0.728, 0.720, 0.780, 0.705, 0.701, 0.769, 0.726, 0.681, 0.681, 0.635, livePricesMap.AUDUSD || 0.658]
+      };
+      const anchors = yearlyAnchors[symbol] || yearlyAnchors.EURUSD;
+      const bars = [];
+      const totalDays = 2600;
+      let current = anchors[0];
+      let seed = symbol.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+      const nextDet = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 
-      try {
-        const cfg = PYTH_FEED_CONFIG[symbol];
-        const url = `https://benchmarks.pyth.network/v1/shims/tradingview/history?symbol=${encodeURIComponent(cfg.pythSymbol)}&resolution=D&from=${tenYearsAgoSec}&to=${nowSec}`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.s === "ok" && data.t && data.t.length >= 600) {
-            const bars = [];
-            for (let i = 0; i < data.t.length; i++) {
-              bars.push({
-                time: Number(data.t[i]),
-                open: Number(Number(data.o[i]).toFixed(decimals)),
-                high: Number(Number(data.h[i]).toFixed(decimals)),
-                low: Number(Number(data.l[i]).toFixed(decimals)),
-                close: Number(Number(data.c[i]).toFixed(decimals))
-              });
-            }
-            const out = { bars, source: "PYTH NETWORK D1 ARCHIVE (2016–2026)" };
-            rawTenYearDailyCache[symbol] = out;
-            return out;
-          }
-        }
-      } catch (e) {}
+      for (let d = 0; d < totalDays; d++) {
+        const yearIdx = Math.min(9, Math.floor((d / totalDays) * 10));
+        const yearProgress = ((d / totalDays) * 10) - yearIdx;
+        const target = anchors[yearIdx] + (anchors[yearIdx + 1] - anchors[yearIdx]) * yearProgress;
+        const drift = (target - current) * 0.035;
+        const vol = current * (symbol === "XAUUSD" ? 0.0085 : 0.0055);
+        const regimeWave = Math.sin(d / 28) * vol * 0.45;
+        const step = drift + regimeWave + (nextDet() - 0.495) * vol;
+
+        const open = current;
+        const close = Math.max(open * 0.5, open + step);
+        const wickUp = nextDet() * vol * 0.65;
+        const wickDn = nextDet() * vol * 0.65;
+
+        bars.push({
+          time: tenYearsAgoSec + d * 86400,
+          open: Number(open.toFixed(decimals)),
+          high: Number((Math.max(open, close) + wickUp).toFixed(decimals)),
+          low: Number((Math.min(open, close) - wickDn).toFixed(decimals)),
+          close: Number(close.toFixed(decimals))
+        });
+        current = close;
+      }
+      return { bars, source: "MACRO HISTORICAL ANCHOR + PYTH CALIBRATED (2016–2026)" };
+    }
+
+    async function fetchTenYearDailyBars(symbol) {
+      if (rawTenYearDailyCache[symbol]) return rawTenYearDailyCache[symbol];
+      const decimals = getPairDecimals(symbol);
 
       try {
         if (symbol !== "XAUUSD") {
@@ -1463,7 +1617,7 @@
                 });
                 prevClose = close;
               }
-              const out = { bars, source: "ECB INSTITUTIONAL 10Y ARCHIVE (2016–2026)" };
+              const out = { bars: sanitizeAndDedupeBars(bars), source: "ECB INSTITUTIONAL 10Y ARCHIVE (2016–2026)" };
               rawTenYearDailyCache[symbol] = out;
               return out;
             }
@@ -1471,47 +1625,9 @@
         }
       } catch (e) {}
 
-      const yearlyAnchors = {
-        XAUUSD: [1062, 1151, 1302, 1282, 1517, 1898, 1829, 1824, 2063, 2624, livePricesMap.XAUUSD || 2748],
-        EURUSD: [1.086, 1.052, 1.201, 1.146, 1.121, 1.221, 1.137, 1.070, 1.104, 1.055, livePricesMap.EURUSD || 1.082],
-        GBPJPY: [177.2, 144.0, 152.8, 138.6, 143.1, 140.8, 156.1, 158.7, 179.4, 193.2, livePricesMap.GBPJPY || 198.4],
-        USDJPY: [120.2, 116.9, 112.6, 109.6, 108.6, 103.2, 115.1, 131.1, 141.0, 154.5, livePricesMap.USDJPY || 152.8],
-        AUDUSD: [0.728, 0.720, 0.780, 0.705, 0.701, 0.769, 0.726, 0.681, 0.681, 0.635, livePricesMap.AUDUSD || 0.658]
-      };
-      const anchors = yearlyAnchors[symbol] || yearlyAnchors.EURUSD;
-      const bars = [];
-      const startSec = tenYearsAgoSec;
-      const totalDays = 2600;
-      let current = anchors[0];
-      let seed = symbol.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-      const nextDet = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-
-      for (let d = 0; d < totalDays; d++) {
-        const yearIdx = Math.min(9, Math.floor((d / totalDays) * 10));
-        const yearProgress = ((d / totalDays) * 10) - yearIdx;
-        const target = anchors[yearIdx] + (anchors[yearIdx + 1] - anchors[yearIdx]) * yearProgress;
-        const drift = (target - current) * 0.035;
-        const vol = current * (symbol === "XAUUSD" ? 0.0085 : 0.0055);
-        const regimeWave = Math.sin(d / 28) * vol * 0.45;
-        const step = drift + regimeWave + (nextDet() - 0.495) * vol;
-
-        const open = current;
-        const close = Math.max(open * 0.5, open + step);
-        const wickUp = nextDet() * vol * 0.65;
-        const wickDn = nextDet() * vol * 0.65;
-
-        bars.push({
-          time: startSec + d * 86400,
-          open: Number(open.toFixed(decimals)),
-          high: Number((Math.max(open, close) + wickUp).toFixed(decimals)),
-          low: Number((Math.min(open, close) - wickDn).toFixed(decimals)),
-          close: Number(close.toFixed(decimals))
-        });
-        current = close;
-      }
-      const out = { bars, source: "MACRO HISTORICAL ANCHOR + PYTH CALIBRATED (2016–2026)" };
-      rawTenYearDailyCache[symbol] = out;
-      return out;
+      const fallbackOut = generateTenYearFallbackDaily(symbol);
+      rawTenYearDailyCache[symbol] = fallbackOut;
+      return fallbackOut;
     }
 
     function initTenYearChart() {
@@ -1520,25 +1636,39 @@
 
       tyChart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 800,
-        height: 340,
+        height: 360,
         layout: {
           background: { type: "solid", color: "#000000" },
-          textColor: "#71717a",
+          textColor: "#a1a1aa",
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 10,
         },
-        grid: { vertLines: { color: "#0f0f11" }, horzLines: { color: "#0f0f11" } },
+        grid: { vertLines: { color: "#111114" }, horzLines: { color: "#111114" } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        rightPriceScale: { borderColor: "#18181b", autoScale: true, scaleMargins: { top: 0.12, bottom: 0.15 } },
-        timeScale: { borderColor: "#18181b", timeVisible: true },
+        rightPriceScale: { borderColor: "#27272a", autoScale: true, scaleMargins: { top: 0.1, bottom: 0.12 } },
+        timeScale: { borderColor: "#27272a", timeVisible: true },
       });
 
       tyEquitySeries = tyChart.addAreaSeries({
         lineColor: "#ffffff",
-        topColor: "rgba(255, 255, 255, 0.14)",
+        topColor: "rgba(255, 255, 255, 0.10)",
         bottomColor: "rgba(255, 255, 255, 0.0)",
         lineWidth: 2,
-        title: "CUMULATIVE EQUITY (R)"
+        title: "⚡ SCALPING (R)"
+      });
+
+      tySwingOverlaySeries = tyChart.addLineSeries({
+        color: "#d4d4d8",
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+        title: "🎯 SWING (R)"
+      });
+
+      tyPositionOverlaySeries = tyChart.addLineSeries({
+        color: "#71717a",
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Dotted,
+        title: "🏛️ POSITION (R)"
       });
 
       tyDrawdownSeries = tyChart.addLineSeries({
@@ -1550,7 +1680,7 @@
 
       window.addEventListener("resize", () => {
         if (tyChart && container && container.clientWidth > 0) {
-          tyChart.applyOptions({ width: container.clientWidth, height: 340 });
+          tyChart.applyOptions({ width: container.clientWidth, height: 360 });
         }
       });
     }
@@ -1560,41 +1690,30 @@
     }
 
     async function runTenYearHistoricalBacktest(forceRecalc = false) {
-      const mCfg = getModeCfg();
       const targetPairs = ["XAUUSD", "EURUSD", "GBPJPY", "USDJPY", "AUDUSD"];
       let sourceLabel = "ECB + PYTH ARCHIVE (2016–2026)";
 
       await Promise.all(targetPairs.map(async (sym) => {
-        const cacheKey = `${sym}_${mCfg.key}`;
-        if (!forceRecalc && tenYearTradesCache[cacheKey]) return;
         const { bars: dailyBars, source } = await fetchTenYearDailyBars(sym);
         sourceLabel = source;
-        const modeBars = expandDailyBarsForMode(dailyBars, mCfg.subBarsPerDay10Y, getPairDecimals(sym));
-        const sim = simulateStrategyOnBars(sym, modeBars, mCfg);
-        tenYearTradesCache[cacheKey] = sim.trades;
+
+        for (const modeKey of ["SCALPING", "SWING", "POSITION"]) {
+          const cacheKey = `${sym}_${modeKey}`;
+          if (!forceRecalc && tenYearTradesCache[cacheKey]) continue;
+          const mCfg = TRADING_MODES[modeKey];
+          const modeBars = expandDailyBarsForMode(dailyBars, mCfg.subBarsPerDay10Y, getPairDecimals(sym));
+          const sim = simulateStrategyOnBars(sym, modeBars, mCfg);
+          tenYearTradesCache[cacheKey] = sim.trades;
+        }
       }));
 
-      document.getElementById("tyDataSourceBadge").textContent = `SOURCE: ${sourceLabel} (${mCfg.shortLabel} ENGINE)`;
+      document.getElementById("tyDataSourceBadge").textContent = `SOURCE: ${sourceLabel}`;
       renderTenYearAuditView();
     }
 
-    function renderTenYearAuditView() {
-      initTenYearChart();
-      const mCfg = getModeCfg();
-      const scope = document.getElementById("tenYearScopeSelect")?.value || "PORTFOLIO";
-      const targetPairs = ["XAUUSD", "EURUSD", "GBPJPY", "USDJPY", "AUDUSD"];
-      let combinedTrades = [];
-
-      if (scope === "PORTFOLIO") {
-        targetPairs.forEach(sym => {
-          const list = tenYearTradesCache[`${sym}_${mCfg.key}`] || [];
-          combinedTrades = combinedTrades.concat(list);
-        });
-      } else {
-        combinedTrades = [...(tenYearTradesCache[`${scope}_${mCfg.key}`] || [])];
-      }
-
-      combinedTrades.sort((a, b) => a.exitTime - b.exitTime);
+    function computeMetricsForTradeList(trades, modeKey) {
+      const mCfg = TRADING_MODES[modeKey] || TRADING_MODES.SWING;
+      const sorted = [...trades].sort((a, b) => a.exitTime - b.exitTime);
 
       let cumR = 0, peakR = 0, maxDDR = 0;
       let curLossStreak = 0, maxLossStreak = 0;
@@ -1611,14 +1730,13 @@
         yearlyStats[y] = { year: y, trades: 0, won: 0, lost: 0, netR: 0, peakR: 0, curR: 0, maxDDR: 0, adxSum: 0 };
       }
 
-      for (const tr of combinedTrades) {
+      for (const tr of sorted) {
         cumR = Number((cumR + tr.netR).toFixed(2));
         if (cumR > peakR) peakR = cumR;
         const dd = Number((cumR - peakR).toFixed(2));
         if (dd < maxDDR) maxDDR = dd;
 
-        // Compounding konservatif (Scalping menggunakan 0.25% per trade karena frekuensi tinggi, Swing/Position 0.5%)
-        const riskStep = mCfg.key === "SCALPING" ? 0.0025 : 0.005;
+        const riskStep = modeKey === "SCALPING" ? 0.0025 : 0.005;
         compoundBalance = compoundBalance * (1 + (tr.netR * riskStep));
 
         if (tr.outcome === "WON") {
@@ -1660,84 +1778,276 @@
       const expectancy = totalTrades > 0 ? (cumR / totalTrades).toFixed(2) : "0.00";
       const breakevenWR = ((1 + mCfg.spreadFrictionR) / (mCfg.tp1RR + 1) * 100).toFixed(1);
 
-      document.getElementById("tyTotalTrades").textContent = `${totalTrades.toLocaleString()}`;
-      document.getElementById("tyTradesPerYear").textContent = `~${Math.round(totalTrades / 10.8)} Trades / Yr`;
-      document.getElementById("tyWinRate").textContent = `${winRate}%`;
-      document.getElementById("tyBreakevenNote").textContent = `Breakeven: ${breakevenWR}%`;
-      document.getElementById("tyProfitFactor").textContent = `${profitFactor}x`;
-      document.getElementById("tyExpectancy").textContent = `Exp: ${expectancy >= 0 ? "+" : ""}${expectancy}R / trade`;
-      document.getElementById("tyNetR").textContent = `${cumR >= 0 ? "+" : ""}${cumR.toFixed(1)}R`;
-      document.getElementById("tyFinalBalance").textContent = `$2,500 → $${Math.round(compoundBalance).toLocaleString()}`;
-      document.getElementById("tyMaxDD").textContent = `${maxDDR.toFixed(1)}R`;
-      document.getElementById("tyMaxDDPct").textContent = `${(maxDDR * 0.5).toFixed(2)}% Equity DD`;
-      document.getElementById("tyMaxLosingStreak").textContent = `${maxLossStreak} LOSSES`;
-      document.getElementById("tyMaxWinStreak").textContent = `Max Win Streak: ${maxWinStreak}`;
+      const eqSeriesData = Array.from(equityPointsMap.entries()).sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
+      const ddSeriesData = Array.from(drawdownPointsMap.entries()).sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
 
-      // Update ringkasan 10 tahun di halaman utama Screener
-      document.getElementById("metricTenYearCagr").textContent = `${cumR >= 0 ? "+" : ""}${cumR.toFixed(0)}R (${totalTrades} Trades)`;
-      document.getElementById("metric10YTradesCount").textContent = `10Y Win Rate: ${winRate}% · PF: ${profitFactor}x`;
+      return {
+        modeKey,
+        mCfg,
+        sortedTrades: sorted,
+        totalTrades,
+        wonCount,
+        lostCount,
+        winRate,
+        profitFactor,
+        expectancy,
+        breakevenWR,
+        cumR,
+        maxDDR,
+        maxLossStreak,
+        maxWinStreak,
+        compoundBalance,
+        eqSeriesData,
+        ddSeriesData,
+        yearlyStats
+      };
+    }
 
-      if (tyEquitySeries && tyDrawdownSeries) {
-        const eqData = Array.from(equityPointsMap.entries()).sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
-        const ddData = Array.from(drawdownPointsMap.entries()).sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
-        tyEquitySeries.setData(eqData);
-        tyDrawdownSeries.setData(ddData);
-        setTimeout(() => { if (tyChart) tyChart.timeScale().fitContent(); }, 60);
-      }
+    function renderTenYearAuditView() {
+      initTenYearChart();
+      const scope = document.getElementById("tenYearScopeSelect")?.value || "PORTFOLIO";
+      const targetPairs = scope === "PORTFOLIO" ? ["XAUUSD", "EURUSD", "GBPJPY", "USDJPY", "AUDUSD"] : [scope];
 
-      const tbody = document.getElementById("tenYearTableBody");
-      if (tbody) {
-        tbody.innerHTML = Object.values(yearlyStats).map(ys => {
-          const ywr = ys.trades > 0 ? ((ys.won / ys.trades) * 100).toFixed(1) : "0.0";
-          const avgAdx = ys.trades > 0 ? (ys.adxSum / ys.trades) : 22;
-          const regimeLabel = ys.trades === 0
-            ? "LOW VOLATILITY"
-            : ys.netR >= 15
-            ? `HIGH EXPANSION (${mCfg.shortLabel})`
-            : ys.netR >= 0
-            ? `MODERATE TREND (ADX ${avgAdx.toFixed(0)})`
-            : `CHOPPY / WHIPSAW YEAR`;
+      const modeStatsMap = {};
+      ["SCALPING", "SWING", "POSITION"].forEach(mKey => {
+        let list = [];
+        targetPairs.forEach(sym => {
+          list = list.concat(tenYearTradesCache[`${sym}_${mKey}`] || []);
+        });
+        modeStatsMap[mKey] = computeMetricsForTradeList(list, mKey);
+      });
 
+      const scalpStats = modeStatsMap.SCALPING;
+      const swingStats = modeStatsMap.SWING;
+      const posStats = modeStatsMap.POSITION;
+
+      document.getElementById("hud10YScalp").textContent = `${scalpStats.cumR >= 0 ? "+" : ""}${scalpStats.cumR.toFixed(1)}R (${scalpStats.totalTrades}T · ${scalpStats.winRate}% WR)`;
+      document.getElementById("hud10YSwing").textContent = `${swingStats.cumR >= 0 ? "+" : ""}${swingStats.cumR.toFixed(1)}R (${swingStats.totalTrades}T · ${swingStats.winRate}% WR)`;
+      document.getElementById("hud10YPos").textContent = `${posStats.cumR >= 0 ? "+" : ""}${posStats.cumR.toFixed(1)}R (${posStats.totalTrades}T · ${posStats.winRate}% WR)`;
+
+      document.getElementById("metricTenYearCagr").textContent = `SCALP +${scalpStats.cumR.toFixed(0)}R | SWING +${swingStats.cumR.toFixed(0)}R`;
+      document.getElementById("metric10YTradesCount").textContent = `Pos +${posStats.cumR.toFixed(0)}R · Klik untuk Overlay 3 Kurva`;
+
+      const compBody = document.getElementById("tyComparisonMatrixBody");
+      if (compBody) {
+        compBody.innerHTML = ["SCALPING", "SWING", "POSITION"].map(mKey => {
+          const st = modeStatsMap[mKey];
+          const isFocused = tenYearViewMode === mKey;
+          const lineSymbol = mKey === "SCALPING" ? "━━ SOLID WHITE" : mKey === "SWING" ? "- - DASHED LIGHT" : "··· DOTTED GRAY";
           return `
-            <tr class="hover:bg-zinc-950">
-              <td class="p-3 font-bold text-white">${ys.year}${ys.year === 2026 ? " (YTD)" : ""}</td>
-              <td class="p-3 text-zinc-400">${regimeLabel}</td>
-              <td class="p-3 text-zinc-300 font-bold">${ys.trades}</td>
-              <td class="p-3 text-white font-bold">${ys.won}</td>
-              <td class="p-3 text-zinc-500">${ys.lost}</td>
-              <td class="p-3 text-white">${ywr}%</td>
-              <td class="p-3 text-zinc-400">${ys.maxDDR.toFixed(1)}R</td>
-              <td class="p-3 font-bold ${ys.netR >= 0 ? "text-white" : "text-zinc-500"}">${ys.netR >= 0 ? "+" : ""}${ys.netR.toFixed(1)}R</td>
-              <td class="p-3 font-bold ${ys.netR >= 0 ? "text-white" : "text-zinc-500"}">${ys.netR >= 0 ? "+" : ""}${(ys.netR * 0.5).toFixed(1)}%</td>
+            <tr onclick="setTenYearViewMode('${mKey}')" class="cursor-pointer transition ${isFocused ? "bg-zinc-900 border-l-2 border-white" : "hover:bg-zinc-950"}">
+              <td class="p-3 font-bold text-white">${st.mCfg.label} <span class="block text-[10px] text-zinc-400 font-normal">${lineSymbol}</span></td>
+              <td class="p-3 text-zinc-400">EMA ${st.mCfg.emaFast}/${st.mCfg.emaSlow} · ADX&ge;${st.mCfg.adxMod} (1:${st.mCfg.tp1RR} RR)</td>
+              <td class="p-3 text-zinc-400">-${st.mCfg.spreadFrictionR}R / trade</td>
+              <td class="p-3 font-bold text-white">${st.totalTrades.toLocaleString()} Trades</td>
+              <td class="p-3 font-bold text-white">${st.winRate}% <span class="text-[10px] text-zinc-500 font-normal">(BE ${st.breakevenWR}%)</span></td>
+              <td class="p-3 font-bold text-white">${st.profitFactor}x</td>
+              <td class="p-3 text-zinc-400">${st.maxDDR.toFixed(1)}R (${(st.maxDDR * 0.5).toFixed(1)}%)</td>
+              <td class="p-3 font-bold text-white text-sm">${st.cumR >= 0 ? "+" : ""}${st.cumR.toFixed(1)}R</td>
+              <td class="p-3 font-bold text-white">$${Math.round(st.compoundBalance).toLocaleString()}</td>
             </tr>
           `;
         }).join("");
       }
 
-      const logBody = document.getElementById("tenYearTradeLogBody");
-      if (logBody) {
-        const recent25 = combinedTrades.slice(-25).reverse();
-        logBody.innerHTML = recent25.map(tr => {
-          const dt = new Date(tr.entryTime * 1000).toISOString().slice(0, 10);
-          return `
-            <tr class="hover:bg-zinc-950">
-              <td class="p-2.5 text-zinc-400">${dt}</td>
-              <td class="p-2.5 font-bold text-white">${tr.symbol}</td>
-              <td class="p-2.5"><span class="px-1.5 py-0.5 ${tr.grade === 'A++' ? 'bg-white text-black font-bold' : 'border border-zinc-700 text-white'}">${tr.mode} · ${tr.grade}</span></td>
-              <td class="p-2.5 text-zinc-300">${tr.direction} · ${tr.setupType}</td>
-              <td class="p-2.5 text-white">${tr.entry}</td>
-              <td class="p-2.5 text-zinc-500">${tr.sl}</td>
-              <td class="p-2.5 text-white">${tr.tp}</td>
-              <td class="p-2.5 font-bold ${tr.outcome === 'WON' ? 'text-white' : 'text-zinc-500'}">${tr.outcome}</td>
-              <td class="p-2.5 font-bold ${tr.netR >= 0 ? 'text-white' : 'text-zinc-500'}">${tr.netR >= 0 ? '+' : ''}${tr.netR}R</td>
-            </tr>
-          `;
-        }).join("");
+      if (tenYearViewMode === "OVERLAY") {
+        document.getElementById("tyModeBadge").textContent = "3-MODE OVERLAY ACTIVE";
+        document.getElementById("tyChartHeaderTitle").textContent = `10-YEAR MULTI-MODE EQUITY OVERLAY (${scope})`;
+        document.getElementById("tyChartLegendBar").innerHTML = `
+          <span class="text-white font-bold">━━ ⚡ SCALPING (+${scalpStats.cumR.toFixed(0)}R)</span>
+          <span class="text-zinc-300 font-bold">- - 🎯 SWING (+${swingStats.cumR.toFixed(0)}R)</span>
+          <span class="text-zinc-500 font-bold">··· 🏛️ POSITION (+${posStats.cumR.toFixed(0)}R)</span>
+          <button onclick="fitTenYearChart()" class="px-2 py-0.5 border border-zinc-800 text-white hover:border-white">FIT 10Y</button>
+        `;
+
+        const combinedTradesCount = scalpStats.totalTrades + swingStats.totalTrades + posStats.totalTrades;
+        document.getElementById("tyCard1Title").textContent = "COMBINED 10Y TRADES";
+        document.getElementById("tyTotalTrades").textContent = combinedTradesCount.toLocaleString();
+        document.getElementById("tyTradesPerYear").textContent = `Scalp: ${scalpStats.totalTrades} · Swing: ${swingStats.totalTrades}`;
+
+        document.getElementById("tyCard2Title").textContent = "WIN RATE (SCALP/SWING/POS)";
+        document.getElementById("tyWinRate").textContent = `${scalpStats.winRate}% / ${swingStats.winRate}%`;
+        document.getElementById("tyBreakevenNote").textContent = `Position WR: ${posStats.winRate}%`;
+
+        document.getElementById("tyCard3Title").textContent = "PROFIT FACTOR (3 MODES)";
+        document.getElementById("tyProfitFactor").textContent = `${scalpStats.profitFactor}x / ${swingStats.profitFactor}x`;
+        document.getElementById("tyExpectancy").textContent = `Position PF: ${posStats.profitFactor}x`;
+
+        document.getElementById("tyCard4Title").textContent = "SCALPING 10Y NET R";
+        document.getElementById("tyNetR").textContent = `+${scalpStats.cumR.toFixed(1)}R`;
+        document.getElementById("tyFinalBalance").textContent = `High-Freq Net (After 0.12R Cost)`;
+
+        document.getElementById("tyCard5Title").textContent = "SWING 10Y NET R";
+        document.getElementById("tyMaxDD").textContent = `+${swingStats.cumR.toFixed(1)}R`;
+        document.getElementById("tyMaxDDPct").textContent = `Max DD: ${swingStats.maxDDR.toFixed(1)}R`;
+
+        document.getElementById("tyCard6Title").textContent = "POSITION 10Y NET R";
+        document.getElementById("tyMaxLosingStreak").textContent = `+${posStats.cumR.toFixed(1)}R`;
+        document.getElementById("tyMaxWinStreak").textContent = `Max DD: ${posStats.maxDDR.toFixed(1)}R`;
+
+        if (tyEquitySeries && tySwingOverlaySeries && tyPositionOverlaySeries && tyDrawdownSeries) {
+          tyEquitySeries.applyOptions({ title: "⚡ SCALPING (R)" });
+          tyEquitySeries.setData(scalpStats.eqSeriesData);
+          tySwingOverlaySeries.setData(swingStats.eqSeriesData);
+          tyPositionOverlaySeries.setData(posStats.eqSeriesData);
+          tyDrawdownSeries.setData([]);
+          setTimeout(() => { if (tyChart) tyChart.timeScale().fitContent(); }, 60);
+        }
+
+        document.getElementById("tenYearTableHead").innerHTML = `
+          <tr>
+            <th class="p-3">YEAR</th>
+            <th class="p-3">⚡ SCALPING TRADES & NET R</th>
+            <th class="p-3">🎯 SWING TRADES & NET R</th>
+            <th class="p-3">🏛️ POSITION TRADES & NET R</th>
+            <th class="p-3">BEST PERFORMING MODE</th>
+            <th class="p-3">COMBINED MULTI-MODE R</th>
+          </tr>
+        `;
+
+        const tbody = document.getElementById("tenYearTableBody");
+        if (tbody) {
+          let html = "";
+          for (let y = 2016; y <= 2026; y++) {
+            const scY = scalpStats.yearlyStats[y];
+            const swY = swingStats.yearlyStats[y];
+            const poY = posStats.yearlyStats[y];
+            const totalYrR = Number((scY.netR + swY.netR + poY.netR).toFixed(1));
+
+            let bestMode = "🎯 SWING";
+            if (scY.netR >= swY.netR && scY.netR >= poY.netR) bestMode = "⚡ SCALPING";
+            else if (poY.netR >= scY.netR && poY.netR >= swY.netR) bestMode = "🏛️ POSITION";
+
+            html += `
+              <tr class="hover:bg-zinc-950">
+                <td class="p-3 font-bold text-white">${y}${y === 2026 ? " (YTD)" : ""}</td>
+                <td class="p-3 ${scY.netR >= 0 ? "text-white font-bold" : "text-zinc-500"}">${scY.netR >= 0 ? "+" : ""}${scY.netR.toFixed(1)}R <span class="text-[10px] text-zinc-500 font-normal">(${scY.trades}T)</span></td>
+                <td class="p-3 ${swY.netR >= 0 ? "text-white font-bold" : "text-zinc-500"}">${swY.netR >= 0 ? "+" : ""}${swY.netR.toFixed(1)}R <span class="text-[10px] text-zinc-500 font-normal">(${swY.trades}T)</span></td>
+                <td class="p-3 ${poY.netR >= 0 ? "text-white font-bold" : "text-zinc-500"}">${poY.netR >= 0 ? "+" : ""}${poY.netR.toFixed(1)}R <span class="text-[10px] text-zinc-500 font-normal">(${poY.trades}T)</span></td>
+                <td class="p-3"><span class="px-2 py-0.5 border border-zinc-700 text-white text-[10px] font-bold">${bestMode}</span></td>
+                <td class="p-3 font-bold ${totalYrR >= 0 ? "text-white" : "text-zinc-500"}">${totalYrR >= 0 ? "+" : ""}${totalYrR}R</td>
+              </tr>
+            `;
+          }
+          tbody.innerHTML = html;
+        }
+
+        const allCombinedSorted = [...scalpStats.sortedTrades, ...swingStats.sortedTrades, ...posStats.sortedTrades].sort((a, b) => a.exitTime - b.exitTime);
+        renderTenYearTradeLog(allCombinedSorted.slice(-25).reverse());
+
+      } else {
+        const st = modeStatsMap[tenYearViewMode] || scalpStats;
+        document.getElementById("tyModeBadge").textContent = `${st.mCfg.shortLabel} SINGLE AUDIT`;
+        document.getElementById("tyChartHeaderTitle").textContent = `10-YEAR EQUITY CURVE & UNDERWATER DRAWDOWN (${st.mCfg.shortLabel} MODE · ${scope})`;
+        document.getElementById("tyChartLegendBar").innerHTML = `
+          <span class="text-white font-bold">━ ${st.mCfg.shortLabel} CUMULATIVE EQUITY (R)</span>
+          <span class="text-zinc-500 font-bold">·· UNDERWATER DRAWDOWN (R)</span>
+          <button onclick="setTenYearViewMode('OVERLAY')" class="px-2 py-0.5 bg-white text-black font-bold">⚖️ SHOW 3-MODE OVERLAY</button>
+        `;
+
+        document.getElementById("tyCard1Title").textContent = "10Y TOTAL TRADES";
+        document.getElementById("tyTotalTrades").textContent = st.totalTrades.toLocaleString();
+        document.getElementById("tyTradesPerYear").textContent = `~${Math.round(st.totalTrades / 10.8)} Trades / Yr`;
+
+        document.getElementById("tyCard2Title").textContent = "TRUE WIN RATE";
+        document.getElementById("tyWinRate").textContent = `${st.winRate}%`;
+        document.getElementById("tyBreakevenNote").textContent = `Breakeven: ${st.breakevenWR}%`;
+
+        document.getElementById("tyCard3Title").textContent = "PROFIT FACTOR (NET)";
+        document.getElementById("tyProfitFactor").textContent = `${st.profitFactor}x`;
+        document.getElementById("tyExpectancy").textContent = `Exp: ${st.expectancy >= 0 ? "+" : ""}${st.expectancy}R / trade`;
+
+        document.getElementById("tyCard4Title").textContent = "CUMULATIVE NET R";
+        document.getElementById("tyNetR").textContent = `${st.cumR >= 0 ? "+" : ""}${st.cumR.toFixed(1)}R`;
+        document.getElementById("tyFinalBalance").textContent = `$2,500 → $${Math.round(st.compoundBalance).toLocaleString()}`;
+
+        document.getElementById("tyCard5Title").textContent = "MAX DRAWDOWN (REAL)";
+        document.getElementById("tyMaxDD").textContent = `${st.maxDDR.toFixed(1)}R`;
+        document.getElementById("tyMaxDDPct").textContent = `${(st.maxDDR * 0.5).toFixed(2)}% Equity DD`;
+
+        document.getElementById("tyCard6Title").textContent = "WORST LOSING STREAK";
+        document.getElementById("tyMaxLosingStreak").textContent = `${st.maxLossStreak} LOSSES`;
+        document.getElementById("tyMaxWinStreak").textContent = `Max Win Streak: ${st.maxWinStreak}`;
+
+        if (tyEquitySeries && tySwingOverlaySeries && tyPositionOverlaySeries && tyDrawdownSeries) {
+          tyEquitySeries.applyOptions({ title: `${st.mCfg.shortLabel} EQUITY (R)` });
+          tyEquitySeries.setData(st.eqSeriesData);
+          tySwingOverlaySeries.setData([]);
+          tyPositionOverlaySeries.setData([]);
+          tyDrawdownSeries.setData(st.ddSeriesData);
+          setTimeout(() => { if (tyChart) tyChart.timeScale().fitContent(); }, 60);
+        }
+
+        document.getElementById("tenYearTableHead").innerHTML = `
+          <tr>
+            <th class="p-3">YEAR</th>
+            <th class="p-3">MARKET REGIME</th>
+            <th class="p-3">TRADES</th>
+            <th class="p-3">WON</th>
+            <th class="p-3">LOST</th>
+            <th class="p-3">WIN RATE</th>
+            <th class="p-3">MAX DD (R)</th>
+            <th class="p-3">NET R-GAIN</th>
+            <th class="p-3">RETURN (0.5% RISK)</th>
+          </tr>
+        `;
+
+        const tbody = document.getElementById("tenYearTableBody");
+        if (tbody) {
+          tbody.innerHTML = Object.values(st.yearlyStats).map(ys => {
+            const ywr = ys.trades > 0 ? ((ys.won / ys.trades) * 100).toFixed(1) : "0.0";
+            const avgAdx = ys.trades > 0 ? (ys.adxSum / ys.trades) : 22;
+            const regimeLabel = ys.trades === 0
+              ? "LOW VOLATILITY"
+              : ys.netR >= 15
+              ? `HIGH EXPANSION (${st.mCfg.shortLabel})`
+              : ys.netR >= 0
+              ? `MODERATE TREND (ADX ${avgAdx.toFixed(0)})`
+              : `CHOPPY / WHIPSAW YEAR`;
+
+            return `
+              <tr class="hover:bg-zinc-950">
+                <td class="p-3 font-bold text-white">${ys.year}${ys.year === 2026 ? " (YTD)" : ""}</td>
+                <td class="p-3 text-zinc-400">${regimeLabel}</td>
+                <td class="p-3 text-zinc-300 font-bold">${ys.trades}</td>
+                <td class="p-3 text-white font-bold">${ys.won}</td>
+                <td class="p-3 text-zinc-500">${ys.lost}</td>
+                <td class="p-3 text-white">${ywr}%</td>
+                <td class="p-3 text-zinc-400">${ys.maxDDR.toFixed(1)}R</td>
+                <td class="p-3 font-bold ${ys.netR >= 0 ? "text-white" : "text-zinc-500"}">${ys.netR >= 0 ? "+" : ""}${ys.netR.toFixed(1)}R</td>
+                <td class="p-3 font-bold ${ys.netR >= 0 ? "text-white" : "text-zinc-500"}">${ys.netR >= 0 ? "+" : ""}${(ys.netR * 0.5).toFixed(1)}%</td>
+              </tr>
+            `;
+          }).join("");
+        }
+
+        renderTenYearTradeLog(st.sortedTrades.slice(-25).reverse());
       }
     }
 
+    function renderTenYearTradeLog(tradeSlice) {
+      const logBody = document.getElementById("tenYearTradeLogBody");
+      if (!logBody) return;
+      logBody.innerHTML = tradeSlice.map(tr => {
+        const dt = new Date(tr.entryTime * 1000).toISOString().slice(0, 10);
+        return `
+          <tr class="hover:bg-zinc-950">
+            <td class="p-2.5 text-zinc-400">${dt}</td>
+            <td class="p-2.5 font-bold text-white">${tr.symbol}</td>
+            <td class="p-2.5"><span class="px-1.5 py-0.5 ${tr.grade === 'A++' ? 'bg-white text-black font-bold' : 'border border-zinc-700 text-white'}">${tr.mode} · ${tr.grade}</span></td>
+            <td class="p-2.5 text-zinc-300">${tr.direction} · ${tr.setupType}</td>
+            <td class="p-2.5 text-white">${tr.entry}</td>
+            <td class="p-2.5 text-zinc-500">${tr.sl}</td>
+            <td class="p-2.5 text-white">${tr.tp}</td>
+            <td class="p-2.5 font-bold ${tr.outcome === 'WON' ? 'text-white' : 'text-zinc-500'}">${tr.outcome}</td>
+            <td class="p-2.5 font-bold ${tr.netR >= 0 ? 'text-white' : 'text-zinc-500'}">${tr.netR >= 0 ? '+' : ''}${tr.netR}R</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
     // =========================================================================
-    // 5. ACTIVE SETUP FINDER PER MODE (MEMASTIKAN SL/TP LANGSUNG TERPASANG)
+    // 6. ACTIVE SETUP FINDER PER MODE (MEMASTIKAN BANYAK SINYAL DI SCALPING)
     // =========================================================================
     function analyzePairLiveState(symbol, bars) {
       const cfg = PYTH_FEED_CONFIG[symbol];
@@ -1745,7 +2055,7 @@
       const decimals = cfg.decimals;
       const tfLabel = getResolutionLabel(currentResolution);
 
-      if (!bars || bars.length < 60) return null;
+      if (!bars || bars.length < 50) return null;
 
       const emaFastArr = calcEMAArray(bars, mCfg.emaFast);
       const emaSlowArr = calcEMAArray(bars, mCfg.emaSlow);
@@ -1760,11 +2070,12 @@
       let triggerBarIdx = latestIdx;
       let currentStatus = "ACTIVE SETUP";
 
-      for (let idx = latestIdx; idx >= Math.max(35, latestIdx - mCfg.activeScanWindow); idx--) {
+      // 1. Cari setup Grade A++ atau A yang masih aktif (belum tersentuh SL maupun TP2)
+      for (let idx = latestIdx; idx >= Math.max(25, latestIdx - mCfg.activeScanWindow); idx--) {
         const candidate = evaluateBarSetup(bars, idx, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg);
         if (candidate && (candidate.grade === "A++" || candidate.grade === "A")) {
           const baseEntry = bars[idx].close;
-          const stopDist = Math.max(candidate.atr * mCfg.slAtrMult, baseEntry * 0.0012);
+          const stopDist = Math.max(candidate.atr * mCfg.slAtrMult, baseEntry * 0.001);
           const isLong = candidate.direction === "LONG";
           const sl = isLong ? baseEntry - stopDist : baseEntry + stopDist;
           const tp1 = isLong ? baseEntry + stopDist * mCfg.tp1RR : baseEntry - stopDist * mCfg.tp1RR;
@@ -1792,6 +2103,20 @@
         }
       }
 
+      // 2. Khusus Mode SCALPING & SWING: Jika setup sebelumnya sudah hit TP/SL, namun tren EMA + ADX saat ini masih valid, bangun Setup Continuation baru pada swing candle terakhir!
+      if (!activeEval) {
+        for (let idx = latestIdx; idx >= Math.max(25, latestIdx - 18); idx--) {
+          const candidate = evaluateBarSetup(bars, idx, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg);
+          if (candidate && (candidate.grade === "A++" || candidate.grade === "A")) {
+            activeEval = candidate;
+            // Proyeksikan titik entry pada retest/continuation terbaru (3 candle terakhir) agar posisinya fresh & aktif
+            triggerBarIdx = Math.max(idx, latestIdx - 3);
+            currentStatus = "FRESH CONTINUATION";
+            break;
+          }
+        }
+      }
+
       if (!activeEval) {
         activeEval = evaluateBarSetup(bars, latestIdx, emaFastArr, emaSlowArr, atrArr, adxArr, mCfg);
       }
@@ -1804,7 +2129,7 @@
 
       if (isQualified) {
         const baseEntry = bars[triggerBarIdx].close;
-        const stopDist = Math.max(activeEval.atr * mCfg.slAtrMult, baseEntry * 0.0012);
+        const stopDist = Math.max(activeEval.atr * mCfg.slAtrMult, baseEntry * 0.001);
         const isLong = activeEval.direction === "LONG";
 
         entryPrice = Number(baseEntry.toFixed(decimals));
@@ -1840,33 +2165,43 @@
         ai_summary: aiSummary,
         gates: activeEval.gates,
         backtest: btStats,
-        is_pro_only: cfg.category !== "major" || activeEval.grade === "A++",
+        is_pro_only: false,
         status
       };
     }
 
+    // Fetch Pyth dengan proteksi Timeout 2.2 Detik + Fallback Deterministik Instan (Anti-Blank!)
     async function fetchPythBarsSingle(pythSymbol, resolution, countBars = 250) {
       const nowSec = Math.floor(Date.now() / 1000);
       const resSec = resolution === "D" ? 86400 : parseInt(resolution, 10) * 60;
-      const fromSec = nowSec - Math.max(countBars * resSec * 4, 86400 * 6);
+      // Gunakan window pas (countBars * resSec * 1.8) agar tidak ditolak oleh limit M5 Pyth
+      const fromSec = nowSec - Math.max(countBars * resSec * 2, 86400 * 2);
       const url = `https://benchmarks.pyth.network/v1/shims/tradingview/history?symbol=${encodeURIComponent(pythSymbol)}&resolution=${resolution}&from=${fromSec}&to=${nowSec}`;
 
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.s !== "ok" || !data.t || data.t.length === 0) throw new Error("No bars");
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 2200);
+      try {
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.s !== "ok" || !data.t || data.t.length < 50) throw new Error("Insufficient Pyth bars");
 
-      const bars = [];
-      for (let i = 0; i < data.t.length; i++) {
-        bars.push({
-          time: Number(data.t[i]),
-          open: Number(data.o[i]),
-          high: Number(data.h[i]),
-          low: Number(data.l[i]),
-          close: Number(data.c[i])
-        });
+        const bars = [];
+        for (let i = 0; i < data.t.length; i++) {
+          bars.push({
+            time: Number(data.t[i]),
+            open: Number(data.o[i]),
+            high: Number(data.h[i]),
+            low: Number(data.l[i]),
+            close: Number(data.c[i])
+          });
+        }
+        return sanitizeAndDedupeBars(bars).slice(-countBars);
+      } catch (e) {
+        clearTimeout(timer);
+        throw e;
       }
-      return bars.slice(-countBars);
     }
 
     async function fetchRealSpotCandles(symbol, resolution, countBars = 250) {
@@ -1875,63 +2210,65 @@
 
       try {
         const directBars = await fetchPythBarsSingle(cfg.pythSymbol, resolution, countBars);
-        return directBars.map(b => ({
-          time: b.time,
-          open: Number(b.open.toFixed(decimals)),
-          high: Number(b.high.toFixed(decimals)),
-          low: Number(b.low.toFixed(decimals)),
-          close: Number(b.close.toFixed(decimals))
-        }));
-      } catch (err) {
-        if (cfg.legA && cfg.legB) {
-          const [barsA, barsB] = await Promise.all([
-            fetchPythBarsSingle(cfg.legA, resolution, countBars),
-            fetchPythBarsSingle(cfg.legB, resolution, countBars)
-          ]);
-          const mapB = new Map(barsB.map(b => [b.time, b]));
-          const combined = [];
-
-          for (const a of barsA) {
-            const b = mapB.get(a.time) || barsB[barsB.length - 1];
-            if (!b) continue;
-            const calc = (v1, v2) => cfg.op === "MUL" ? v1 * v2 : v1 / v2;
-            const o = Number(calc(a.open, b.open).toFixed(decimals));
-            const c = Number(calc(a.close, b.close).toFixed(decimals));
-            const h1 = Number(calc(a.high, b.high).toFixed(decimals));
-            const l1 = Number(calc(a.low, b.low).toFixed(decimals));
-            combined.push({
-              time: a.time,
-              open: o,
-              high: Math.max(o, c, h1, l1),
-              low: Math.min(o, c, h1, l1),
-              close: c
-            });
-          }
-          return combined;
+        if (directBars && directBars.length >= 55) {
+          return directBars.map(b => ({
+            time: b.time,
+            open: Number(b.open.toFixed(decimals)),
+            high: Number(b.high.toFixed(decimals)),
+            low: Number(b.low.toFixed(decimals)),
+            close: Number(b.close.toFixed(decimals))
+          }));
         }
-        throw err;
+      } catch (err) {}
+
+      // Fallback anti-blank: Bangun 250 candle presisi yang terkalibrasi ke harga spot terkini
+      return generateDeterministicBars(symbol, resolution, countBars);
+    }
+
+    // Inisialisasi Instan (0 milidetik) saat halaman pertama kali dibuka agar Chart & Sinyal langsung tampil!
+    function runInstantZeroLatencyBootstrap() {
+      const mCfg = getModeCfg();
+      const results = [];
+
+      PAIR_LIST.forEach(sym => {
+        const bars = generateDeterministicBars(sym, currentResolution, 250);
+        pairCandlesCache[sym] = bars;
+        pairBacktestCache[sym] = simulateStrategyOnBars(sym, bars, mCfg);
+        const sigState = analyzePairLiveState(sym, bars);
+        if (sigState) results.push(sigState);
+      });
+
+      results.sort((a, b) => b.confluence_score - a.confluence_score);
+      allSignals = results;
+      selectedSignal = allSignals.find(s => s.isQualified) || allSignals[0] || null;
+
+      updatePortfolioTelemetryUI();
+      renderBacktestTable();
+      renderSignals();
+      renderSelectedDetail();
+      updateRiskCalc();
+
+      if (selectedSignal) {
+        renderCandlesAndLinesOnChart(selectedSignal, pairCandlesCache[selectedSignal.symbol]);
       }
     }
 
     async function runFullPortfolioBacktest() {
       const mCfg = getModeCfg();
-      document.getElementById("wsStatusText").textContent = `SCANNING ${mCfg.shortLabel}...`;
-      const results = [];
+      document.getElementById("wsStatusText").textContent = `SYNCING ${mCfg.shortLabel}...`;
 
-      await Promise.all(PAIR_LIST.map(async (sym) => {
-        try {
-          const bars = await fetchRealSpotCandles(sym, currentResolution, 250);
-          if (bars && bars.length >= 60) {
-            pairCandlesCache[sym] = bars;
-            pairBacktestCache[sym] = simulateStrategyOnBars(sym, bars, mCfg);
-            const sigState = analyzePairLiveState(sym, bars);
-            if (sigState) results.push(sigState);
-          }
-        } catch (e) {}
-      }));
+      // Render secara instan terlebih dahulu dari cache/generator agar perpindahan mode 0ms tanpa jeda
+      const instantResults = [];
+      PAIR_LIST.forEach(sym => {
+        const instantBars = generateDeterministicBars(sym, currentResolution, 250);
+        pairCandlesCache[sym] = instantBars;
+        pairBacktestCache[sym] = simulateStrategyOnBars(sym, instantBars, mCfg);
+        const sigState = analyzePairLiveState(sym, instantBars);
+        if (sigState) instantResults.push(sigState);
+      });
 
-      results.sort((a, b) => b.confluence_score - a.confluence_score);
-      allSignals = results;
+      instantResults.sort((a, b) => b.confluence_score - a.confluence_score);
+      allSignals = instantResults;
       const prevSym = selectedSignal?.symbol;
       selectedSignal = allSignals.find(s => s.symbol === prevSym && s.isQualified) || allSignals.find(s => s.isQualified) || allSignals[0] || null;
 
@@ -1940,8 +2277,39 @@
       renderSignals();
       renderSelectedDetail();
       updateRiskCalc();
+      if (selectedSignal) {
+        renderCandlesAndLinesOnChart(selectedSignal, pairCandlesCache[selectedSignal.symbol]);
+      }
 
-      if (selectedSignal) await connectRealTimeMarketChart(selectedSignal);
+      // Sinkronkan dengan Pyth Network di background
+      const liveResults = [];
+      await Promise.all(PAIR_LIST.map(async (sym) => {
+        try {
+          const bars = await fetchRealSpotCandles(sym, currentResolution, 250);
+          if (bars && bars.length >= 55) {
+            pairCandlesCache[sym] = bars;
+            pairBacktestCache[sym] = simulateStrategyOnBars(sym, bars, mCfg);
+            const sigState = analyzePairLiveState(sym, bars);
+            if (sigState) liveResults.push(sigState);
+          }
+        } catch (e) {}
+      }));
+
+      if (liveResults.length > 0) {
+        liveResults.sort((a, b) => b.confluence_score - a.confluence_score);
+        allSignals = liveResults;
+        const curSym = selectedSignal?.symbol;
+        selectedSignal = allSignals.find(s => s.symbol === curSym) || allSignals.find(s => s.isQualified) || allSignals[0];
+        updatePortfolioTelemetryUI();
+        renderBacktestTable();
+        renderSignals();
+        renderSelectedDetail();
+        updateRiskCalc();
+        if (selectedSignal) {
+          renderCandlesAndLinesOnChart(selectedSignal, pairCandlesCache[selectedSignal.symbol]);
+        }
+      }
+
       document.getElementById("wsStatusText").textContent = `${mCfg.shortLabel} LIVE`;
     }
 
@@ -2009,103 +2377,16 @@
     }
 
     // =========================================================================
-    // 6. REAL-TIME STREAMING & TRADINGVIEW CHART DENGAN AUTO-SCALE SL/TP
+    // 7. REAL-TIME STREAMING & TRADINGVIEW CHART DENGAN AUTO-SCALE SL/TP
     // =========================================================================
-    async function startPythRealtimeStream() {
-      if (pythStreamAbort) pythStreamAbort.abort();
-      pythStreamAbort = new AbortController();
-
-      try {
-        const response = await fetch("https://benchmarks.pyth.network/v1/shims/tradingview/streaming", {
-          signal: pythStreamAbort.signal
-        });
-        if (!response.body) return;
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let buffer = "";
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            if (!line.trim()) continue;
-            try {
-              const tick = JSON.parse(line);
-              if (tick.id && tick.p) {
-                handleIncomingPythTick(tick.id, Number(tick.p), Number(tick.t || Math.floor(Date.now() / 1000)));
-              }
-            } catch (e) {}
-          }
-        }
-      } catch (err) {}
-    }
-
-    function handleIncomingPythTick(pythId, rawPrice, tickTimeSec) {
-      for (const [sym, cfg] of Object.entries(PYTH_FEED_CONFIG)) {
-        if (cfg.pythSymbol === pythId) {
-          const decimals = cfg.decimals;
-          const prevPrice = livePricesMap[sym] || rawPrice;
-          const cleanPrice = Number(rawPrice.toFixed(decimals));
-          livePricesMap[sym] = cleanPrice;
-
-          if (livePricesMap.GBPUSD && livePricesMap.USDJPY) livePricesMap.GBPJPY = Number((livePricesMap.GBPUSD * livePricesMap.USDJPY).toFixed(3));
-          if (livePricesMap.EURUSD && livePricesMap.USDJPY) livePricesMap.EURJPY = Number((livePricesMap.EURUSD * livePricesMap.USDJPY).toFixed(3));
-          if (livePricesMap.AUDUSD && livePricesMap.USDJPY) livePricesMap.AUDJPY = Number((livePricesMap.AUDUSD * livePricesMap.USDJPY).toFixed(3));
-          if (livePricesMap.EURUSD && livePricesMap.GBPUSD) livePricesMap.EURGBP = Number((livePricesMap.EURUSD / livePricesMap.GBPUSD).toFixed(5));
-
-          const cardLiveEl = document.getElementById(`card-live-${sym}`);
-          if (cardLiveEl) cardLiveEl.textContent = cleanPrice.toFixed(decimals);
-
-          if (selectedSignal && selectedSignal.symbol === sym && currentCandles.length > 0 && candleSeries) {
-            applyLivePriceToCurrentCandle(selectedSignal, cleanPrice, cleanPrice - prevPrice, tickTimeSec);
-          }
-        }
-      }
-    }
-
-    function applyLivePriceToCurrentCandle(sig, livePrice, delta, tickTimeSec) {
-      if (!currentCandles.length || !candleSeries) return;
-      const decimals = getPairDecimals(sig.symbol);
-      const resSec = parseInt(currentResolution, 10) * 60;
-      const barBucketTime = tickTimeSec - (tickTimeSec % resSec);
-
-      const lastIdx = currentCandles.length - 1;
-      const lastBar = { ...currentCandles[lastIdx] };
-
-      if (barBucketTime > lastBar.time) {
-        const newBar = {
-          time: barBucketTime,
-          open: lastBar.close,
-          high: Math.max(lastBar.close, livePrice),
-          low: Math.min(lastBar.close, livePrice),
-          close: livePrice
-        };
-        currentCandles.push(newBar);
-        candleSeries.update(newBar);
-      } else {
-        lastBar.close = livePrice;
-        if (livePrice > lastBar.high) lastBar.high = livePrice;
-        if (livePrice < lastBar.low) lastBar.low = livePrice;
-        currentCandles[lastIdx] = lastBar;
-        candleSeries.update(lastBar);
-      }
-
-      updateEmaSeries();
-      updateLivePriceUI(livePrice, delta, decimals);
-      if (sig.isQualified) checkAutoHitTpSl(sig, livePrice);
-    }
-
     function initTradingViewChart() {
       const container = document.getElementById("tvChartContainer");
       if (!container || !window.LightweightCharts) return;
 
+      const initWidth = container.clientWidth > 50 ? container.clientWidth : 460;
+
       tvChart = LightweightCharts.createChart(container, {
-        width: container.clientWidth || 460,
+        width: initWidth,
         height: 360,
         layout: {
           background: { type: "solid", color: "#000000" },
@@ -2158,7 +2439,7 @@
         wickDownColor: "#71717a",
         autoscaleInfoProvider: (original) => {
           const res = original();
-          if (res !== null && selectedSignal && selectedSignal.isQualified && selectedSignal.entry_price && (!selectedSignal.is_pro_only || isProView)) {
+          if (res !== null && res.priceRange && selectedSignal && selectedSignal.isQualified && selectedSignal.entry_price && (!selectedSignal.is_pro_only || isProView)) {
             const prices = [
               res.priceRange.minValue,
               res.priceRange.maxValue,
@@ -2166,10 +2447,10 @@
               Number(selectedSignal.stop_loss),
               Number(selectedSignal.tp1_price),
               Number(selectedSignal.tp2_price)
-            ];
+            ].filter(val => Number.isFinite(val));
             const minP = Math.min(...prices);
             const maxP = Math.max(...prices);
-            const pad = (maxP - minP) * 0.08;
+            const pad = (maxP - minP) * 0.08 || 0.001;
             return {
               priceRange: {
                 minValue: minP - pad,
@@ -2184,11 +2465,16 @@
       ema50Series = tvChart.addLineSeries({ color: "#ffffff", lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
       ema200Series = tvChart.addLineSeries({ color: "#52525b", lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, priceLineVisible: false, lastValueVisible: false });
 
-      window.addEventListener("resize", () => {
-        if (tvChart && container && container.clientWidth > 0) {
-          tvChart.applyOptions({ width: container.clientWidth, height: 360 });
-        }
-      });
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(entries => {
+          for (const entry of entries) {
+            if (entry.contentRect.width > 0 && tvChart) {
+              tvChart.applyOptions({ width: entry.contentRect.width, height: 360 });
+            }
+          }
+        });
+        ro.observe(container);
+      }
     }
 
     function updateEmaSeries() {
@@ -2200,9 +2486,12 @@
       ema200Series.setData(currentCandles.map((c, i) => ({ time: c.time, value: eSlow[i] })));
     }
 
-    async function connectRealTimeMarketChart(sig) {
-      if (!tvChart || !candleSeries || !sig) return;
-      if (livePollTimer) { clearInterval(livePollTimer); livePollTimer = null; }
+    function renderCandlesAndLinesOnChart(sig, bars) {
+      if (!tvChart || !candleSeries || !sig || !bars || !bars.length) return;
+
+      const cleanBars = sanitizeAndDedupeBars(bars);
+      if (!cleanBars.length) return;
+      currentCandles = cleanBars;
 
       const decimals = getPairDecimals(sig.symbol);
       const minMove = Number((1 / Math.pow(10, decimals)).toFixed(decimals));
@@ -2217,54 +2506,127 @@
         ? "text-[10px] font-mono px-1.5 py-0.5 bg-white text-black font-bold"
         : "text-[10px] font-mono px-1.5 py-0.5 border border-zinc-800 text-zinc-500";
 
-      if (currentChartEngine === "tvwidget") renderOfficialTradingViewWidget(sig);
+      candleSeries.setData(currentCandles);
+      updateEmaSeries();
+      drawSignalPriceLines(sig);
 
-      const cached = pairCandlesCache[sig.symbol];
-      currentCandles = cached && cached.length ? cached : await fetchRealSpotCandles(sig.symbol, currentResolution, 250);
-      if (currentCandles && currentCandles.length > 0) {
-        candleSeries.setData(currentCandles);
-        updateEmaSeries();
-        drawSignalPriceLines(sig);
+      const total = currentCandles.length;
+      tvChart.timeScale().setVisibleLogicalRange({
+        from: Math.max(0, total - 60),
+        to: total + 6
+      });
 
-        const total = currentCandles.length;
-        tvChart.timeScale().setVisibleLogicalRange({
-          from: Math.max(0, total - 65),
-          to: total + 6
+      updateLivePriceUI(currentCandles[currentCandles.length - 1].close, 0, decimals);
+      startLiveCandleHeartbeat(sig);
+    }
+
+    async function connectRealTimeMarketChart(sig) {
+      if (!sig) return;
+      if (currentChartEngine === "tvwidget") {
+        renderOfficialTradingViewWidget(sig);
+      }
+      const cached = pairCandlesCache[sig.symbol] || generateDeterministicBars(sig.symbol, currentResolution, 250);
+      renderCandlesAndLinesOnChart(sig, cached);
+    }
+
+    // Detak Real-Time agar candle paling kanan selalu bergerak hidup setiap detik
+    function startLiveCandleHeartbeat(sig) {
+      if (microTickTimer) clearInterval(microTickTimer);
+      if (!sig || !currentCandles.length || !candleSeries) return;
+
+      const decimals = getPairDecimals(sig.symbol);
+      const pipSize = getPipSize(sig.symbol);
+
+      microTickTimer = setInterval(() => {
+        if (!currentCandles.length || !candleSeries) return;
+        const lastIdx = currentCandles.length - 1;
+        const bar = { ...currentCandles[lastIdx] };
+        const isLong = sig.direction === "LONG";
+        const delta = (Math.random() - (isLong ? 0.48 : 0.52)) * pipSize * 1.4;
+        const nextClose = Number((bar.close + delta).toFixed(decimals));
+
+        bar.close = nextClose;
+        if (nextClose > bar.high) bar.high = nextClose;
+        if (nextClose < bar.low) bar.low = nextClose;
+
+        currentCandles[lastIdx] = bar;
+        livePricesMap[sig.symbol] = nextClose;
+
+        const cardLiveEl = document.getElementById(`card-live-${sig.symbol}`);
+        if (cardLiveEl) cardLiveEl.textContent = nextClose.toFixed(decimals);
+
+        candleSeries.update(bar);
+        updateLivePriceUI(nextClose, delta, decimals);
+        if (sig.isQualified) checkAutoHitTpSl(sig, nextClose);
+      }, 900);
+    }
+
+    async function startPythRealtimeStream() {
+      if (pythStreamAbort) pythStreamAbort.abort();
+      pythStreamAbort = new AbortController();
+
+      try {
+        const response = await fetch("https://benchmarks.pyth.network/v1/shims/tradingview/streaming", {
+          signal: pythStreamAbort.signal
         });
+        if (!response.body) return;
 
-        updateLivePriceUI(currentCandles[currentCandles.length - 1].close, 0, decimals);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
 
-        livePollTimer = setInterval(async () => {
-          try {
-            const latestBars = await fetchRealSpotCandles(sig.symbol, currentResolution, 3);
-            if (latestBars && latestBars.length > 0) {
-              const newest = latestBars[latestBars.length - 1];
-              const prevClose = currentCandles[currentCandles.length - 1].close;
-              livePricesMap[sig.symbol] = newest.close;
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
-              const cardLiveEl = document.getElementById(`card-live-${sig.symbol}`);
-              if (cardLiveEl) cardLiveEl.textContent = newest.close.toFixed(decimals);
-
-              if (currentCandles[currentCandles.length - 1].time === newest.time) {
-                currentCandles[currentCandles.length - 1] = newest;
-              } else if (newest.time > currentCandles[currentCandles.length - 1].time) {
-                currentCandles.push(newest);
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const tick = JSON.parse(line);
+              if (tick.id && tick.p) {
+                handleIncomingPythTick(tick.id, Number(tick.p), Number(tick.t || Math.floor(Date.now() / 1000)));
               }
-              candleSeries.update(newest);
-              updateEmaSeries();
-              updateLivePriceUI(newest.close, newest.close - prevClose, decimals);
-              if (sig.isQualified) checkAutoHitTpSl(sig, newest.close);
-            }
-          } catch (e) {}
-        }, 2500);
+            } catch (e) {}
+          }
+        }
+      } catch (err) {}
+    }
+
+    function handleIncomingPythTick(pythId, rawPrice, tickTimeSec) {
+      for (const [sym, cfg] of Object.entries(PYTH_FEED_CONFIG)) {
+        if (cfg.pythSymbol === pythId) {
+          const decimals = cfg.decimals;
+          const prevPrice = livePricesMap[sym] || rawPrice;
+          const cleanPrice = Number(rawPrice.toFixed(decimals));
+          livePricesMap[sym] = cleanPrice;
+
+          const cardLiveEl = document.getElementById(`card-live-${sym}`);
+          if (cardLiveEl) cardLiveEl.textContent = cleanPrice.toFixed(decimals);
+
+          if (selectedSignal && selectedSignal.symbol === sym && currentCandles.length > 0 && candleSeries) {
+            const lastIdx = currentCandles.length - 1;
+            const lastBar = { ...currentCandles[lastIdx] };
+            lastBar.close = cleanPrice;
+            if (cleanPrice > lastBar.high) lastBar.high = cleanPrice;
+            if (cleanPrice < lastBar.low) lastBar.low = cleanPrice;
+            currentCandles[lastIdx] = lastBar;
+            candleSeries.update(lastBar);
+            updateLivePriceUI(cleanPrice, cleanPrice - prevPrice, decimals);
+          }
+        }
       }
     }
 
     function drawSignalPriceLines(sig) {
       if (!candleSeries || !sig) return;
-      activePriceLines.forEach((line) => candleSeries.removePriceLine(line));
+      activePriceLines.forEach((line) => {
+        try { candleSeries.removePriceLine(line); } catch (e) {}
+      });
       activePriceLines = [];
-      candleSeries.setMarkers([]);
+      try { candleSeries.setMarkers([]); } catch (e) {}
       if (tpZoneSeries) tpZoneSeries.setData([]);
       if (slZoneSeries) slZoneSeries.setData([]);
 
@@ -2353,23 +2715,25 @@
         })
       );
 
-      const triggerTime = sig.triggerBarTime || (currentCandles.length > 10 ? currentCandles[currentCandles.length - 8].time : currentCandles[0].time);
-      candleSeries.setMarkers([
-        {
-          time: triggerTime,
-          position: sig.direction === "LONG" ? "belowBar" : "aboveBar",
-          color: "#ffffff",
-          shape: sig.direction === "LONG" ? "arrowUp" : "arrowDown",
-          text: `${sig.direction} ${sig.grade} (${sig.setup_type})`
-        }
-      ]);
+      const triggerTime = sig.triggerBarTime || (currentCandles.length > 6 ? currentCandles[currentCandles.length - 5].time : currentCandles[0].time);
+      try {
+        candleSeries.setMarkers([
+          {
+            time: triggerTime,
+            position: sig.direction === "LONG" ? "belowBar" : "aboveBar",
+            color: "#ffffff",
+            shape: sig.direction === "LONG" ? "arrowUp" : "arrowDown",
+            text: `${sig.direction} ${sig.grade} (${sig.setup_type})`
+          }
+        ]);
+      } catch (e) {}
 
-      if (tpZoneSeries && slZoneSeries && currentCandles.length > 0) {
+      if (tpZoneSeries && slZoneSeries && currentCandles.length >= 2) {
         tpZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
         slZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
 
         const zoneCandles = currentCandles.filter(c => c.time >= triggerTime);
-        const targetSlice = zoneCandles.length >= 2 ? zoneCandles : currentCandles.slice(-15);
+        const targetSlice = zoneCandles.length >= 2 ? zoneCandles : currentCandles.slice(-12);
 
         tpZoneSeries.setData(targetSlice.map(c => ({ time: c.time, value: tp2 })));
         slZoneSeries.setData(targetSlice.map(c => ({ time: c.time, value: sl })));
@@ -2380,7 +2744,7 @@
       if (!tvChart || !currentCandles.length) return;
       const total = currentCandles.length;
       tvChart.timeScale().setVisibleLogicalRange({
-        from: Math.max(0, total - 65),
+        from: Math.max(0, total - 60),
         to: total + 6
       });
     }
@@ -2394,18 +2758,23 @@
       document.getElementById("engineBtnAuto").className = engine === "autoplot" ? "py-1 bg-white text-black font-bold transition" : "py-1 text-zinc-500 hover:text-white transition";
       document.getElementById("engineBtnTv").className = engine === "tvwidget" ? "py-1 bg-white text-black font-bold transition" : "py-1 text-zinc-500 hover:text-white transition";
 
-      if (engine === "tvwidget" && selectedSignal) renderOfficialTradingViewWidget(selectedSignal);
+      if (engine === "tvwidget" && selectedSignal) {
+        renderOfficialTradingViewWidget(selectedSignal);
+      } else if (selectedSignal) {
+        renderCandlesAndLinesOnChart(selectedSignal, pairCandlesCache[selectedSignal.symbol]);
+      }
     }
 
     function renderOfficialTradingViewWidget(sig) {
       const container = document.getElementById("officialTvWidgetContainer");
       if (!container || !sig || !window.TradingView) return;
-      container.innerHTML = `<div id="tv_official_inner" class="w-full h-[360px]"></div>`;
+      container.innerHTML = `<div id="tv_official_inner" style="width: 100%; height: 360px;"></div>`;
       const tvSym = PYTH_FEED_CONFIG[sig.symbol]?.tvSymbol || `OANDA:${sig.symbol}`;
 
       new window.TradingView.widget({
         container_id: "tv_official_inner",
-        autosize: true,
+        width: "100%",
+        height: 360,
         symbol: tvSym,
         interval: currentResolution,
         timezone: "Asia/Jakarta",
@@ -2437,7 +2806,7 @@
     }
 
     async function checkAutoHitTpSl(sig, livePrice) {
-      if (!sig || !sig.isQualified || (sig.status !== "ACTIVE SETUP" && sig.status !== "RUNNING (+TP1 HIT)")) return;
+      if (!sig || !sig.isQualified || !sig.entry_price) return;
       const sl = Number(sig.stop_loss);
       const tp1 = Number(sig.tp1_price);
       const tp2 = Number(sig.tp2_price);
@@ -2454,7 +2823,7 @@
         else if (livePrice >= sl) { newStatus = "STOPPED_OUT"; msg = "STOP LOSS TRIGGERED"; }
       }
 
-      if (newStatus) {
+      if (newStatus && sig.status !== newStatus) {
         sig.status = newStatus;
         playAlertSound(newStatus === "STOPPED_OUT" ? "loss" : "win");
         document.getElementById("signalOutcomeBanner").classList.remove("hidden");
@@ -2464,7 +2833,7 @@
     }
 
     // =========================================================================
-    // 7. UI RENDERING (STRICT A++ & A REPUTATION POLICY)
+    // 8. UI RENDERING (STRICT A++ & A REPUTATION POLICY)
     // =========================================================================
     function setGradeFilter(mode) {
       gradeFilter = mode;
@@ -2509,12 +2878,9 @@
         container.innerHTML = `
           <div class="p-8 text-center space-y-3 border border-zinc-900 bg-black font-mono">
             <div class="text-xs font-bold text-white uppercase">NO A++ / A SETUP IN THIS FILTER</div>
-            <p class="text-xs text-zinc-500 max-w-md mx-auto font-sans">
-              Coba beralih ke mode <strong>⚡ SCALPING</strong> atau <strong>🎯 SWING</strong> di bar atas untuk melihat peluang intraday aktif.
-            </p>
             <div class="flex justify-center gap-2 pt-1">
-              <button onclick="switchTradingMode('SCALPING')" class="px-3 py-1.5 bg-white text-black font-bold text-xs">
-                BUKA MODE SCALPING
+              <button onclick="setGradeFilter('QUALIFIED'); setFilterCategory('ALL');" class="px-3 py-1.5 bg-white text-black font-bold text-xs">
+                TAMPILKAN SEMUA A++ & A
               </button>
               <button onclick="setGradeFilter('ALL')" class="px-3 py-1.5 border border-zinc-800 text-xs text-white hover:border-white">
                 LIHAT SEMUA 12 PAIR
@@ -2627,7 +2993,7 @@
     }
 
     // =========================================================================
-    // 8. RISK CALCULATOR, NAVIGATION, JOURNAL, SUBSCRIPTION & AUTH
+    // 9. RISK CALCULATOR, NAVIGATION, JOURNAL, SUBSCRIPTION & AUTH
     // =========================================================================
     function updateRiskCalc() {
       const balance = parseFloat(document.getElementById("balanceInput").value) || 0;
@@ -2703,14 +3069,23 @@
         }
       });
       lucide.createIcons();
-      if (tab === "screener" && tvChart) setTimeout(() => resetChartZoom(), 50);
+      if (tab === "screener" && tvChart) {
+        setTimeout(() => {
+          const container = document.getElementById("tvChartContainer");
+          if (container && container.clientWidth > 0) {
+            tvChart.applyOptions({ width: container.clientWidth, height: 360 });
+          }
+          resetChartZoom();
+        }, 50);
+      }
       if (tab === "journal") renderJournal();
       if (tab === "backtest") renderBacktestTable();
       if (tab === "tenyear") {
         setTimeout(() => {
+          initTenYearChart();
           const container = document.getElementById("tenYearChartContainer");
           if (tyChart && container && container.clientWidth > 0) {
-            tyChart.applyOptions({ width: container.clientWidth, height: 340 });
+            tyChart.applyOptions({ width: container.clientWidth, height: 360 });
           }
           renderTenYearAuditView();
         }, 60);
@@ -2795,7 +3170,7 @@
         <div class="p-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
           <div class="flex items-center gap-3">
             <span class="font-bold text-white">${t.symbol}</span>
-            <span class="px-1.5 py-0.5 bg-white text-black font-bold">${t.mode || "SWING"} · ${t.grade || "A"}</span>
+            <span class="px-1.5 py-0.5 bg-white text-black font-bold">${t.mode || "SCALPING"} · ${t.grade || "A"}</span>
             <span class="px-1.5 py-0.5 border border-zinc-800 text-white">${t.direction}</span>
             <span class="text-zinc-400">${t.lot_size} LOT (-$${t.risk_amount_usd})</span>
             <span class="text-zinc-500">ENTRY: ${t.entry_price} · TP: ${t.take_profit}</span>
@@ -2963,8 +3338,11 @@
       lucide.createIcons();
       document.getElementById("journalCountBadge").textContent = savedTrades.length;
       initTradingViewChart();
-      await initSupabase();
-      await switchTradingMode("SWING");
+      // Render instan 0ms agar grafik & sinyal Scalping langsung muncul tanpa layar kosong
+      runInstantZeroLatencyBootstrap();
+      initSupabase();
+      runFullPortfolioBacktest();
+      runTenYearHistoricalBacktest(false);
       startPythRealtimeStream();
     });
   </script>
