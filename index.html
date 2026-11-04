@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwingPulse — Institutional Monochrome Quant Terminal</title>
+  <title>SwingPulse — Quantitative Forex Terminal</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -44,395 +44,376 @@
       --bg-pitch: #000000;
       --fg-pure: #ffffff;
       --fg-muted: #71717a;
-      --border-hairline: #18181b;
     }
     body {
       background-color: var(--bg-pitch);
       color: var(--fg-pure);
       overflow-x: hidden;
-      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
     .num-lock {
       font-variant-numeric: tabular-nums;
     }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #000000; }
-    ::-webkit-scrollbar-thumb { background: #27272a; }
+    ::-webkit-scrollbar-thumb { background: #18181b; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #71717a; }
     
+    /* Penyesuaian Lembut untuk Kartu & Tombol agar Tidak Menyilaukan Mata */
     .signal-card {
-      transition: border-color 0.12s ease, transform 0.1s ease;
+      border-radius: 6px;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
     }
     .tactile-btn {
-      transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease, transform 0.08s ease;
+      border-radius: 4px;
+      transition: all 0.14s ease;
     }
     .tactile-btn:active {
       transform: translateY(1px);
     }
   </style>
 </head>
-<body class="min-h-screen bg-black text-white antialiased selection:bg-white selection:text-black">
+<body class="min-h-screen bg-black text-white selection:bg-white selection:text-black">
 
-  <!-- TOP COMMAND BAR (STRICT SOLID BLACK) -->
+  <!-- UNIFIED TOP NAVBAR (LEBIH RINGKAS & TIDAK MEMAKAN LAYAR) -->
   <header class="border-b border-zinc-900 bg-black sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
       
-      <div class="flex items-center gap-5">
-        <div class="flex items-center gap-2.5 cursor-pointer group" onclick="switchMainTab('screener')">
-          <div class="w-7 h-7 bg-white text-black flex items-center justify-center font-bold group-hover:bg-zinc-200 transition">
-            <i data-lucide="terminal" class="w-4 h-4"></i>
+      <!-- Brand & Primary Tabs -->
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="switchMainTab('screener')">
+          <div class="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-bold">
+            <i data-lucide="activity" class="w-4 h-4"></i>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold tracking-tight text-sm sm:text-base text-white font-mono">SWINGPULSE</span>
-            <span class="hidden xl:inline-block text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 border border-zinc-800 text-zinc-400">
-              OS v6.5
-            </span>
+          <div>
+            <span class="font-bold tracking-tight text-sm sm:text-base text-white block leading-none">SwingPulse</span>
+            <span class="text-[11px] text-zinc-500 font-mono block mt-0.5">Quant Screener</span>
           </div>
         </div>
 
-        <!-- Primary Desktop Navigation -->
-        <nav class="hidden md:flex items-center gap-1 bg-black p-1 border border-zinc-900 text-[11px] font-mono">
-          <button onclick="switchMainTab('screener')" id="nav-screener" class="tactile-btn px-2.5 py-1 bg-white text-black font-bold">
-            01. SCREENER
+        <!-- Navigation Menu (Menggunakan Font Sans yang Nyaman Dibaca) -->
+        <nav class="hidden md:flex items-center gap-1.5 text-xs font-medium">
+          <button onclick="switchMainTab('screener')" id="nav-screener" class="tactile-btn px-3 py-1.5 bg-white text-black font-semibold">
+            Screener
           </button>
-          <button onclick="switchMainTab('backtest')" id="nav-backtest" class="tactile-btn px-2.5 py-1 text-zinc-500 hover:text-white">
-            02. 250-BAR AUDIT
+          <button onclick="switchMainTab('backtest')" id="nav-backtest" class="tactile-btn px-3 py-1.5 text-zinc-400 hover:text-white">
+            Audit 250-Bar
           </button>
-          <button onclick="switchMainTab('tenyear')" id="nav-tenyear" class="tactile-btn px-2.5 py-1 text-zinc-500 hover:text-white">
-            03. 10Y PERFORMANCE
+          <button onclick="switchMainTab('tenyear')" id="nav-tenyear" class="tactile-btn px-3 py-1.5 text-zinc-400 hover:text-white">
+            Performa 10 Tahun
           </button>
-          <button onclick="switchMainTab('journal')" id="nav-journal" class="tactile-btn px-2.5 py-1 text-zinc-500 hover:text-white flex items-center gap-1.5">
-            <span>04. JOURNAL</span>
-            <span id="journalCountBadge" class="num-lock text-[10px] px-1 border border-zinc-800 text-zinc-400">0</span>
+          <button onclick="switchMainTab('journal')" id="nav-journal" class="tactile-btn px-3 py-1.5 text-zinc-400 hover:text-white flex items-center gap-1.5">
+            <span>Jurnal</span>
+            <span id="journalCountBadge" class="num-lock text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-300">0</span>
           </button>
-          <button onclick="switchMainTab('pricing')" id="nav-pricing" class="tactile-btn px-2.5 py-1 text-zinc-500 hover:text-white">
-            05. PRO ACCESS
+          <button onclick="switchMainTab('pricing')" id="nav-pricing" class="tactile-btn px-3 py-1.5 text-zinc-400 hover:text-white">
+            Paket Pro
           </button>
         </nav>
       </div>
 
-      <!-- Right System Telemetry & Auth -->
-      <div class="flex items-center gap-2">
-        <button onclick="toggleSoundAlert()" id="soundBtn" class="tactile-btn p-1.5 border border-zinc-800 bg-black hover:border-white text-white" title="Notifikasi Suara Hit TP/SL">
-          <i data-lucide="volume-2" id="soundIcon" class="w-3.5 h-3.5"></i>
+      <!-- Right Controls -->
+      <div class="flex items-center gap-2.5">
+        <button onclick="toggleSoundAlert()" id="soundBtn" class="tactile-btn p-2 border border-zinc-900 bg-black hover:border-zinc-700 text-zinc-300" title="Suara Notifikasi">
+          <i data-lucide="volume-2" id="soundIcon" class="w-4 h-4"></i>
         </button>
 
-        <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 text-[11px] font-mono border border-zinc-800 bg-black text-zinc-400">
-          <span id="wsStatusDot" class="w-1.5 h-1.5 bg-white animate-pulse"></span>
-          <span id="wsStatusText" class="hidden lg:inline num-lock">LIVE STREAM</span>
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono border border-zinc-900 bg-black text-zinc-400">
+          <span id="wsStatusDot" class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+          <span id="wsStatusText" class="hidden lg:inline num-lock text-[11px]">LIVE</span>
         </div>
 
-        <button onclick="toggleProMode()" id="tierToggleBtn" class="tactile-btn flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-bold border border-white bg-white text-black">
-          <i data-lucide="unlock" id="tierIcon" class="w-3 h-3"></i>
+        <button onclick="toggleProMode()" id="tierToggleBtn" class="tactile-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-white bg-white text-black">
+          <i data-lucide="unlock" id="tierIcon" class="w-3.5 h-3.5"></i>
           <span id="tierText">PRO TIER</span>
         </button>
 
         <div id="authGuestArea">
-          <button onclick="openAuthModal('login')" class="tactile-btn px-3 py-1 text-[11px] font-mono border border-zinc-800 bg-black text-white hover:border-white">
-            LOGIN
+          <button onclick="openAuthModal('login')" class="tactile-btn px-3.5 py-1.5 text-xs font-medium border border-zinc-800 bg-black text-white hover:border-zinc-600">
+            Masuk
           </button>
         </div>
 
         <div id="authUserArea" class="hidden items-center gap-2">
-          <span id="navUserName" class="hidden sm:inline text-xs font-mono text-white">TRADER</span>
-          <button onclick="handleLogout()" class="tactile-btn p-1.5 border border-zinc-800 bg-black hover:border-white text-zinc-400 hover:text-white" title="Logout">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span id="navUserName" class="hidden sm:inline text-xs font-medium text-white">Trader</span>
+          <button onclick="handleLogout()" class="tactile-btn p-2 border border-zinc-900 bg-black hover:border-zinc-700 text-zinc-400 hover:text-white" title="Keluar">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Mobile Navigation Bar -->
-    <div class="flex md:hidden border-t border-zinc-900 bg-black px-2 py-1.5 justify-around text-[10px] font-mono overflow-x-auto">
-      <button onclick="switchMainTab('screener')" id="mnav-screener" class="py-1 px-1.5 text-white font-bold">01.SCREENER</button>
-      <button onclick="switchMainTab('backtest')" id="mnav-backtest" class="py-1 px-1.5 text-zinc-500">02.250-BAR</button>
-      <button onclick="switchMainTab('tenyear')" id="mnav-tenyear" class="py-1 px-1.5 text-zinc-500">03.10Y-DATA</button>
-      <button onclick="switchMainTab('journal')" id="mnav-journal" class="py-1 px-1.5 text-zinc-500">04.JOURNAL</button>
-      <button onclick="switchMainTab('pricing')" id="mnav-pricing" class="py-1 px-1.5 text-zinc-500">05.PRO</button>
+    <!-- Mobile Navigation -->
+    <div class="flex md:hidden border-t border-zinc-900 bg-black px-3 py-2 justify-around text-xs font-medium overflow-x-auto">
+      <button onclick="switchMainTab('screener')" id="mnav-screener" class="py-1 px-2 text-white font-semibold">Screener</button>
+      <button onclick="switchMainTab('backtest')" id="mnav-backtest" class="py-1 px-2 text-zinc-500">Audit 250-Bar</button>
+      <button onclick="switchMainTab('tenyear')" id="mnav-tenyear" class="py-1 px-2 text-zinc-500">10 Tahun</button>
+      <button onclick="switchMainTab('journal')" id="mnav-journal" class="py-1 px-2 text-zinc-500">Jurnal</button>
+      <button onclick="switchMainTab('pricing')" id="mnav-pricing" class="py-1 px-2 text-zinc-500">Pro</button>
     </div>
   </header>
-
-  <!-- GLOBAL TRADING MODE SWITCHER BAR (STICKY BELOW HEADER) -->
-  <div class="bg-black border-b border-zinc-800 sticky top-14 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3 font-mono">
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="text-[10px] uppercase text-zinc-500">ENGINE MODE:</span>
-        <div class="flex gap-1 border border-zinc-800 p-0.5 bg-black text-[11px]">
-          <button onclick="switchTradingMode('SCALPING')" id="modeBtn-SCALPING" class="tactile-btn px-3 py-1 bg-white text-black font-bold">
-            ⚡ SCALPING (M5/M15)
-          </button>
-          <button onclick="switchTradingMode('SWING')" id="modeBtn-SWING" class="tactile-btn px-3 py-1 text-zinc-400 hover:text-white">
-            🎯 SWING (M15/H1)
-          </button>
-          <button onclick="switchTradingMode('POSITION')" id="modeBtn-POSITION" class="tactile-btn px-3 py-1 text-zinc-400 hover:text-white">
-            🏛️ POSITION (H4/D1)
-          </button>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-4 text-[11px] num-lock">
-        <span id="modeRuleSummary" class="hidden lg:inline text-zinc-400">EMA 20/50 · 4-Trigger Micro Setup · SL 1.0x ATR · TP 1.6R & 2.5R</span>
-        <span id="activeGradeSummary" class="text-white font-bold">READY</span>
-        <span id="tickCounterBadge" class="text-zinc-500">TICKS: <strong class="text-white">0</strong></span>
-      </div>
-    </div>
-  </div>
 
   <!-- ======================================================================= -->
   <!-- VIEW 1: LIVE QUANT SCREENER                                             -->
   <!-- ======================================================================= -->
-  <main id="view-screener" class="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+  <main id="view-screener" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
     
-    <!-- Top Telemetry Strip -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 border border-zinc-900 bg-black divide-y sm:divide-y-0 sm:divide-x divide-zinc-900 font-mono num-lock">
-      <div class="p-3.5">
-        <span id="metricWinRateTitle" class="text-[10px] uppercase text-zinc-500 block">SCALPING 250-BAR WIN RATE</span>
-        <span id="metricWinRate" class="text-lg sm:text-xl font-bold text-white mt-0.5 block">--%</span>
-        <span id="metricSampleSize" class="text-[10px] text-zinc-500 block mt-0.5">Breakeven Threshold: 38.0%</span>
+    <!-- Baris Pemilihan Mode Gaya Trading (Lebih Bersih & Lega) -->
+    <div class="p-4 rounded-md border border-zinc-900 bg-black flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="text-xs font-medium text-zinc-400">Mode Strategi:</span>
+        <div class="flex flex-wrap gap-1.5 p-1 rounded border border-zinc-900 bg-black text-xs font-medium">
+          <button onclick="switchTradingMode('SCALPING')" id="modeBtn-SCALPING" class="tactile-btn px-3.5 py-1.5 bg-white text-black font-semibold">
+            ⚡ Scalping (M5/M15)
+          </button>
+          <button onclick="switchTradingMode('SWING')" id="modeBtn-SWING" class="tactile-btn px-3.5 py-1.5 text-zinc-400 hover:text-white">
+            🎯 Swing (M15/H1)
+          </button>
+          <button onclick="switchTradingMode('POSITION')" id="modeBtn-POSITION" class="tactile-btn px-3.5 py-1.5 text-zinc-400 hover:text-white">
+            🏛️ Position (H4/D1)
+          </button>
+        </div>
       </div>
-      <div class="p-3.5">
-        <span class="text-[10px] uppercase text-zinc-500 block">REAL PROFIT FACTOR (NET)</span>
-        <span id="metricProfitFactor" class="text-lg sm:text-xl font-bold text-white mt-0.5 block">--</span>
-        <span id="textSpreadNote" class="text-[10px] text-zinc-500 block mt-0.5">Includes 0.12R Spread Friction</span>
-      </div>
-      <div class="p-3.5">
-        <span class="text-[10px] uppercase text-zinc-500 block">QUALIFIED A++ / A SETUPS</span>
-        <span id="metricActiveCount" class="text-lg sm:text-xl font-bold text-white mt-0.5 block">-- / 12 PAIRS</span>
-        <span id="metricModeFreqNote" class="text-[10px] text-zinc-500 block mt-0.5">Auto-Plotted on Chart</span>
-      </div>
-      <div class="p-3.5 cursor-pointer hover:bg-zinc-950 transition" onclick="openTenYearOverlayDirectly()">
-        <span id="metric10YTitle" class="text-[10px] uppercase text-zinc-500 block">10Y OVERLAY AUDIT (3 MODES) →</span>
-        <span id="metricTenYearCagr" class="text-lg sm:text-xl font-bold text-white mt-0.5 block">COMPARE 3 CURVES</span>
-        <span id="metric10YTradesCount" class="text-[10px] text-zinc-400 underline block mt-0.5">Buka perbandingan kurva 10 tahun</span>
+
+      <div class="flex items-center gap-4 text-xs font-mono num-lock text-zinc-400">
+        <span id="modeRuleSummary" class="hidden xl:inline text-zinc-500">EMA 20/50 · SL 1.0x ATR · TP 1.6R & 2.5R</span>
+        <span id="activeGradeSummary" class="text-white font-semibold">Memindai...</span>
+        <span id="tickCounterBadge" class="text-zinc-500">Ticks: <strong class="text-white">0</strong></span>
       </div>
     </div>
 
-    <!-- Main Screener Split Layout: Left Scrollable Feed (7 Cols) + Right Sticky Terminal (5 Cols) -->
+    <!-- 4 Kartu Ringkasan Performa (Dengan Ruang Napas Lega) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 num-lock">
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span id="metricWinRateTitle" class="text-xs text-zinc-500 block">Win Rate (250 Candle)</span>
+        <span id="metricWinRate" class="text-xl font-bold font-mono text-white mt-1 block">--%</span>
+        <span id="metricSampleSize" class="text-[11px] text-zinc-500 block mt-1">Batas Impas: 38.0%</span>
+      </div>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block">Profit Factor Bersih</span>
+        <span id="metricProfitFactor" class="text-xl font-bold font-mono text-white mt-1 block">--</span>
+        <span id="textSpreadNote" class="text-[11px] text-zinc-500 block mt-1">Termasuk potongan spread</span>
+      </div>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block">Sinyal Layak Eksekusi</span>
+        <span id="metricActiveCount" class="text-xl font-bold font-mono text-white mt-1 block">-- / 12 Pair</span>
+        <span id="metricModeFreqNote" class="text-[11px] text-zinc-500 block mt-1">Hanya Grade A++ & A</span>
+      </div>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black cursor-pointer hover:border-zinc-700 transition" onclick="openTenYearOverlayDirectly()">
+        <span id="metric10YTitle" class="text-xs text-zinc-400 block">Audit 10 Tahun (2016–2026) →</span>
+        <span id="metricTenYearCagr" class="text-xl font-bold font-mono text-white mt-1 block">Lihat Grafik</span>
+        <span id="metric10YTradesCount" class="text-[11px] text-zinc-500 block mt-1">Bandingkan 3 kurva strategi</span>
+      </div>
+    </div>
+
+    <!-- Layout Utama: Daftar Sinyal di Kiri (7 Kolom) & Terminal Chart di Kanan (5 Kolom) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       
-      <!-- LEFT COLUMN (7 COLS): STRICT FILTER & SIGNAL LIST -->
-      <div class="lg:col-span-7 space-y-3.5">
+      <!-- KOLOM KIRI (7 KOLOM): FILTER & KARTU SINYAL -->
+      <div class="lg:col-span-7 space-y-4">
         
-        <!-- Filter Control Box -->
-        <div class="p-3.5 border border-zinc-900 bg-black space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-900 pb-3">
+        <!-- Bar Filter Kualitas & Timeframe -->
+        <div class="p-4 rounded-md border border-zinc-900 bg-black space-y-3.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div id="screenerModeHeader" class="text-xs font-bold uppercase tracking-wider text-white font-mono">
-                ⚡ SCALPING MODE — HIGH-FREQUENCY A++ & A SETUPS
-              </div>
-              <p id="screenerModeSub" class="text-[11px] text-zinc-500 mt-0.5">
-                Klik kartu sinyal untuk mengunci fokus grafik dan menyalin parameter Entry, SL, dan TP.
+              <h2 id="screenerModeHeader" class="text-sm font-semibold text-white">
+                Daftar Sinyal Terverifikasi (Grade A++ & A)
+              </h2>
+              <p id="screenerModeSub" class="text-xs text-zinc-500 mt-0.5">
+                Klik kartu sinyal untuk menampilkan titik Entry, Stop Loss, dan Take Profit di grafik kanan.
               </p>
             </div>
-            <div class="flex gap-1 border border-zinc-800 p-0.5 bg-black text-[10px] font-mono shrink-0">
-              <button onclick="setGradeFilter('QUALIFIED')" id="gradeBtnQualified" class="tactile-btn px-2.5 py-1 bg-white text-black font-bold">
+
+            <div class="flex gap-1 p-1 rounded border border-zinc-900 bg-black text-xs font-medium shrink-0">
+              <button onclick="setGradeFilter('QUALIFIED')" id="gradeBtnQualified" class="tactile-btn px-3 py-1 bg-white text-black font-semibold">
                 A++ & A
               </button>
-              <button onclick="setGradeFilter('A_PLUS_PLUS')" id="gradeBtnApp" class="tactile-btn px-2.5 py-1 text-zinc-500 hover:text-white">
-                A++ ONLY
+              <button onclick="setGradeFilter('A_PLUS_PLUS')" id="gradeBtnApp" class="tactile-btn px-3 py-1 text-zinc-400 hover:text-white">
+                Hanya A++
               </button>
-              <button onclick="setGradeFilter('ALL')" id="gradeBtnAll" class="tactile-btn px-2.5 py-1 text-zinc-500 hover:text-white">
-                ALL 12
+              <button onclick="setGradeFilter('ALL')" id="gradeBtnAll" class="tactile-btn px-3 py-1 text-zinc-400 hover:text-white">
+                Semua (12)
               </button>
             </div>
           </div>
 
-          <!-- Category & Timeframe Selector -->
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap gap-1 text-[10px] font-mono">
-              <button onclick="setFilterCategory('ALL')" data-cat="ALL" class="cat-btn tactile-btn px-2.5 py-1 bg-white text-black font-bold">ALL (12)</button>
-              <button onclick="setFilterCategory('major')" data-cat="major" class="cat-btn tactile-btn px-2.5 py-1 border border-zinc-900 text-zinc-400 hover:text-white">MAJOR</button>
-              <button onclick="setFilterCategory('cross')" data-cat="cross" class="cat-btn tactile-btn px-2.5 py-1 border border-zinc-900 text-zinc-400 hover:text-white">CROSS</button>
-              <button onclick="setFilterCategory('commodity')" data-cat="commodity" class="cat-btn tactile-btn px-2.5 py-1 border border-zinc-900 text-zinc-400 hover:text-white">XAU (GOLD)</button>
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-900/80">
+            <div class="flex flex-wrap gap-1.5 text-xs font-medium">
+              <button onclick="setFilterCategory('ALL')" data-cat="ALL" class="cat-btn tactile-btn px-3 py-1 bg-white text-black font-semibold">Semua</button>
+              <button onclick="setFilterCategory('major')" data-cat="major" class="cat-btn tactile-btn px-3 py-1 border border-zinc-900 text-zinc-400 hover:text-white">Major</button>
+              <button onclick="setFilterCategory('cross')" data-cat="cross" class="cat-btn tactile-btn px-3 py-1 border border-zinc-900 text-zinc-400 hover:text-white">Cross JPY</button>
+              <button onclick="setFilterCategory('commodity')" data-cat="commodity" class="cat-btn tactile-btn px-3 py-1 border border-zinc-900 text-zinc-400 hover:text-white">Gold (XAU)</button>
             </div>
 
-            <div class="flex items-center gap-1.5 font-mono">
-              <span class="text-[10px] text-zinc-500">TF:</span>
-              <div class="flex gap-1 border border-zinc-900 p-0.5 bg-black text-[10px]">
-                <button onclick="changeScanTimeframe('5')" id="scanTf-5" class="tactile-btn px-2 py-0.5 bg-white text-black font-bold">M5</button>
-                <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="tactile-btn px-2 py-0.5 text-zinc-500 hover:text-white">M15</button>
-                <button onclick="changeScanTimeframe('60')" id="scanTf-60" class="tactile-btn px-2 py-0.5 text-zinc-500 hover:text-white">H1</button>
-                <button onclick="changeScanTimeframe('240')" id="scanTf-240" class="tactile-btn px-2 py-0.5 text-zinc-500 hover:text-white">H4</button>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="text-zinc-500">Timeframe:</span>
+              <div class="flex gap-1 p-0.5 rounded border border-zinc-900 bg-black font-mono text-[11px]">
+                <button onclick="changeScanTimeframe('5')" id="scanTf-5" class="tactile-btn px-2.5 py-1 bg-white text-black font-bold">M5</button>
+                <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="tactile-btn px-2.5 py-1 text-zinc-400 hover:text-white">M15</button>
+                <button onclick="changeScanTimeframe('60')" id="scanTf-60" class="tactile-btn px-2.5 py-1 text-zinc-400 hover:text-white">H1</button>
+                <button onclick="changeScanTimeframe('240')" id="scanTf-240" class="tactile-btn px-2.5 py-1 text-zinc-400 hover:text-white">H4</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Signal Cards Container -->
-        <div id="signalsContainer" class="space-y-2.5"></div>
+        <!-- Daftar Kartu Sinyal (Dirender dengan Nyaman oleh app2.js) -->
+        <div id="signalsContainer" class="space-y-3"></div>
       </div>
 
-      <!-- RIGHT COLUMN (5 COLS): STICKY CHART, SL/TP HUD, 5-GATE AUDIT & LOT SIZING -->
-      <div class="lg:col-span-5 lg:sticky lg:top-28 space-y-4">
+      <!-- KOLOM KANAN (5 KOLOM): PANEL GRAFIK STICKY YANG BERSIH & LEGA -->
+      <div class="lg:col-span-5 lg:sticky lg:top-20 space-y-5">
         
-        <!-- Real-Time Chart Terminal Box -->
-        <div class="p-4 border border-white bg-black space-y-3">
+        <!-- Modul Grafik TradingView -->
+        <div class="p-5 rounded-md border border-zinc-800 bg-black space-y-4">
           
-          <!-- Chart Header & Copy Setup Action -->
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 bg-white inline-block animate-pulse"></span>
-              <span id="chartTitle" class="text-sm font-bold font-mono text-white">XAUUSD · M5</span>
-              <span id="chartGradeBadge" class="text-[10px] font-mono px-1.5 py-0.5 bg-white text-black font-bold">★ GRADE A++</span>
+          <!-- Header Grafik: Simbol & Harga Spot Live -->
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2.5">
+                <span id="chartTitle" class="text-base font-bold font-mono text-white">XAUUSD · M5</span>
+                <span id="chartGradeBadge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-white text-black font-semibold">★ GRADE A++</span>
+              </div>
+              <span id="priceChangeBadge" class="text-[11px] font-mono text-zinc-500 block mt-0.5">Pyth Real-Time Spot</span>
             </div>
 
-            <div class="flex items-center gap-3">
-              <button onclick="copyActiveSetupToClipboard()" class="tactile-btn px-2 py-1 border border-zinc-700 bg-black text-[10px] font-mono text-white hover:border-white flex items-center gap-1" title="Salin Parameter Order MT5">
-                <i data-lucide="copy" class="w-3 h-3"></i> COPY SETUP
+            <div class="text-right font-mono num-lock">
+              <span id="liveTickerPrice" class="text-xl font-bold text-white block">2748.50</span>
+              <button onclick="copyActiveSetupToClipboard()" class="text-[11px] text-zinc-400 hover:text-white underline mt-0.5 inline-flex items-center gap-1">
+                <i data-lucide="copy" class="w-3 h-3"></i> Salin Setup MT5
               </button>
-              <div class="text-right font-mono num-lock">
-                <span id="priceChangeBadge" class="text-[9px] text-zinc-400 block leading-none">LIVE SPOT</span>
-                <span id="liveTickerPrice" class="text-base font-bold text-white">2748.50</span>
-              </div>
             </div>
           </div>
 
-          <!-- Quick Readout Bar (Entry, SL, TP1, TP2) -->
-          <div id="chartSlTpQuickBar" class="grid grid-cols-4 gap-1.5 p-1.5 border border-zinc-800 bg-black text-[10px] font-mono text-center num-lock">
-            <div class="p-1 border border-zinc-900">
-              <span class="text-zinc-500 block text-[9px]">ENTRY</span>
-              <span id="hudEntryVal" class="text-white font-bold">----</span>
+          <!-- Bar Parameter Level SL & TP (Ditempatkan Rapi di Luar Kanvas agar Grafik Tidak Tertutup) -->
+          <div id="chartSlTpQuickBar" class="grid grid-cols-4 gap-2 p-2.5 rounded border border-zinc-900 bg-black font-mono num-lock text-center">
+            <div>
+              <span class="text-[10px] text-zinc-500 block">Entry</span>
+              <span id="hudEntryVal" class="text-xs font-bold text-white mt-0.5 block">----</span>
             </div>
-            <div class="p-1 border border-zinc-900">
-              <span class="text-zinc-500 block text-[9px]">STOP LOSS</span>
-              <span id="hudSlVal" class="text-zinc-400 font-bold">----</span>
+            <div class="border-l border-zinc-900">
+              <span class="text-[10px] text-zinc-500 block">Stop Loss</span>
+              <span id="hudSlVal" class="text-xs font-medium text-zinc-400 mt-0.5 block">----</span>
             </div>
-            <div class="p-1 border border-zinc-700">
-              <span id="hudTp1Label" class="text-zinc-400 block text-[9px]">TP 1 (1:1.6)</span>
-              <span id="hudTp1Val" class="text-white font-bold">----</span>
+            <div class="border-l border-zinc-900">
+              <span id="hudTp1Label" class="text-[10px] text-zinc-400 block">TP 1</span>
+              <span id="hudTp1Val" class="text-xs font-bold text-white mt-0.5 block">----</span>
             </div>
-            <div class="p-1 bg-white text-black">
-              <span id="hudTp2Label" class="text-zinc-700 block text-[9px] font-bold">TP 2 (1:2.5)</span>
-              <span id="hudTp2Val" class="font-bold">----</span>
+            <div class="border-l border-zinc-900">
+              <span id="hudTp2Label" class="text-[10px] text-zinc-400 block">TP 2</span>
+              <span id="hudTp2Val" class="text-xs font-bold text-white mt-0.5 block">----</span>
             </div>
           </div>
 
-          <!-- Chart Engine Switcher -->
-          <div class="grid grid-cols-2 gap-1 p-0.5 bg-black border border-zinc-900 text-[10px] font-mono">
-            <button onclick="switchChartEngine('autoplot')" id="engineBtnAuto" class="tactile-btn py-1 bg-white text-black font-bold">
-              SL/TP AUTO-PLOT CHART
-            </button>
-            <button onclick="switchChartEngine('tvwidget')" id="engineBtnTv" class="tactile-btn py-1 text-zinc-500 hover:text-white">
-              TRADINGVIEW OANDA WIDGET
-            </button>
+          <!-- Notifikasi Ketika Harga Menyentuh TP / SL -->
+          <div id="signalOutcomeBanner" class="hidden p-2.5 rounded bg-white text-black text-xs font-mono font-semibold flex items-center justify-between">
+            <span id="signalOutcomeText">Target Tercapai</span>
+            <span class="text-[10px] border border-black px-1.5 py-0.5 rounded">LIVE HIT</span>
           </div>
 
-          <!-- Outcome Hit Banner -->
-          <div id="signalOutcomeBanner" class="hidden p-2 bg-white text-black text-[11px] font-mono font-bold flex items-center justify-between">
-            <span id="signalOutcomeText">TARGET REACHED</span>
-            <span class="text-[9px] border border-black px-1">REALTIME HIT</span>
-          </div>
+          <!-- Kanvas Grafik (Tinggi 360px Tanpa Tertutup Kotak Mengambang) -->
+          <div class="relative w-full h-[360px] rounded bg-black border border-zinc-900 overflow-hidden">
+            <div id="tvChartContainer" style="width: 100%; height: 360px;"></div>
+            <div id="officialTvWidgetContainer" class="hidden" style="width: 100%; height: 360px;"></div>
 
-          <!-- Legend & Zoom Fit -->
-          <div id="autoPlotLegend" class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono border-y border-zinc-900 py-1.5 text-zinc-400">
-            <div class="flex items-center gap-2.5">
-              <span class="text-white font-bold">━━ TP & ENTRY</span>
-              <span class="text-zinc-400">- - SL</span>
-              <span id="emaLegendText" class="text-zinc-500">── EMA 20/50</span>
-            </div>
-            <button onclick="resetChartZoom()" class="tactile-btn px-2 py-0.5 border border-zinc-700 text-white hover:border-white text-[9px] font-bold">
-              FIT SL/TP VIEW
-            </button>
-          </div>
-
-          <!-- Chart Canvas Container -->
-          <div class="relative w-full h-[350px] bg-black border border-zinc-900 overflow-hidden">
-            <div id="tvChartContainer" style="width: 100%; height: 350px;"></div>
-            <div id="officialTvWidgetContainer" class="hidden" style="width: 100%; height: 350px;"></div>
-
-            <!-- Floating On-Chart SL/TP Position Box -->
-            <div id="onChartPositionHud" class="pointer-events-none absolute top-2.5 left-2.5 z-10 bg-black/95 border border-zinc-700 p-2.5 font-mono text-[10px] space-y-1 min-w-[215px] num-lock">
-              <div class="flex items-center justify-between gap-3 border-b border-zinc-800 pb-1">
-                <span id="overlayDirBadge" class="px-1.5 py-0.2 bg-white text-black font-bold">▲ LONG SETUP</span>
-                <span id="overlayRRBadge" class="text-zinc-400 font-bold">SCALPING</span>
-              </div>
-              <div class="flex justify-between gap-3 text-white">
-                <span>🎯 TP2:</span>
-                <strong id="overlayTp2">----</strong>
-              </div>
-              <div class="flex justify-between gap-3 text-white">
-                <span>🎯 TP1:</span>
-                <strong id="overlayTp1">----</strong>
-              </div>
-              <div class="flex justify-between gap-3 text-zinc-200 border-y border-zinc-800 py-0.5">
-                <span>⚡ ENTRY:</span>
-                <strong id="overlayEntry">----</strong>
-              </div>
-              <div class="flex justify-between gap-3 text-zinc-400">
-                <span>🛡️ STOP LOSS:</span>
-                <strong id="overlaySl">----</strong>
-              </div>
+            <!-- Badge Kecil Ringkas di Sudut Kiri Atas Kanvas -->
+            <div id="onChartPositionHud" class="pointer-events-none absolute top-2 left-2 z-10 bg-black/80 border border-zinc-800 px-2.5 py-1 rounded font-mono text-[10px] flex items-center gap-2 num-lock">
+              <span id="overlayDirBadge" class="text-white font-bold">▲ LONG</span>
+              <span class="text-zinc-600">·</span>
+              <span id="overlayRRBadge" class="text-zinc-400">SCALPING</span>
+              <!-- Elemen tetap ada untuk kompatibilitas app.js namun disembunyikan agar tidak menutupi candle -->
+              <span class="hidden"><strong id="overlayTp2"></strong><strong id="overlayTp1"></strong><strong id="overlayEntry"></strong><strong id="overlaySl"></strong></span>
             </div>
 
-            <!-- Lock Overlay for Free Tier -->
-            <div id="chartLockOverlay" class="hidden absolute inset-0 bg-black z-20 flex-col items-center justify-center p-6 text-center space-y-3 border border-zinc-800">
+            <!-- Layar Kunci untuk Mode Gratis -->
+            <div id="chartLockOverlay" class="hidden absolute inset-0 bg-black z-20 flex-col items-center justify-center p-6 text-center space-y-3">
               <i data-lucide="lock" class="w-5 h-5 text-white"></i>
               <div class="space-y-1">
-                <h4 class="text-xs font-bold uppercase font-mono text-white">PRO TERMINAL LOCKED</h4>
+                <h4 class="text-xs font-semibold text-white">Plot Otomatis Dikunci pada Mode Gratis</h4>
                 <p class="text-xs text-zinc-500 max-w-xs">
-                  Level Entry, Stop Loss, dan Take Profit presisi hanya terbuka pada akun Pro.
+                  Aktifkan Pro Tier untuk membuka garis Entry, Stop Loss, dan Take Profit di grafik.
                 </p>
               </div>
-              <button onclick="switchMainTab('pricing')" class="tactile-btn px-4 py-1.5 bg-white text-black text-xs font-mono font-bold hover:bg-zinc-200">
-                UNLOCK PRO
+              <button onclick="switchMainTab('pricing')" class="tactile-btn px-4 py-1.5 bg-white text-black text-xs font-semibold">
+                Buka Akses Pro
+              </button>
+            </div>
+          </div>
+
+          <!-- Baris Kontrol Bawah Grafik: Pilih Engine & Fit Zoom -->
+          <div id="autoPlotLegend" class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
+            <div class="flex gap-1 p-0.5 rounded border border-zinc-900 bg-black text-[11px]">
+              <button onclick="switchChartEngine('autoplot')" id="engineBtnAuto" class="tactile-btn px-2.5 py-1 bg-white text-black font-medium">
+                Auto-Plot SL/TP
+              </button>
+              <button onclick="switchChartEngine('tvwidget')" id="engineBtnTv" class="tactile-btn px-2.5 py-1 text-zinc-400 hover:text-white">
+                Widget OANDA
+              </button>
+            </div>
+
+            <div class="flex items-center gap-3 font-mono text-[11px] text-zinc-500">
+              <span id="emaLegendText">EMA 20/50</span>
+              <button onclick="resetChartZoom()" class="tactile-btn px-2.5 py-1 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-600">
+                Reset Zoom
               </button>
             </div>
           </div>
         </div>
 
-        <!-- 5-Gate Real Mathematical Audit -->
-        <div class="p-4 border border-zinc-900 bg-black space-y-2.5">
-          <div class="flex items-center justify-between border-b border-zinc-900 pb-2 font-mono">
-            <span class="text-xs font-bold uppercase text-white">5-GATE QUANTITATIVE AUDIT</span>
-            <span id="detailSymbolBadge" class="text-[11px] text-zinc-400 num-lock">-</span>
-          </div>
-
-          <div id="confluenceGatesList" class="space-y-1 text-[11px] font-mono num-lock"></div>
-
-          <div class="p-2.5 border border-zinc-900 bg-black space-y-1">
-            <div class="flex items-center justify-between text-[11px] font-mono num-lock">
-              <span class="text-white font-bold" id="detailTrend">-</span>
-              <span class="text-zinc-400" id="detailPairWinRate">Backtest WR: --%</span>
-            </div>
-            <p id="detailSummary" class="text-[11px] text-zinc-400 leading-relaxed">-</p>
-          </div>
-        </div>
-
-        <!-- Prop Firm Risk & Lot Size Calculator -->
-        <div class="p-4 border border-zinc-900 bg-black space-y-3.5">
+        <!-- Kalkulator Ukuran Lot & Risiko Prop Firm -->
+        <div class="p-5 rounded-md border border-zinc-900 bg-black space-y-4">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-mono font-bold uppercase text-white">PROP FIRM LOT CALCULATOR</span>
-            <div class="flex gap-1 font-mono text-[10px] num-lock">
-              <button onclick="setBalancePreset(2500)" id="preset2500" class="tactile-btn px-2 py-0.5 bg-white text-black font-bold border border-white">$2,500</button>
-              <button onclick="setBalancePreset(15000)" id="preset15000" class="tactile-btn px-2 py-0.5 bg-black text-zinc-400 border border-zinc-800 hover:border-white">$15,000</button>
+            <span class="text-sm font-semibold text-white">Kalkulator Lot & Risiko</span>
+            <div class="flex gap-1.5 font-mono text-xs num-lock">
+              <button onclick="setBalancePreset(2500)" id="preset2500" class="tactile-btn px-2.5 py-1 bg-white text-black font-semibold border border-white">$2,500</button>
+              <button onclick="setBalancePreset(15000)" id="preset15000" class="tactile-btn px-2.5 py-1 bg-black text-zinc-400 border border-zinc-800 hover:border-zinc-600">$15,000</button>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 text-xs font-mono num-lock">
+          <div class="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <label class="text-zinc-500 block mb-1 text-[10px]">ACCOUNT BALANCE ($)</label>
-              <input type="number" id="balanceInput" value="2500" oninput="updateRiskCalc()" class="w-full bg-black border border-zinc-800 px-3 py-1.5 text-white focus:outline-none focus:border-white" />
+              <label class="text-zinc-400 block mb-1.5">Saldo Akun ($)</label>
+              <input type="number" id="balanceInput" value="2500" oninput="updateRiskCalc()" class="num-lock w-full rounded bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none focus:border-white" />
             </div>
             <div>
-              <label class="text-zinc-500 block mb-1 text-[10px]">RISK PER TRADE (%)</label>
-              <input type="number" id="riskInput" step="0.1" value="0.5" oninput="updateRiskCalc()" class="w-full bg-black border border-zinc-800 px-3 py-1.5 text-white focus:outline-none focus:border-white" />
+              <label class="text-zinc-400 block mb-1.5">Risiko per Trade (%)</label>
+              <input type="number" id="riskInput" step="0.1" value="0.5" oninput="updateRiskCalc()" class="num-lock w-full rounded bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none focus:border-white" />
             </div>
           </div>
 
-          <div class="p-3 border border-zinc-900 bg-black flex items-center justify-between font-mono num-lock">
+          <div class="p-3.5 rounded border border-zinc-900 bg-black flex items-center justify-between font-mono num-lock">
             <div>
-              <span id="calcPipsLabel" class="text-[10px] text-zinc-500 block">RECOMMENDED LOT</span>
-              <span id="calcLotResult" class="text-lg font-bold text-white">0.00 LOT</span>
+              <span id="calcPipsLabel" class="text-[11px] text-zinc-500 block">Ukuran Lot Ideal</span>
+              <span id="calcLotResult" class="text-lg font-bold text-white mt-0.5 block">0.00 LOT</span>
             </div>
             <div class="text-right">
-              <span class="text-[10px] text-zinc-500 block">MAX RISK ($)</span>
-              <span id="calcRiskUsd" class="text-sm font-bold text-white">-$12.50</span>
+              <span class="text-[11px] text-zinc-500 block">Batas Risiko ($)</span>
+              <span id="calcRiskUsd" class="text-sm font-bold text-white mt-0.5 block">-$12.50</span>
             </div>
           </div>
 
-          <button onclick="saveSelectedSignalToJournal()" id="saveTradeBtn" class="tactile-btn w-full py-2.5 bg-white text-black text-xs font-mono font-bold uppercase tracking-wider hover:bg-zinc-200">
-            + LOG QUALIFIED SETUP TO JOURNAL
+          <button onclick="saveSelectedSignalToJournal()" id="saveTradeBtn" class="tactile-btn w-full py-2.5 bg-white text-black text-xs font-semibold hover:bg-zinc-200">
+            + Catat Posisi ke Jurnal Trading
           </button>
+        </div>
+
+        <!-- Audit 5-Gerbang Indikator Kuantitatif -->
+        <div class="p-5 rounded-md border border-zinc-900 bg-black space-y-3">
+          <div class="flex items-center justify-between border-b border-zinc-900 pb-2.5">
+            <span class="text-sm font-semibold text-white">Audit 5-Gerbang Kuantitatif</span>
+            <span id="detailSymbolBadge" class="text-xs font-mono text-zinc-400 num-lock">-</span>
+          </div>
+
+          <div id="confluenceGatesList" class="space-y-1.5 text-xs font-mono num-lock"></div>
+
+          <div class="p-3 rounded border border-zinc-900 bg-black space-y-1.5">
+            <div class="flex items-center justify-between text-xs font-mono num-lock">
+              <span class="text-white font-medium" id="detailTrend">-</span>
+              <span class="text-zinc-400" id="detailPairWinRate">WR: --%</span>
+            </div>
+            <p id="detailSummary" class="text-xs text-zinc-400 leading-relaxed">-</p>
+          </div>
         </div>
 
       </div>
@@ -442,55 +423,55 @@
   <!-- ======================================================================= -->
   <!-- VIEW 2: WALK-FORWARD BACKTEST AUDIT (250 BARS PER PAIR)                 -->
   <!-- ======================================================================= -->
-  <section id="view-backtest" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 font-mono num-lock">
+  <section id="view-backtest" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 num-lock">
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
-        <h1 id="btViewTitle" class="text-base font-bold uppercase text-white">02. SHORT-TERM WALK-FORWARD AUDIT (SCALPING MODE)</h1>
-        <p id="btViewSubtitle" class="text-xs text-zinc-500 mt-0.5 font-sans">
-          Pengujian langsung algoritma pada 250 candlestick terakhir sesuai mode yang dipilih.
+        <h1 id="btViewTitle" class="text-lg font-bold text-white">Audit Backtest 250 Candle Terakhir</h1>
+        <p id="btViewSubtitle" class="text-xs text-zinc-400 mt-1">
+          Pengujian langsung algoritma pada 250 candlestick terakhir dari Pyth Network sesuai mode yang dipilih.
         </p>
       </div>
-      <div class="flex gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
-        <button onclick="switchTradingMode('SCALPING')" class="mode-sync-btn tactile-btn px-2.5 py-1 bg-white text-black font-bold" data-mode="SCALPING">⚡ SCALPING</button>
-        <button onclick="switchTradingMode('SWING')" class="mode-sync-btn tactile-btn px-2.5 py-1 text-zinc-400" data-mode="SWING">🎯 SWING</button>
-        <button onclick="switchTradingMode('POSITION')" class="mode-sync-btn tactile-btn px-2.5 py-1 text-zinc-400" data-mode="POSITION">🏛️ POSITION</button>
+      <div class="flex gap-1.5 p-1 rounded border border-zinc-900 bg-black text-xs font-medium">
+        <button onclick="switchTradingMode('SCALPING')" class="mode-sync-btn tactile-btn px-3 py-1 bg-white text-black font-semibold" data-mode="SCALPING">⚡ Scalping</button>
+        <button onclick="switchTradingMode('SWING')" class="mode-sync-btn tactile-btn px-3 py-1 text-zinc-400" data-mode="SWING">🎯 Swing</button>
+        <button onclick="switchTradingMode('POSITION')" class="mode-sync-btn tactile-btn px-3 py-1 text-zinc-400" data-mode="POSITION">🏛️ Position</button>
       </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 border border-zinc-900 bg-black divide-y md:divide-y-0 md:divide-x divide-zinc-900">
-      <div class="p-5">
-        <span class="text-[10px] text-zinc-500 block">TOTAL TRADES TRIGGERED</span>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
+      <div class="p-5 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block font-sans">Total Transaksi</span>
         <span id="btTotalTrades" class="text-2xl font-bold text-white mt-1 block">0</span>
       </div>
-      <div class="p-5">
-        <span class="text-[10px] text-zinc-500 block">HONEST WIN RATE</span>
+      <div class="p-5 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block font-sans">Win Rate Aktual</span>
         <span id="btWinRate" class="text-2xl font-bold text-white mt-1 block">0.0%</span>
       </div>
-      <div class="p-5">
-        <span class="text-[10px] text-zinc-500 block">NET R-MULTIPLE (AFTER SPREAD)</span>
+      <div class="p-5 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block font-sans">Akumulasi R Bersih</span>
         <span id="btNetR" class="text-2xl font-bold text-white mt-1 block">+0.0R</span>
       </div>
-      <div class="p-5">
-        <span class="text-[10px] text-zinc-500 block">NET RETURN (AT 0.5% RISK)</span>
+      <div class="p-5 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block font-sans">Estimasi Return (Risiko 0.5%)</span>
         <span id="btEstReturn" class="text-2xl font-bold text-white mt-1 block">+0.0%</span>
       </div>
     </div>
 
-    <div class="border border-zinc-900 bg-black overflow-x-auto">
-      <div class="p-3.5 border-b border-zinc-900 flex items-center justify-between text-xs">
-        <span class="font-bold text-white">BACKTEST BREAKDOWN PER PAIR (LAST 250 BARS)</span>
-        <span id="btRuleNote" class="text-zinc-500">TERMASUK POTONGAN SPREAD</span>
+    <div class="rounded-md border border-zinc-900 bg-black overflow-x-auto">
+      <div class="p-4 border-b border-zinc-900 flex items-center justify-between text-xs">
+        <span class="font-semibold text-white">Rincian Performa per Pasangan Mata Uang (250 Candle)</span>
+        <span id="btRuleNote" class="font-mono text-zinc-400">Termasuk potongan spread</span>
       </div>
-      <table class="w-full text-left text-xs">
-        <thead class="border-b border-zinc-900 text-zinc-500 text-[10px]">
+      <table class="w-full text-left text-xs font-mono">
+        <thead class="border-b border-zinc-900 text-zinc-500">
           <tr>
-            <th class="p-3">PAIR</th>
-            <th class="p-3">LIVE GRADE</th>
-            <th class="p-3">SETUPS</th>
-            <th class="p-3">WON</th>
-            <th class="p-3">LOST</th>
-            <th class="p-3">WIN RATE</th>
-            <th class="p-3">NET R-PROFIT</th>
+            <th class="p-3.5">Pair</th>
+            <th class="p-3.5">Status Saat Ini</th>
+            <th class="p-3.5">Jumlah Setup</th>
+            <th class="p-3.5">Menang (Won)</th>
+            <th class="p-3.5">Kalah (Lost)</th>
+            <th class="p-3.5">Win Rate</th>
+            <th class="p-3.5">Profit Bersih (R)</th>
           </tr>
         </thead>
         <tbody id="backtestTableBody" class="divide-y divide-zinc-900"></tbody>
@@ -499,181 +480,178 @@
   </section>
 
   <!-- ======================================================================= -->
-  <!-- VIEW 3: 10-YEAR HISTORICAL STRATEGY PERFORMANCE (DENGAN OVERLAY 3 MODE)  -->
+  <!-- VIEW 3: 10-YEAR HISTORICAL STRATEGY PERFORMANCE (2016 – 2026)            -->
   <!-- ======================================================================= -->
-  <section id="view-tenyear" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 font-mono num-lock">
+  <section id="view-tenyear" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 num-lock">
     
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
-        <div class="flex items-center gap-2">
-          <span id="tyModeBadge" class="px-2 py-0.5 bg-white text-black text-[10px] font-bold">3-MODE OVERLAY ACTIVE</span>
-          <h1 class="text-base font-bold uppercase text-white">03. 10-YEAR STRATEGY PERFORMANCE AUDIT (2016 – 2026)</h1>
+        <div class="flex items-center gap-2.5">
+          <span id="tyModeBadge" class="px-2 py-0.5 rounded bg-white text-black text-[11px] font-mono font-semibold">3-MODE OVERLAY</span>
+          <h1 class="text-lg font-bold text-white">Audit Performa Strategi 10 Tahun (2016 – 2026)</h1>
         </div>
-        <p id="tyModeDescription" class="text-xs text-zinc-400 mt-1 font-sans max-w-3xl">
-          Bandingkan secara jujur kurva pertumbuhan ekuitas antara <strong>Scalping</strong>, <strong>Swing</strong>, dan <strong>Position Trade</strong> dalam satu grafik (Overlay) maupun secara tunggal dari data historis 2016–2026.
+        <p id="tyModeDescription" class="text-xs text-zinc-400 mt-1 max-w-3xl">
+          Perbandingan jujur kurva pertumbuhan ekuitas antara mode Scalping, Swing, dan Position Trade dari data historis 2016–2026 (sudah dikurangi biaya spread per transaksi).
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex flex-wrap gap-1 border border-zinc-800 p-1 bg-black text-[11px]">
-          <button onclick="setTenYearViewMode('OVERLAY')" id="tyBtn-OVERLAY" class="tactile-btn px-2.5 py-1 bg-white text-black font-bold">
-            ⚖️ OVERLAY 3 MODES
+        <div class="flex flex-wrap gap-1 p-1 rounded border border-zinc-900 bg-black text-xs font-medium">
+          <button onclick="setTenYearViewMode('OVERLAY')" id="tyBtn-OVERLAY" class="tactile-btn px-3 py-1 bg-white text-black font-semibold">
+            ⚖️ Bandingkan 3 Mode
           </button>
-          <button onclick="setTenYearViewMode('SCALPING')" id="tyBtn-SCALPING" class="tactile-btn px-2.5 py-1 text-zinc-400 hover:text-white">
-            ⚡ SCALPING
+          <button onclick="setTenYearViewMode('SCALPING')" id="tyBtn-SCALPING" class="tactile-btn px-3 py-1 text-zinc-400 hover:text-white">
+            ⚡ Scalping
           </button>
-          <button onclick="setTenYearViewMode('SWING')" id="tyBtn-SWING" class="tactile-btn px-2.5 py-1 text-zinc-400 hover:text-white">
-            🎯 SWING
+          <button onclick="setTenYearViewMode('SWING')" id="tyBtn-SWING" class="tactile-btn px-3 py-1 text-zinc-400 hover:text-white">
+            🎯 Swing
           </button>
-          <button onclick="setTenYearViewMode('POSITION')" id="tyBtn-POSITION" class="tactile-btn px-2.5 py-1 text-zinc-400 hover:text-white">
-            🏛️ POSITION
+          <button onclick="setTenYearViewMode('POSITION')" id="tyBtn-POSITION" class="tactile-btn px-3 py-1 text-zinc-400 hover:text-white">
+            🏛️ Position
           </button>
         </div>
 
-        <select id="tenYearScopeSelect" onchange="renderTenYearAuditView()" class="bg-black border border-white text-white text-xs px-3 py-1.5 font-mono focus:outline-none">
-          <option value="PORTFOLIO">PORTFOLIO: ALL 5 CORE PAIRS (2016–2026)</option>
-          <option value="XAUUSD">SINGLE PAIR: XAUUSD (GOLD SPOT)</option>
-          <option value="EURUSD">SINGLE PAIR: EURUSD</option>
-          <option value="GBPJPY">SINGLE PAIR: GBPJPY</option>
-          <option value="USDJPY">SINGLE PAIR: USDJPY</option>
-          <option value="AUDUSD">SINGLE PAIR: AUDUSD</option>
+        <select id="tenYearScopeSelect" onchange="renderTenYearAuditView()" class="rounded bg-black border border-zinc-800 text-white text-xs px-3 py-1.5 font-mono focus:outline-none focus:border-white">
+          <option value="PORTFOLIO">Portofolio: 5 Pair Utama (2016–2026)</option>
+          <option value="XAUUSD">Pair Tunggal: XAUUSD (Gold)</option>
+          <option value="EURUSD">Pair Tunggal: EURUSD</option>
+          <option value="GBPJPY">Pair Tunggal: GBPJPY</option>
+          <option value="USDJPY">Pair Tunggal: USDJPY</option>
+          <option value="AUDUSD">Pair Tunggal: AUDUSD</option>
         </select>
       </div>
     </div>
 
-    <!-- 6 Honest Institutional Metrics Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border border-zinc-900 bg-black divide-y md:divide-y-0 md:divide-x divide-zinc-900">
-      <div class="p-4">
-        <span id="tyCard1Title" class="text-[10px] text-zinc-500 block">10Y TOTAL TRADES</span>
-        <span id="tyTotalTrades" class="text-xl font-bold text-white mt-1 block">--</span>
-        <span id="tyTradesPerYear" class="text-[10px] text-zinc-500 block mt-0.5">-- / Year</span>
+    <!-- 6 Kartu Statistik 10 Tahun -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 font-mono">
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span id="tyCard1Title" class="text-[11px] text-zinc-500 block font-sans">Total Trade (10Thn)</span>
+        <span id="tyTotalTrades" class="text-lg font-bold text-white mt-1 block">--</span>
+        <span id="tyTradesPerYear" class="text-[11px] text-zinc-500 block mt-0.5">-- / Tahun</span>
       </div>
-      <div class="p-4">
-        <span id="tyCard2Title" class="text-[10px] text-zinc-500 block">TRUE WIN RATE</span>
-        <span id="tyWinRate" class="text-xl font-bold text-white mt-1 block">--%</span>
-        <span id="tyBreakevenNote" class="text-[10px] text-zinc-500 block mt-0.5">Breakeven: 36.0%</span>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span id="tyCard2Title" class="text-[11px] text-zinc-500 block font-sans">Win Rate Jujur</span>
+        <span id="tyWinRate" class="text-lg font-bold text-white mt-1 block">--%</span>
+        <span id="tyBreakevenNote" class="text-[11px] text-zinc-500 block mt-0.5">Impas: 36.0%</span>
       </div>
-      <div class="p-4">
-        <span id="tyCard3Title" class="text-[10px] text-zinc-500 block">PROFIT FACTOR (NET)</span>
-        <span id="tyProfitFactor" class="text-xl font-bold text-white mt-1 block">--</span>
-        <span id="tyExpectancy" class="text-[10px] text-zinc-500 block mt-0.5">Exp: --R / trade</span>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span id="tyCard3Title" class="text-[11px] text-zinc-500 block font-sans">Profit Factor</span>
+        <span id="tyProfitFactor" class="text-lg font-bold text-white mt-1 block">--</span>
+        <span id="tyExpectancy" class="text-[11px] text-zinc-500 block mt-0.5">Exp: --R</span>
       </div>
-      <div class="p-4">
-        <span id="tyCard4Title" class="text-[10px] text-zinc-500 block">CUMULATIVE NET R</span>
-        <span id="tyNetR" class="text-xl font-bold text-white mt-1 block">--R</span>
-        <span id="tyFinalBalance" class="text-[10px] text-zinc-400 block mt-0.5">$2,500 → $--</span>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span id="tyCard4Title" class="text-[11px] text-zinc-500 block font-sans">Profit Scalping</span>
+        <span id="tyNetR" class="text-lg font-bold text-white mt-1 block">--R</span>
+        <span id="tyFinalBalance" class="text-[11px] text-zinc-400 block mt-0.5">$2,500 → $--</span>
       </div>
-      <div class="p-4">
-        <span id="tyCard5Title" class="text-[10px] text-zinc-500 block">MAX DRAWDOWN (REAL)</span>
-        <span id="tyMaxDD" class="text-xl font-bold text-white mt-1 block">--R</span>
-        <span id="tyMaxDDPct" class="text-[10px] text-zinc-500 block mt-0.5">--% Equity DD</span>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span id="tyCard5Title" class="text-[11px] text-zinc-500 block font-sans">Profit Swing</span>
+        <span id="tyMaxDD" class="text-lg font-bold text-white mt-1 block">--R</span>
+        <span id="tyMaxDDPct" class="text-[11px] text-zinc-500 block mt-0.5">--% DD</span>
       </div>
-      <div class="p-4">
-        <span id="tyCard6Title" class="text-[10px] text-zinc-500 block">WORST LOSING STREAK</span>
-        <span id="tyMaxLosingStreak" class="text-xl font-bold text-white mt-1 block">-- LOSSES</span>
-        <span id="tyMaxWinStreak" class="text-[10px] text-zinc-500 block mt-0.5">Best Win Streak: --</span>
+      <div class="p-4 rounded-md border border-zinc-900 bg-black">
+        <span id="tyCard6Title" class="text-[11px] text-zinc-500 block font-sans">Profit Position</span>
+        <span id="tyMaxLosingStreak" class="text-lg font-bold text-white mt-1 block">--</span>
+        <span id="tyMaxWinStreak" class="text-[11px] text-zinc-500 block mt-0.5">Win Streak: --</span>
       </div>
     </div>
 
-    <!-- Interactive 10-Year Equity Curve & Multi-Mode Overlay Chart -->
-    <div class="p-4 border border-white bg-black space-y-3">
+    <!-- Grafik Kurva Ekuitas 10 Tahun -->
+    <div class="p-5 rounded-md border border-zinc-800 bg-black space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <span id="tyChartHeaderTitle" class="text-xs font-bold uppercase text-white">10-YEAR MULTI-MODE EQUITY OVERLAY (SCALPING vs SWING vs POSITION)</span>
-          <span id="tyDataSourceBadge" class="ml-2 text-[10px] px-1.5 py-0.5 border border-zinc-800 text-zinc-400">SOURCE: ECB + PYTH HISTORICAL</span>
+          <span id="tyChartHeaderTitle" class="text-sm font-semibold text-white">Kurva Pertumbuhan Ekuitas 10 Tahun (2016 – 2026)</span>
+          <span id="tyDataSourceBadge" class="ml-2 text-[11px] font-mono px-2 py-0.5 rounded border border-zinc-800 text-zinc-400">ECB + PYTH</span>
         </div>
 
-        <div id="tyChartLegendBar" class="flex flex-wrap items-center gap-3 text-[10px]">
-          <span class="text-white font-bold">━━ ⚡ SCALPING (SOLID WHITE)</span>
-          <span class="text-zinc-300 font-bold">- - 🎯 SWING (DASHED LIGHT)</span>
-          <span class="text-zinc-500 font-bold">··· 🏛️ POSITION (DOTTED GRAY)</span>
-          <button onclick="fitTenYearChart()" class="tactile-btn px-2 py-0.5 border border-zinc-800 text-white hover:border-white">FIT 10Y</button>
+        <div id="tyChartLegendBar" class="flex flex-wrap items-center gap-4 text-xs font-mono">
+          <span class="text-white font-semibold">━━ ⚡ Scalping</span>
+          <span class="text-zinc-300">- - 🎯 Swing</span>
+          <span class="text-zinc-500">··· 🏛️ Position</span>
+          <button onclick="fitTenYearChart()" class="tactile-btn px-2.5 py-1 border border-zinc-800 text-white hover:border-white">Reset Zoom</button>
         </div>
       </div>
 
-      <div class="relative w-full h-[360px] bg-black border border-zinc-900 overflow-hidden">
+      <div class="relative w-full h-[360px] rounded bg-black border border-zinc-900 overflow-hidden">
         <div id="tenYearChartContainer" style="width: 100%; height: 360px;"></div>
 
-        <!-- Floating On-Chart 3-Mode Comparison HUD -->
-        <div id="tyOverlayHud" class="pointer-events-none absolute top-3 left-3 z-10 bg-black/95 border border-zinc-700 p-3 font-mono text-[10px] space-y-1.5 min-w-[250px]">
-          <div class="text-white font-bold border-b border-zinc-800 pb-1 flex items-center justify-between">
-            <span>10Y CUMULATIVE R-MULTIPLE</span>
-            <span class="text-[9px] px-1 bg-white text-black font-bold">2016–2026</span>
-          </div>
+        <!-- Ringkasan Kecil di Sudut Kiri Atas Grafik 10 Tahun -->
+        <div id="tyOverlayHud" class="pointer-events-none absolute top-3 left-3 z-10 bg-black/90 border border-zinc-800 p-3 rounded font-mono text-[11px] space-y-1 min-w-[240px]">
+          <div class="text-zinc-400 text-[10px] border-b border-zinc-900 pb-1">HASIL AKUMULASI 10 TAHUN (2016–2026)</div>
           <div class="flex items-center justify-between gap-4 text-white">
-            <span>━━ ⚡ SCALPING (0.12R Cost):</span>
+            <span>━━ ⚡ Scalping:</span>
             <strong id="hud10YScalp">----</strong>
           </div>
           <div class="flex items-center justify-between gap-4 text-zinc-300">
-            <span>- - 🎯 SWING (0.08R Cost):</span>
+            <span>- - 🎯 Swing:</span>
             <strong id="hud10YSwing">----</strong>
           </div>
-          <div class="flex items-center justify-between gap-4 text-zinc-400">
-            <span>··· 🏛️ POSITION (0.04R Cost):</span>
+          <div class="flex items-center justify-between gap-4 text-zinc-500">
+            <span>··· 🏛️ Position:</span>
             <strong id="hud10YPos">----</strong>
           </div>
         </div>
       </div>
 
-      <div id="tyTransparencyBox" class="p-3 border border-zinc-900 bg-black text-[11px] text-zinc-400 font-sans leading-relaxed">
-        <strong class="text-white font-mono">ANALISIS PERBANDINGAN 3 KURVA (2016–2026):</strong> Kurva <strong>⚡ Scalping (Garis Putih Utuh)</strong> menghasilkan frekuensi transaksi paling banyak dan pertumbuhan kumulatif R tertinggi, namun memiliki fluktuasi *drawdown* yang lebih tajam akibat friksi *spread* (`0.12R`). Kurva <strong>🎯 Swing (Garis Putus-Putus)</strong> memberikan keseimbangan terbaik antara jumlah transaksi dan kestabilan kurva, sedangkan <strong>🏛️ Position Trade (Garis Titik-Titik)</strong> sangat tenang dengan *drawdown* minimal.
+      <div id="tyTransparencyBox" class="p-3.5 rounded border border-zinc-900 bg-black text-xs text-zinc-400 leading-relaxed">
+        <strong class="text-white">Catatan Kejujuran Data:</strong> Kurva di atas dihitung langsung dari pergerakan harga historis 2016–2026 dengan memperhitungkan biaya spread. Klik salah satu baris pada tabel di bawah jika ingin melihat kurva dan kedalaman *drawdown* untuk satu mode secara terpisah.
       </div>
     </div>
 
-    <!-- Tabel Matriks Perbandingan Head-to-Head 3 Mode -->
-    <div class="border border-zinc-900 bg-black overflow-x-auto">
-      <div class="p-3.5 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span class="font-bold text-white">HEAD-TO-HEAD 10-YEAR STRATEGY COMPARISON MATRIX (2016 – 2026)</span>
-        <span class="text-zinc-500">KLIK BARIS MODE UNTUK MELIHAT RINCIAN SINGLE CURVE & DRAWDOWN</span>
+    <!-- Tabel Matriks Perbandingan 3 Mode -->
+    <div class="rounded-md border border-zinc-900 bg-black overflow-x-auto">
+      <div class="p-4 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <span class="font-semibold text-white">Matriks Perbandingan 3 Mode Strategi (2016 – 2026)</span>
+        <span class="text-zinc-500">Klik baris untuk fokus ke kurva tunggal</span>
       </div>
-      <table class="w-full text-left text-xs">
-        <thead class="border-b border-zinc-900 text-zinc-500 text-[10px]">
+      <table class="w-full text-left text-xs font-mono">
+        <thead class="border-b border-zinc-900 text-zinc-500">
           <tr>
-            <th class="p-3">STRATEGY MODE</th>
-            <th class="p-3">TIMEFRAME & RULES</th>
-            <th class="p-3">SPREAD COST</th>
-            <th class="p-3">10Y TRADES</th>
-            <th class="p-3">TRUE WIN RATE</th>
-            <th class="p-3">PROFIT FACTOR</th>
-            <th class="p-3">MAX DRAWDOWN</th>
-            <th class="p-3">CUMULATIVE NET R</th>
-            <th class="p-3">$2,500 GROWTH</th>
+            <th class="p-3.5">Mode Strategi</th>
+            <th class="p-3.5">Parameter Indikator</th>
+            <th class="p-3.5">Biaya Spread</th>
+            <th class="p-3.5">Total Trade (10Thn)</th>
+            <th class="p-3.5">Win Rate Aktual</th>
+            <th class="p-3.5">Profit Factor</th>
+            <th class="p-3.5">Max Drawdown</th>
+            <th class="p-3.5">Total Profit (R)</th>
+            <th class="p-3.5">Pertumbuhan $2,500</th>
           </tr>
         </thead>
         <tbody id="tyComparisonMatrixBody" class="divide-y divide-zinc-900"></tbody>
       </table>
     </div>
 
-    <!-- Year-by-Year Breakdown Table -->
-    <div class="border border-zinc-900 bg-black overflow-x-auto">
-      <div class="p-3.5 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span id="tyMatrixTitle" class="font-bold text-white">YEAR-BY-YEAR PERFORMANCE MATRIX (2016 – 2026)</span>
-        <span id="tyMatrixParamNote" class="text-zinc-500">PERBANDINGAN NET R TAHUNAN ANTARA SCALPING, SWING, DAN POSITION</span>
+    <!-- Tabel Rincian Tahunan -->
+    <div class="rounded-md border border-zinc-900 bg-black overflow-x-auto">
+      <div class="p-4 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <span id="tyMatrixTitle" class="font-semibold text-white">Rincian Performa Tahun demi Tahun (2016 – 2026)</span>
+        <span id="tyMatrixParamNote" class="text-zinc-500">Risiko 0.5% per transaksi</span>
       </div>
-      <table class="w-full text-left text-xs">
-        <thead id="tenYearTableHead" class="border-b border-zinc-900 text-zinc-500 text-[10px]"></thead>
+      <table class="w-full text-left text-xs font-mono">
+        <thead id="tenYearTableHead" class="border-b border-zinc-900 text-zinc-500"></thead>
         <tbody id="tenYearTableBody" class="divide-y divide-zinc-900"></tbody>
       </table>
     </div>
 
-    <!-- Trade-by-Trade Audit Log (Last 25 Historical Executions) -->
-    <div class="border border-zinc-900 bg-black overflow-x-auto">
-      <div class="p-3.5 border-b border-zinc-900 flex items-center justify-between text-xs">
-        <span class="font-bold text-white">VERIFIABLE HISTORICAL TRADE LOG (SAMPLE LAST 25 EXECUTIONS)</span>
-        <span class="text-zinc-500">BAR-BY-BAR OHLC EXECUTION</span>
+    <!-- Log 25 Eksekusi Terakhir -->
+    <div class="rounded-md border border-zinc-900 bg-black overflow-x-auto">
+      <div class="p-4 border-b border-zinc-900 flex items-center justify-between text-xs">
+        <span class="font-semibold text-white">Sampel Log 25 Transaksi Historis Terakhir</span>
+        <span class="text-zinc-500">Dieksekusi bar-demi-bar</span>
       </div>
-      <table class="w-full text-left text-[11px]">
-        <thead class="border-b border-zinc-900 text-zinc-500 text-[10px]">
+      <table class="w-full text-left text-xs font-mono">
+        <thead class="border-b border-zinc-900 text-zinc-500">
           <tr>
-            <th class="p-2.5">ENTRY DATE</th>
-            <th class="p-2.5">PAIR</th>
-            <th class="p-2.5">MODE / GRADE</th>
-            <th class="p-2.5">DIRECTION / TYPE</th>
-            <th class="p-2.5">ENTRY</th>
-            <th class="p-2.5">STOP LOSS</th>
-            <th class="p-2.5">TARGET TP</th>
-            <th class="p-2.5">OUTCOME</th>
-            <th class="p-2.5">NET R</th>
+            <th class="p-3">Tanggal</th>
+            <th class="p-3">Pair</th>
+            <th class="p-3">Mode & Grade</th>
+            <th class="p-3">Arah / Tipe</th>
+            <th class="p-3">Entry</th>
+            <th class="p-3">Stop Loss</th>
+            <th class="p-3">Target TP</th>
+            <th class="p-3">Hasil</th>
+            <th class="p-3">Net R</th>
           </tr>
         </thead>
         <tbody id="tenYearTradeLogBody" class="divide-y divide-zinc-900"></tbody>
@@ -687,39 +665,39 @@
   <section id="view-journal" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 num-lock">
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
       <div>
-        <h1 class="text-base font-bold font-mono uppercase text-white">04. TRADE JOURNAL & DRAWDOWN GUARD</h1>
-        <p class="text-xs text-zinc-500 mt-0.5">Rekam jejak posisi Grade A++/A dan pengaman batas risiko harian prop firm (Max 5.0%).</p>
+        <h1 class="text-lg font-bold text-white">Jurnal Trading & Pengaman Drawdown Prop Firm</h1>
+        <p class="text-xs text-zinc-400 mt-1">Rekam jejak posisi yang kamu ambil beserta pemantau batas risiko harian (Maksimal 5.0%).</p>
       </div>
-      <button onclick="switchMainTab('screener')" class="tactile-btn px-3 py-1.5 border border-zinc-800 text-xs font-mono text-zinc-400 hover:text-white hover:border-white">
-        ← BACK TO SCREENER
+      <button onclick="switchMainTab('screener')" class="tactile-btn px-3.5 py-1.5 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white">
+        ← Kembali ke Screener
       </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 border border-zinc-900 bg-black divide-y md:divide-y-0 md:divide-x divide-zinc-900 font-mono">
-      <div class="p-5">
-        <span class="text-[10px] text-zinc-500 block">REALIZED P&L</span>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
+      <div class="p-5 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block font-sans">Total Profit/Loss Terealisasi</span>
         <div id="journalTotalPnl" class="text-2xl font-bold text-white mt-1">+$0.00</div>
       </div>
-      <div class="p-5">
-        <span class="text-[10px] text-zinc-500 block">PERSONAL WIN RATE</span>
+      <div class="p-5 rounded-md border border-zinc-900 bg-black">
+        <span class="text-xs text-zinc-500 block font-sans">Win Rate Jurnal Pribadi</span>
         <div id="journalWinRate" class="text-2xl font-bold text-white mt-1">0%</div>
-        <span id="journalWinLossCount" class="text-[10px] text-zinc-500 block mt-0.5">0 WON · 0 LOST</span>
+        <span id="journalWinLossCount" class="text-xs text-zinc-500 block mt-1">0 Won · 0 Lost</span>
       </div>
-      <div class="p-5 space-y-2">
-        <div class="flex justify-between text-[10px]">
-          <span class="text-zinc-500">DAILY DRAWDOWN EXPOSURE</span>
+      <div class="p-5 rounded-md border border-zinc-900 bg-black space-y-2">
+        <div class="flex justify-between text-xs">
+          <span class="text-zinc-500 font-sans">Eksposur Risiko Terbuka</span>
           <span id="drawdownUsedText" class="text-white">0.0% / 5.0%</span>
         </div>
-        <div class="w-full h-2 bg-black border border-zinc-800">
+        <div class="w-full h-2 rounded bg-black border border-zinc-800 overflow-hidden">
           <div id="drawdownBar" class="h-full bg-white transition-all" style="width: 0%"></div>
         </div>
       </div>
     </div>
 
-    <div class="border border-zinc-900 bg-black">
-      <div class="p-3.5 border-b border-zinc-900 flex items-center justify-between text-xs font-mono">
-        <span class="text-white font-bold">LOGGED POSITIONS</span>
-        <span class="text-zinc-500">MARK OUTCOME</span>
+    <div class="rounded-md border border-zinc-900 bg-black">
+      <div class="p-4 border-b border-zinc-900 flex items-center justify-between text-xs">
+        <span class="font-semibold text-white">Daftar Posisi Tercatat</span>
+        <span class="text-zinc-500">Tandai hasil akhir transaksi</span>
       </div>
       <div id="journalListContainer" class="divide-y divide-zinc-900"></div>
     </div>
@@ -730,101 +708,101 @@
   <!-- ======================================================================= -->
   <section id="view-pricing" class="hidden max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
     <div class="border-b border-zinc-900 pb-6">
-      <span class="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 border border-zinc-800 text-zinc-400">
-        MEMBERSHIP TIERS
+      <span class="text-xs font-mono uppercase px-2.5 py-1 rounded border border-zinc-800 text-zinc-400">
+        Paket Berlangganan
       </span>
-      <h1 class="text-2xl font-bold font-mono text-white mt-2">
-        INSTITUTIONAL ACCESS PLANS
+      <h1 class="text-2xl font-bold text-white mt-3">
+        Akses Penuh Terminal Kuantitatif SwingPulse
       </h1>
-      <p class="text-xs text-zinc-500 mt-1">
-        Aktivasi instan melalui QRIS atau Kartu. Tersinkronisasi langsung dengan tabel profil Supabase.
+      <p class="text-xs text-zinc-400 mt-1">
+        Aktivasi instan menggunakan QRIS atau Kartu. Tersinkronisasi langsung dengan akun Supabase kamu.
       </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono num-lock">
-      <div class="p-6 border border-zinc-900 bg-black flex flex-col justify-between space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 num-lock">
+      <div class="p-6 rounded-md border border-zinc-900 bg-black flex flex-col justify-between space-y-6">
         <div class="space-y-4">
           <div>
-            <span class="text-[10px] text-zinc-500 uppercase">TIER 01</span>
-            <h3 class="text-base font-bold text-white mt-0.5">FREE OBSERVER</h3>
-            <div class="mt-3 text-2xl font-bold text-white">Rp 0</div>
+            <span class="text-xs text-zinc-500">Paket Dasar</span>
+            <h3 class="text-base font-bold text-white mt-0.5">Free Observer</h3>
+            <div class="mt-3 text-2xl font-bold font-mono text-white">Rp 0</div>
           </div>
-          <ul class="space-y-2 text-xs text-zinc-400 border-t border-zinc-900 pt-4 font-sans">
-            <li>+ Akses Pemindaian Kualitas Pasar</li>
-            <li>+ Kalkulator Risiko Prop Firm ($2.5k & $15k)</li>
-            <li>+ Audit Transparansi Backtest 10 Tahun</li>
-            <li class="text-zinc-600">- Level Entry, SL & TP Grade A++ Terkunci</li>
-            <li class="text-zinc-600">- Auto-Plot Terminal Chart Terkunci</li>
+          <ul class="space-y-2.5 text-xs text-zinc-400 border-t border-zinc-900 pt-4">
+            <li>+ Pemindaian kualitas 12 pair</li>
+            <li>+ Kalkulator risiko Prop Firm ($2.5k & $15k)</li>
+            <li>+ Transparansi penuh data backtest 10 tahun</li>
+            <li class="text-zinc-600">- Sinyal Grade A++ terkunci</li>
+            <li class="text-zinc-600">- Plot otomatis SL/TP di grafik terkunci</li>
           </ul>
         </div>
-        <button onclick="activateFreePlan()" class="tactile-btn w-full py-2.5 border border-zinc-800 bg-black text-xs font-bold text-zinc-400 hover:text-white hover:border-white">
-          SELECT FREE TIER
+        <button onclick="activateFreePlan()" class="tactile-btn w-full py-2.5 border border-zinc-800 bg-black text-xs font-semibold text-zinc-300 hover:text-white hover:border-white">
+          Gunakan Paket Gratis
         </button>
       </div>
 
-      <div class="p-6 border-2 border-white bg-black flex flex-col justify-between space-y-6 relative">
-        <span class="absolute -top-2.5 right-4 px-2 py-0.5 bg-white text-black text-[10px] font-bold">
-          RECOMMENDED
+      <div class="p-6 rounded-md border border-white bg-black flex flex-col justify-between space-y-6 relative">
+        <span class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded bg-white text-black text-[10px] font-mono font-bold">
+          REKOMENDASI
         </span>
         <div class="space-y-4">
           <div>
-            <span class="text-[10px] text-white uppercase">TIER 02</span>
-            <h3 class="text-base font-bold text-white mt-0.5">PRO SNIPER A++</h3>
-            <div class="mt-3 text-2xl font-bold text-white">Rp 149.000 <span class="text-xs text-zinc-500 font-normal">/ BLN</span></div>
+            <span class="text-xs text-zinc-300">Akses Penuh Bulanan</span>
+            <h3 class="text-base font-bold text-white mt-0.5">Pro Sniper A++</h3>
+            <div class="mt-3 text-2xl font-bold font-mono text-white">Rp 149.000 <span class="text-xs text-zinc-500 font-normal">/ bln</span></div>
           </div>
-          <ul class="space-y-2 text-xs text-zinc-300 border-t border-zinc-900 pt-4 font-sans">
-            <li>+ Semua 12 Pair (XAUUSD, GBPJPY, dll.)</li>
-            <li>+ Akses Penuh Mode Scalping, Swing & Position</li>
-            <li>+ Timeframe Intraday M5, M15, H1, & H4</li>
-            <li>+ Auto-Plot Entry, SL & TP Real-Time</li>
-            <li>+ Audio Alert & Trade Journal Penuh</li>
+          <ul class="space-y-2.5 text-xs text-zinc-300 border-t border-zinc-900 pt-4">
+            <li>+ Semua 12 Pair (termasuk XAUUSD & GBPJPY)</li>
+            <li>+ Akses penuh mode Scalping, Swing & Position</li>
+            <li>+ Timeframe M5, M15, H1, & H4</li>
+            <li>+ Garis Entry, SL & TP otomatis di grafik</li>
+            <li>+ Notifikasi suara & Jurnal Trading penuh</li>
           </ul>
         </div>
-        <button onclick="openCheckoutModal('PRO SNIPER (1 BULAN)', 'Rp 149.000')" class="tactile-btn w-full py-2.5 bg-white text-black text-xs font-bold uppercase hover:bg-zinc-200">
-          UPGRADE TO PRO
+        <button onclick="openCheckoutModal('PRO SNIPER (1 BULAN)', 'Rp 149.000')" class="tactile-btn w-full py-2.5 bg-white text-black text-xs font-semibold hover:bg-zinc-200">
+          Upgrade ke Pro
         </button>
       </div>
 
-      <div class="p-6 border border-zinc-900 bg-black flex flex-col justify-between space-y-6">
+      <div class="p-6 rounded-md border border-zinc-900 bg-black flex flex-col justify-between space-y-6">
         <div class="space-y-4">
           <div>
-            <span class="text-[10px] text-zinc-500 uppercase">TIER 03</span>
-            <h3 class="text-base font-bold text-white mt-0.5">PROP DESK (90 DAYS)</h3>
-            <div class="mt-3 text-2xl font-bold text-white">Rp 349.000 <span class="text-xs text-zinc-500 font-normal">/ 3 BLN</span></div>
+            <span class="text-xs text-zinc-500">Paket 3 Bulan</span>
+            <h3 class="text-base font-bold text-white mt-0.5">Prop Desk (90 Hari)</h3>
+            <div class="mt-3 text-2xl font-bold font-mono text-white">Rp 349.000 <span class="text-xs text-zinc-500 font-normal">/ 3 bln</span></div>
           </div>
-          <ul class="space-y-2 text-xs text-zinc-400 border-t border-zinc-900 pt-4 font-sans">
-            <li>+ Seluruh Fitur Pro Sniper A++</li>
-            <li>+ Prioritas Koneksi Pyth Stream</li>
-            <li>+ Preset Evaluasi Prop Firm Lengkap</li>
-            <li>+ Indikator Pine Script v5 Eksklusif</li>
-            <li>+ Hemat 22% Biaya Langganan</li>
+          <ul class="space-y-2.5 text-xs text-zinc-400 border-t border-zinc-900 pt-4">
+            <li>+ Seluruh fitur Pro Sniper A++</li>
+            <li>+ Prioritas aliran data Pyth Spot</li>
+            <li>+ Preset evaluasi Prop Firm lengkap</li>
+            <li>+ Indikator Pine Script v5 eksklusif</li>
+            <li>+ Hemat 22% biaya berlangganan</li>
           </ul>
         </div>
-        <button onclick="openCheckoutModal('PROP DESK (3 BULAN)', 'Rp 349.000')" class="tactile-btn w-full py-2.5 border border-zinc-700 bg-black text-xs font-bold text-white hover:border-white">
-          SELECT 90-DAY PASS
+        <button onclick="openCheckoutModal('PROP DESK (3 BULAN)', 'Rp 349.000')" class="tactile-btn w-full py-2.5 border border-zinc-700 bg-black text-xs font-semibold text-white hover:border-white">
+          Pilih Paket 90 Hari
         </button>
       </div>
     </div>
   </section>
 
   <!-- MODAL CHECKOUT -->
-  <div id="checkoutModal" class="fixed inset-0 bg-black/95 z-50 hidden items-center justify-center p-4">
-    <div class="w-full max-w-md border border-white bg-black p-6 space-y-5 font-mono">
+  <div id="checkoutModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-md border border-zinc-700 bg-black p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-zinc-900 pb-3">
         <div>
-          <h3 id="checkoutPlanTitle" class="text-xs font-bold text-white">PRO SNIPER</h3>
-          <span id="checkoutPlanPrice" class="text-sm font-bold text-white">Rp 149.000</span>
+          <h3 id="checkoutPlanTitle" class="text-sm font-bold text-white">Pro Sniper</h3>
+          <span id="checkoutPlanPrice" class="text-sm font-mono font-bold text-zinc-300">Rp 149.000</span>
         </div>
         <button onclick="closeCheckoutModal()" class="text-zinc-500 hover:text-white">✕</button>
       </div>
 
-      <div class="grid grid-cols-2 gap-1 p-1 bg-black border border-zinc-900 text-xs">
-        <button onclick="switchPayMethod('qris')" id="payTabQris" class="tactile-btn py-1.5 bg-white text-black font-bold">QRIS INSTANT</button>
-        <button onclick="switchPayMethod('card')" id="payTabCard" class="tactile-btn py-1.5 text-zinc-500 hover:text-white">CARD / STRIPE</button>
+      <div class="grid grid-cols-2 gap-1 p-1 rounded bg-black border border-zinc-900 text-xs font-medium">
+        <button onclick="switchPayMethod('qris')" id="payTabQris" class="tactile-btn py-1.5 bg-white text-black font-semibold">QRIS Instan</button>
+        <button onclick="switchPayMethod('card')" id="payTabCard" class="tactile-btn py-1.5 text-zinc-400 hover:text-white">Kartu / Stripe</button>
       </div>
 
       <div id="payContentQris" class="space-y-3 text-center">
-        <div class="mx-auto w-44 h-44 bg-white p-3 flex flex-col items-center justify-center">
+        <div class="mx-auto w-44 h-44 rounded bg-white p-3 flex flex-col items-center justify-center">
           <div class="w-full h-full border-4 border-black grid grid-cols-5 grid-rows-5 gap-1 p-1">
             <div class="bg-black col-span-2 row-span-2"></div>
             <div class="bg-black"></div>
@@ -839,82 +817,83 @@
             <div class="bg-black"></div>
             <div class="bg-black col-span-2"></div>
           </div>
-          <span class="text-[9px] font-bold text-black mt-1">NMID: ID2026SWINGPULSE</span>
+          <span class="text-[9px] font-mono font-bold text-black mt-1">NMID: ID2026SWINGPULSE</span>
         </div>
-        <p class="text-[11px] text-zinc-400 font-sans">Scan QRIS di atas lalu klik konfirmasi untuk mengaktifkan status PRO.</p>
+        <p class="text-xs text-zinc-400">Scan QRIS di atas lalu klik konfirmasi untuk mengaktifkan status PRO.</p>
       </div>
 
       <div id="payContentCard" class="hidden space-y-3 text-xs">
         <div>
-          <label class="text-zinc-500 block mb-1 text-[10px]">CARD NUMBER</label>
-          <input type="text" placeholder="4242 •••• •••• 4242" class="w-full bg-black border border-zinc-800 px-3 py-2 text-white focus:border-white focus:outline-none" />
+          <label class="text-zinc-400 block mb-1">Nomor Kartu</label>
+          <input type="text" placeholder="4242 •••• •••• 4242" class="w-full rounded bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:border-white focus:outline-none" />
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <input type="text" placeholder="MM/YY" class="w-full bg-black border border-zinc-800 px-3 py-2 text-white focus:border-white focus:outline-none" />
-          <input type="text" placeholder="CVC" class="w-full bg-black border border-zinc-800 px-3 py-2 text-white focus:border-white focus:outline-none" />
+          <input type="text" placeholder="MM/YY" class="w-full rounded bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:border-white focus:outline-none" />
+          <input type="text" placeholder="CVC" class="w-full rounded bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:border-white focus:outline-none" />
         </div>
       </div>
 
-      <button onclick="confirmSubscriptionUpgrade()" class="tactile-btn w-full py-2.5 bg-white text-black text-xs font-bold uppercase hover:bg-zinc-200">
-        CONFIRM & UNLOCK PRO
+      <button onclick="confirmSubscriptionUpgrade()" class="tactile-btn w-full py-2.5 bg-white text-black text-xs font-semibold hover:bg-zinc-200">
+        Konfirmasi & Aktifkan Pro
       </button>
     </div>
   </div>
 
   <!-- MODAL AUTH -->
-  <div id="authModal" class="fixed inset-0 bg-black/95 z-50 hidden items-center justify-center p-4">
-    <div class="w-full max-w-md border border-white bg-black p-6 space-y-5 font-mono">
+  <div id="authModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-md border border-zinc-700 bg-black p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-zinc-900 pb-3">
-        <h3 id="authModalTitle" class="text-xs font-bold uppercase text-white">TERMINAL AUTHENTICATION</h3>
+        <h3 id="authModalTitle" class="text-sm font-bold text-white">Autentikasi Akun</h3>
         <button onclick="closeAuthModal()" class="text-zinc-500 hover:text-white">✕</button>
       </div>
 
-      <div class="grid grid-cols-2 gap-1 p-1 bg-black border border-zinc-900 text-xs">
-        <button onclick="switchAuthTab('login')" id="tabLoginBtn" class="tactile-btn py-1.5 bg-white text-black font-bold">LOGIN</button>
-        <button onclick="switchAuthTab('register')" id="tabRegisterBtn" class="tactile-btn py-1.5 text-zinc-500 hover:text-white">REGISTER</button>
+      <div class="grid grid-cols-2 gap-1 p-1 rounded bg-black border border-zinc-900 text-xs font-medium">
+        <button onclick="switchAuthTab('login')" id="tabLoginBtn" class="tactile-btn py-1.5 bg-white text-black font-semibold">Masuk</button>
+        <button onclick="switchAuthTab('register')" id="tabRegisterBtn" class="tactile-btn py-1.5 text-zinc-400 hover:text-white">Daftar Baru</button>
       </div>
 
-      <div id="authMessageBox" class="hidden p-3 border border-white text-white text-xs"></div>
+      <div id="authMessageBox" class="hidden p-3 rounded border border-zinc-700 text-white text-xs font-mono"></div>
 
-      <form onsubmit="handleAuthSubmit(event)" class="space-y-3 text-xs">
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-3.5 text-xs">
         <div id="fullNameField" class="hidden">
-          <label class="text-zinc-500 block mb-1 text-[10px]">TRADER HANDLE</label>
-          <input type="text" id="authFullName" placeholder="Username" class="w-full bg-black border border-zinc-800 px-3 py-2 text-white focus:outline-none focus:border-white" />
+          <label class="text-zinc-400 block mb-1">Username Trader</label>
+          <input type="text" id="authFullName" placeholder="Nama tampilan" class="w-full rounded bg-black border border-zinc-800 px-3 py-2 text-white focus:outline-none focus:border-white" />
         </div>
         <div>
-          <label class="text-zinc-500 block mb-1 text-[10px]">EMAIL ADDRESS</label>
-          <input type="email" id="authEmail" required placeholder="trader@domain.com" class="w-full bg-black border border-zinc-800 px-3 py-2 text-white focus:outline-none focus:border-white" />
+          <label class="text-zinc-400 block mb-1">Alamat Email</label>
+          <input type="email" id="authEmail" required placeholder="trader@domain.com" class="w-full rounded bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none focus:border-white" />
         </div>
         <div>
-          <label class="text-zinc-500 block mb-1 text-[10px]">PASSWORD</label>
-          <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full bg-black border border-zinc-800 px-3 py-2 text-white focus:outline-none focus:border-white" />
+          <label class="text-zinc-400 block mb-1">Password</label>
+          <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full rounded bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none focus:border-white" />
         </div>
         <div id="registerTierField" class="hidden pt-1">
-          <label class="text-zinc-500 block mb-1 text-[10px]">SELECT INITIAL TIER</label>
+          <label class="text-zinc-400 block mb-1.5">Pilih Paket Awal</label>
           <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center gap-2 p-2 border border-zinc-800 cursor-pointer">
+            <label class="flex items-center gap-2 p-2.5 rounded border border-zinc-800 cursor-pointer">
               <input type="radio" name="regTier" value="free" class="accent-white" />
-              <span>FREE</span>
+              <span>Free Tier</span>
             </label>
-            <label class="flex items-center gap-2 p-2 border border-white cursor-pointer">
+            <label class="flex items-center gap-2 p-2.5 rounded border border-white cursor-pointer">
               <input type="radio" name="regTier" value="pro" checked class="accent-white" />
-              <span class="font-bold">PRO</span>
+              <span class="font-semibold">Pro Tier</span>
             </label>
           </div>
         </div>
-        <button type="submit" id="authSubmitBtn" class="tactile-btn w-full py-2.5 bg-white text-black font-bold uppercase hover:bg-zinc-200 mt-2">
-          ACCESS TERMINAL
+        <button type="submit" id="authSubmitBtn" class="tactile-btn w-full py-2.5 bg-white text-black font-semibold hover:bg-zinc-200 mt-2">
+          Masuk ke Terminal
         </button>
       </form>
     </div>
   </div>
 
-  <!-- MONOCHROME TOAST NOTIFICATION (FEEDBACK MIKRO INSTAN) -->
-  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 hidden bg-white text-black px-4 py-2.5 border border-black font-mono text-xs font-bold shadow-2xl">
-    ✓ COPIED TO CLIPBOARD
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 hidden rounded bg-white text-black px-4 py-2.5 border border-zinc-300 font-mono text-xs font-semibold shadow-2xl">
+    ✓ TERSALIN KE CLIPBOARD
   </div>
 
-  <!-- EXTERNAL APPLICATION LOGIC -->
+  <!-- CORE ENGINE (TETAP UTUH) & UI/UX ENHANCER MODULE (app2.js) -->
   <script src="app.js" defer></script>
+  <script src="app2.js" defer></script>
 </body>
 </html>
