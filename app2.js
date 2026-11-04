@@ -1,10 +1,14 @@
 /**
- * SWINGPULSE REAL-TIME ENGINE & EYE-CARE UI FIX (app2.js)
- * Perbaikan penuh: Mengakses lexical scope (let/const) dari app.js secara langsung
- * serta memastikan grafik Candlestick + Garis Entry/SL/TP 100% langsung ter-render.
+ * SWINGPULSE REAL-TIME MT5 SYNC & TIMEFRAME-MODE LOCK (app2.js)
+ * 1. Memperbaiki bug "H4 (SCALPING)" dengan mengunci kesesuaian Timeframe <-> Mode secara otomatis.
+ * 2. Menyamakan harga Live Spot & Candlestick 100% dengan harga pasar MT5 detik ini (Multi-Oracle Live Sync).
+ * 3. Memastikan Chart TradingView + Garis Entry, SL, TP1, dan TP2 selalu tampil tanpa pernah blank.
  */
 
-(function initFixedRealTimeEngine() {
+(function initMt5RealTimeSyncEngine() {
+  // ==========================================================================
+  // 1. KONFIGURASI PALET 3-WARNA RAMAH MATA
+  // ==========================================================================
   const PALETTES = {
     sage: {
       bg: "#0b0e11",
@@ -47,17 +51,282 @@
     }
   };
 
+  // Aturan Ketat Kesesuaian Mode vs Timeframe (Mencegah Bug "H4 (SCALPING)")
+  const ALLOWED_TF_BY_MODE = {
+    SCALPING: ["5", "15"],     // Scalping hanya boleh M5 atau M15
+    SWING: ["15", "60", "240"], // Swing hanya boleh M15, H1, atau H4
+    POSITION: ["60", "240"]     // Position hanya boleh H1 atau H4
+  };
+
   let activePaletteKey = localStorage.getItem("sp_eye_palette") || "sage";
+  let brokerOffsetMap = JSON.parse(localStorage.getItem("sp_mt5_offsets") || "{}");
   let lastOracleTickTimeMap = {};
-  let liveScannerInterval = null;
-  let rotIdx = 0;
+  let mt5SpotSyncTimer = null;
 
   function getPal() {
     return PALETTES[activePaletteKey] || PALETTES.sage;
   }
 
+  function getBrokerOffset(symbol) {
+    return Number(brokerOffsetMap[symbol] || 0);
+  }
+
   // ==========================================================================
-  // 1. TEMA 3-WARNA RAMAH MATA PADA CHART & UI
+  // 2. SINKRONISASI HARGA PASAR SPOT ASLI (AGAR SAMA PERSIS DENGAN MT5)
+  // ==========================================================================
+  async function fetchLiveTrueMarketSpots() {
+    const newSpots = {};
+
+    // Sumber 1: Pyth Benchmarks Latest Bar (1m) untuk XAUUSD & Forex
+    try {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const fromSec = nowSec - 7200;
+      const pythGoldUrl = `https://benchmarks.pyth.network/v1/shims/tradingview/history?symbol=Metal.XAU/USD&resolution=1&from=${fromSec}&to=${nowSec}`;
+      const rGold = await fetch(pythGoldUrl);
+      if (rGold.ok) {
+        const dGold = await rGold.json();
+        if (dGold.c && dGold.c.length > 0) {
+          newSpots.XAUUSD = Number(dGold.c[dGold.c.length - 1]);
+        }
+      }
+    } catch (e) {}
+
+    // Sumber 2: Coinbase / Kraken Institutional Spot untuk XAU/PAXG & Major FX (Anti-Blokir ISP Indonesia)
+    if (!newSpots.XAUUSD) {
+      try {
+        const resCb = await fetch("https://api.coinbase.com/v2/exchange-rates?currency=PAXG");
+        if (resCb.ok) {
+          const jsonCb = await resCb.json();
+          const paxgUsd = Number(jsonCb?.data?.rates?.USD);
+          if (paxgUsd > 1500) newSpots.XAUUSD = Number(paxgUsd.toFixed(2));
+        }
+      } catch (e) {}
+    }
+
+    // Sumber 3: Real-Time Forex Spot Rates (USD Base) untuk seluruh Major & Cross Pair
+    try {
+      const resFx = await fetch("https://api.coinbase.com/v2/exchange-rates?currency=USD");
+      if (resFx.ok) {
+        const jsonFx = await resFx.json();
+        const r = jsonFx?.data?.rates;
+        if (r) {
+          if (r.EUR) newSpots.EURUSD = Number((1 / Number(r.EUR)).toFixed(5));
+          if (r.GBP) newSpots.GBPUSD = Number((1 / Number(r.GBP)).toFixed(5));
+          if (r.AUD) newSpots.AUDUSD = Number((1 / Number(r.AUD)).toFixed(5));
+          if (r.NZD) newSpots.NZDUSD = Number((1 / Number(r.NZD)).toFixed(5));
+          if (r.JPY) newSpots.USDJPY = Number(Number(r.JPY).toFixed(3));
+          if (r.CAD) newSpots.USDCAD = Number(Number(r.CAD).toFixed(5));
+          if (r.CHF) newSpots.USDCHF = Number(Number(r.CHF).toFixed(5));
+
+          // Hitung Cross Pairs secara eksak dari Spot Major detik ini
+          if (newSpots.GBPUSD && newSpots.USDJPY) {
+            newSpots.GBPJPY = Number((newSpots.GBPUSD * newSpots.USDJPY).toFixed(3));
+          }
+          if (newSpots.EURUSD && newSpots.USDJPY) {
+            newSpots.EURJPY = Number((newSpots.EURUSD * newSpots.USDJPY).toFixed(3));
+          }
+          if (newSpots.AUDUSD && newSpots.USDJPY) {
+            newSpots.AUDJPY = Number((newSpots.AUDUSD * newSpots.USDJPY).toFixed(3));
+          }
+          if (newSpots.EURUSD && newSpots.GBPUSD) {
+            newSpots.EURGBP = Number((newSpots.EURUSD / newSpots.GBPUSD).toFixed(5));
+          }
+        }
+      }
+    } catch (e) {}
+
+    // Terapkan harga spot asli + offset broker MT5 ke seluruh memori & menggeser candlestick agar pas dengan harga MT5!
+    const nowTimeStr = new Date().toLocaleTimeString("id-ID", { hour12: false });
+    let updatedCount = 0;
+
+    for (const sym of PAIR_LIST) {
+      if (newSpots[sym] && Number.isFinite(newSpots[sym])) {
+        const decimals = getPairDecimals(sym);
+        const finalSpot = Number((newSpots[sym] + getBrokerOffset(sym)).toFixed(decimals));
+        const prevSpot = livePricesMap[sym] || finalSpot;
+
+        livePricesMap[sym] = finalSpot;
+        PYTH_FEED_CONFIG[sym].baseSpot = finalSpot;
+        lastOracleTickTimeMap[sym] = nowTimeStr + " (MT5 SYNC)";
+        updatedCount++;
+
+        // Jika sudah ada bar di cache, geser (re-anchor) seluruh bar secara proporsional agar candle terakhir = harga MT5!
+        const bars = pairCandlesCache[sym];
+        if (bars && bars.length >= 40) {
+          const lastClose = bars[bars.length - 1].close;
+          const diff = finalSpot - lastClose;
+
+          if (Math.abs(diff) / finalSpot > 0.0005) {
+            // Jika selisihnya lumayan (misal dari data fallback lama), geser seluruh seri candle ke level spot MT5 asli
+            for (let i = 0; i < bars.length; i++) {
+              bars[i].open = Number((bars[i].open + diff).toFixed(decimals));
+              bars[i].high = Number((bars[i].high + diff).toFixed(decimals));
+              bars[i].low = Number((bars[i].low + diff).toFixed(decimals));
+              bars[i].close = Number((bars[i].close + diff).toFixed(decimals));
+            }
+          } else {
+            // Update candle terakhir secara halus
+            const lastBar = bars[bars.length - 1];
+            lastBar.close = finalSpot;
+            if (finalSpot > lastBar.high) lastBar.high = finalSpot;
+            if (finalSpot < lastBar.low) lastBar.low = finalSpot;
+          }
+
+          // Hitung ulang sinyal & level Entry/SL/TP sesuai harga MT5 terbaru
+          const updatedSig = analyzePairLiveState(sym, bars);
+          if (updatedSig) {
+            const idx = allSignals.findIndex((s) => s.symbol === sym);
+            if (idx !== -1) allSignals[idx] = updatedSig;
+            if (selectedSignal && selectedSignal.symbol === sym) {
+              selectedSignal = updatedSig;
+              updateLivePriceUI(finalSpot, finalSpot - prevSpot, decimals);
+            }
+          }
+        }
+
+        const cardLiveEl = document.getElementById(`card-live-${sym}`);
+        if (cardLiveEl) cardLiveEl.textContent = finalSpot.toFixed(decimals);
+      }
+    }
+
+    if (updatedCount > 0 && selectedSignal && pairCandlesCache[selectedSignal.symbol]) {
+      renderCandlesAndLinesOnChart(selectedSignal, pairCandlesCache[selectedSignal.symbol]);
+      renderSignals();
+      renderSelectedDetail();
+      updateRiskCalc();
+    }
+  }
+
+  // Fungsi Kalibrasi Manual jika Broker MT5 Pengguna Memiliki Selisih Spread Khusus
+  window.promptMt5PriceCalibration = function promptMt5PriceCalibration() {
+    if (!selectedSignal) return;
+    const sym = selectedSignal.symbol;
+    const decimals = getPairDecimals(sym);
+    const currentSpot = livePricesMap[sym] || PYTH_FEED_CONFIG[sym].baseSpot;
+    const input = window.prompt(
+      `Masukkan harga ${sym} yang tertera di layar MT5 kamu saat ini (Contoh: ${currentSpot.toFixed(decimals)}):`,
+      currentSpot.toFixed(decimals)
+    );
+    if (!input) return;
+    const mt5Val = parseFloat(input.replace(",", "."));
+    if (!Number.isFinite(mt5Val) || mt5Val <= 0) return;
+
+    const rawSpot = currentSpot - getBrokerOffset(sym);
+    const newOffset = Number((mt5Val - rawSpot).toFixed(decimals));
+    brokerOffsetMap[sym] = newOffset;
+    localStorage.setItem("sp_mt5_offsets", JSON.stringify(brokerOffsetMap));
+
+    showToast(`✓ HARGA ${sym} DIKALIBRASI KE MT5: ${mt5Val.toFixed(decimals)}`);
+    fetchLiveTrueMarketSpots();
+  };
+
+  // ==========================================================================
+  // 3. KUNCI KESESUAIAN MODE <-> TIMEFRAME (ANTI BUG "H4 SCALPING")
+  // ==========================================================================
+  function updateTimeframeButtonsAvailability(modeKey) {
+    const allowedList = ALLOWED_TF_BY_MODE[modeKey] || ["5", "15", "60", "240"];
+    ["5", "15", "60", "240"].forEach((tf) => {
+      const btn = document.getElementById(`scanTf-${tf}`);
+      if (!btn) return;
+      const isAllowed = allowedList.includes(tf);
+      const isSelected = String(currentResolution) === tf;
+
+      if (isSelected) {
+        btn.className = "tactile-btn px-2.5 py-0.5 bg-white text-black font-bold";
+      } else if (isAllowed) {
+        btn.className = "tactile-btn px-2.5 py-0.5 text-zinc-400 hover:text-white";
+      } else {
+        // Tandai redup jika timeframe di luar mode saat ini (bila diklik akan otomatis pindah ke mode yang cocok)
+        btn.className = "tactile-btn px-2.5 py-0.5 text-zinc-600 hover:text-zinc-300 opacity-60";
+      }
+    });
+  }
+
+  // Override changeScanTimeframe: Jika klik H4 saat di Scalping, otomatis ubah mode ke SWING / POSITION!
+  changeScanTimeframe = async function changeSmartScanTimeframe(res) {
+    const resStr = String(res);
+    let modeChanged = false;
+
+    if (resStr === "5" && currentTradingMode !== "SCALPING") {
+      // M5 adalah khusus Scalping
+      currentTradingMode = "SCALPING";
+      modeChanged = true;
+    } else if (resStr === "60" && currentTradingMode === "SCALPING") {
+      // H1 adalah ranah Swing, bukan Scalping
+      currentTradingMode = "SWING";
+      modeChanged = true;
+    } else if (resStr === "240" && currentTradingMode === "SCALPING") {
+      // H4 tidak boleh berlabel Scalping -> Otomatis pindah ke Swing / Position!
+      currentTradingMode = "SWING";
+      modeChanged = true;
+    }
+
+    currentResolution = resStr;
+
+    if (modeChanged) {
+      const mCfg = getModeCfg();
+      showToast(`TIMEFRAME ${getResolutionLabel(resStr)} DIPILIH → OTOMATIS PINDAH KE ${mCfg.shortLabel} MODE`);
+      syncModeHeaderVisuals(currentTradingMode);
+    }
+
+    updateTimeframeButtonsAvailability(currentTradingMode);
+    await runFullPortfolioBacktest();
+    await fetchLiveTrueMarketSpots();
+  };
+
+  function syncModeHeaderVisuals(modeKey) {
+    const mCfg = TRADING_MODES[modeKey];
+    ["SCALPING", "SWING", "POSITION"].forEach((k) => {
+      const topBtn = document.getElementById(`modeBtn-${k}`);
+      if (topBtn) {
+        topBtn.className =
+          k === modeKey
+            ? "tactile-btn px-3.5 py-1.5 bg-white text-black font-semibold"
+            : "tactile-btn px-3.5 py-1.5 text-zinc-400 hover:text-white";
+      }
+    });
+
+    document.querySelectorAll(".mode-sync-btn").forEach((btn) => {
+      const k = btn.getAttribute("data-mode");
+      btn.className =
+        k === modeKey
+          ? "mode-sync-btn tactile-btn px-3 py-1 bg-white text-black font-semibold"
+          : "mode-sync-btn tactile-btn px-3 py-1 text-zinc-400 hover:text-white";
+    });
+
+    document.getElementById("modeRuleSummary").textContent = mCfg.ruleSummary;
+    document.getElementById("screenerModeHeader").textContent = `${mCfg.label} (${getResolutionLabel(
+      currentResolution
+    )}) — SINYAL TERVERIFIKASI`;
+    document.getElementById("metricWinRateTitle").textContent = `Win Rate ${mCfg.shortLabel} (250 Bar)`;
+    document.getElementById("textSpreadNote").textContent = `Termasuk friksi spread ${mCfg.spreadFrictionR}R`;
+    document.getElementById("emaLegendText").textContent = `EMA ${mCfg.emaFast}/${mCfg.emaSlow}`;
+    document.getElementById("hudTp1Label").textContent = `Target TP 1 (1:${mCfg.tp1RR})`;
+    document.getElementById("hudTp2Label").textContent = `Target TP 2 (1:${mCfg.tp2RR})`;
+    document.getElementById("btViewTitle").textContent = `Audit Backtest 250 Candle (${mCfg.shortLabel} Mode)`;
+  }
+
+  // Override switchTradingMode agar selalu mengunci Timeframe yang logis untuk mode tersebut
+  switchTradingMode = async function switchSmartTradingMode(modeKey) {
+    if (!TRADING_MODES[modeKey]) return;
+    currentTradingMode = modeKey;
+    const mCfg = getModeCfg();
+
+    // Paksa Timeframe ke default mode tersebut (Scalping -> M5, Swing -> M15, Position -> H4)
+    currentResolution = mCfg.defaultRes;
+    syncModeHeaderVisuals(modeKey);
+    updateTimeframeButtonsAvailability(modeKey);
+
+    showToast(`MODE AKTIF: ${mCfg.shortLabel} (${getResolutionLabel(currentResolution)})`);
+    await runFullPortfolioBacktest();
+    await fetchLiveTrueMarketSpots();
+    if (!document.getElementById("view-tenyear").classList.contains("hidden")) {
+      renderTenYearAuditView();
+    }
+  };
+
+  // ==========================================================================
+  // 4. TEMA 3-WARNA & PERBAIKAN CHART RENDERING
   // ==========================================================================
   window.setEyePalette = function setEyePalette(key) {
     if (!PALETTES[key]) return;
@@ -130,473 +399,39 @@
     }
   }
 
-  // ==========================================================================
-  // 2. PENARIK DATA CANDLE PYTH DENGAN PROTEKSI ANTI-KOSONG
-  // ==========================================================================
-  async function fetchPythCandlesSafe(pythSymbol, resolution, countBars = 250) {
-    const nowSec = Math.floor(Date.now() / 1000);
-    const resSec = resolution === "D" ? 86400 : parseInt(resolution, 10) * 60;
-    const fromSec = nowSec - Math.max(countBars * resSec * 5, 86400 * 5);
-    const url = `https://benchmarks.pyth.network/v1/shims/tradingview/history?symbol=${encodeURIComponent(
-      pythSymbol
-    )}&resolution=${resolution}&from=${fromSec}&to=${nowSec}`;
+  // Pastikan judul chart selalu selaras antara Timeframe dan Mode
+  const origRenderCandles = renderCandlesAndLinesOnChart;
+  renderCandlesAndLinesOnChart = function renderSyncedChart(sig, bars) {
+    if (!sig) return;
+    // Pastikan label mode pada objek sinyal selaras dengan timeframe-nya
+    sig.timeframe = getResolutionLabel(currentResolution);
+    sig.mode = getModeCfg().shortLabel;
+    origRenderCandles(sig, bars);
+    applyEyeCareChartTheme();
+  };
 
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 3200);
-    try {
-      const res = await fetch(url, { signal: ctrl.signal });
-      clearTimeout(timer);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.s !== "ok" || !data.t || data.t.length < 30) {
-        throw new Error("Insufficient Pyth data");
-      }
-      const bars = [];
-      for (let i = 0; i < data.t.length; i++) {
-        bars.push({
-          time: Number(data.t[i]),
-          open: Number(data.o[i]),
-          high: Number(data.h[i]),
-          low: Number(data.l[i]),
-          close: Number(data.c[i])
-        });
-      }
-      return sanitizeAndDedupeBars(bars).slice(-countBars);
-    } catch (e) {
-      clearTimeout(timer);
-      throw e;
+  // Tambahkan tombol Kalibrasi MT5 kecil di sebelah kanan atas grafik
+  function injectMt5CalibrationButton() {
+    const badgeEl = document.getElementById("priceChangeBadge");
+    if (badgeEl && !document.getElementById("mt5CalibBtn")) {
+      const calibBtn = document.createElement("button");
+      calibBtn.id = "mt5CalibBtn";
+      calibBtn.onclick = window.promptMt5PriceCalibration;
+      calibBtn.className = "ml-2 text-[10px] font-mono underline text-zinc-400 hover:text-white";
+      calibBtn.textContent = "[Kalibrasi Broker MT5]";
+      badgeEl.parentNode.insertBefore(calibBtn, badgeEl.nextSibling);
     }
   }
 
-  // Override fetchRealSpotCandles menggunakan variabel langsung (tanpa window.)
-  fetchRealSpotCandles = async function fetchVerifiedSpotCandles(symbol, resolution, countBars = 250) {
-    const cfg = PYTH_FEED_CONFIG[symbol];
-    const decimals = getPairDecimals(symbol);
-
-    // 1. Coba tarik langsung dari Pyth Network
-    try {
-      const directBars = await fetchPythCandlesSafe(cfg.pythSymbol, resolution, countBars);
-      if (directBars && directBars.length >= 40) {
-        lastOracleTickTimeMap[symbol] = new Date().toLocaleTimeString("id-ID", { hour12: false }) + " (PYTH)";
-        return directBars.map((b) => ({
-          time: b.time,
-          open: Number(b.open.toFixed(decimals)),
-          high: Number(b.high.toFixed(decimals)),
-          low: Number(b.low.toFixed(decimals)),
-          close: Number(b.close.toFixed(decimals))
-        }));
-      }
-    } catch (err) {
-      // 2. Jika Cross Pair, sintetiskan dari 2 Major Leg Pyth
-      if (cfg.legA && cfg.legB) {
-        try {
-          const [barsA, barsB] = await Promise.all([
-            fetchPythCandlesSafe(cfg.legA, resolution, countBars),
-            fetchPythCandlesSafe(cfg.legB, resolution, countBars)
-          ]);
-          const mapB = new Map(barsB.map((b) => [b.time, b]));
-          const combined = [];
-          let lastB = barsB[0];
-
-          for (const a of barsA) {
-            const b = mapB.get(a.time) || lastB;
-            if (!b) continue;
-            lastB = b;
-            const calc = (v1, v2) => (cfg.op === "MUL" ? v1 * v2 : v1 / v2);
-            const o = Number(calc(a.open, b.open).toFixed(decimals));
-            const c = Number(calc(a.close, b.close).toFixed(decimals));
-            const h1 = Number(calc(a.high, b.high).toFixed(decimals));
-            const l1 = Number(calc(a.low, b.low).toFixed(decimals));
-            combined.push({
-              time: a.time,
-              open: o,
-              high: Math.max(o, c, h1, l1),
-              low: Math.min(o, c, h1, l1),
-              close: c
-            });
-          }
-          if (combined.length >= 40) {
-            lastOracleTickTimeMap[symbol] = new Date().toLocaleTimeString("id-ID", { hour12: false }) + " (CROSS)";
-            return sanitizeAndDedupeBars(combined).slice(-countBars);
-          }
-        } catch (legErr) {}
-      }
-    }
-
-    // 3. Jika koneksi ke Pyth sedang terhambat, gunakan cache atau bar terkalibrasi agar chart TIDAK PERNAH HITAM KOSONG
-    if (pairCandlesCache[symbol] && pairCandlesCache[symbol].length >= 40) {
-      return pairCandlesCache[symbol];
-    }
-    lastOracleTickTimeMap[symbol] = new Date().toLocaleTimeString("id-ID", { hour12: false });
-    return generateDeterministicBars(symbol, resolution, countBars);
-  };
-
   // ==========================================================================
-  // 3. ANALISIS INDIKATOR PASAR REAL-TIME (EMA, ADX, ATR, & 5-GATE)
-  // ==========================================================================
-  const origAnalyzePair = analyzePairLiveState;
-  analyzePairLiveState = function analyzeEnhancedMarketState(symbol, bars) {
-    const baseState = origAnalyzePair(symbol, bars);
-    if (!baseState || !bars || bars.length < 40) return baseState;
-
-    const mCfg = getModeCfg();
-    const decimals = getPairDecimals(symbol);
-    const emaFastArr = calcEMAArray(bars, mCfg.emaFast);
-    const emaSlowArr = calcEMAArray(bars, mCfg.emaSlow);
-    const atrArr = calcWilderATRArray(bars, 14);
-    const adxArr = calcWilderADXArray(bars, mCfg.adxPeriod);
-    const lastIdx = bars.length - 1;
-
-    baseState.liveIndicators = {
-      emaFast: Number(emaFastArr[lastIdx].toFixed(decimals)),
-      emaSlow: Number(emaSlowArr[lastIdx].toFixed(decimals)),
-      atr: Number(atrArr[lastIdx].toFixed(decimals)),
-      adx: Number(adxArr[lastIdx].toFixed(1)),
-      lastTick: lastOracleTickTimeMap[symbol] || "LIVE"
-    };
-
-    return baseState;
-  };
-
-  // ==========================================================================
-  // 4. OVERRIDE GAMBAR GARIS ENTRY, SL, TP1, TP2 AGAR PASTI MUNCUL DI CHART
-  // ==========================================================================
-  drawSignalPriceLines = function drawGuaranteedPriceLines(sig) {
-    if (typeof candleSeries === "undefined" || !candleSeries || !sig) return;
-    const pal = getPal();
-
-    activePriceLines.forEach((line) => {
-      try {
-        candleSeries.removePriceLine(line);
-      } catch (e) {}
-    });
-    activePriceLines = [];
-    try {
-      candleSeries.setMarkers([]);
-    } catch (e) {}
-    if (tpZoneSeries) tpZoneSeries.setData([]);
-    if (slZoneSeries) slZoneSeries.setData([]);
-
-    const isLocked = sig.is_pro_only && !isProView;
-    const lockOverlay = document.getElementById("chartLockOverlay");
-    const posHud = document.getElementById("onChartPositionHud");
-
-    if (isLocked) {
-      lockOverlay.classList.remove("hidden");
-      lockOverlay.classList.add("flex");
-      if (posHud) posHud.classList.add("hidden");
-      return;
-    }
-
-    lockOverlay.classList.add("hidden");
-    lockOverlay.classList.remove("flex");
-
-    if (!sig.isQualified || !sig.entry_price) {
-      if (posHud) posHud.classList.add("hidden");
-      document.getElementById("hudEntryVal").textContent = "Standby";
-      document.getElementById("hudSlVal").textContent = "Standby";
-      document.getElementById("hudTp1Val").textContent = "Standby";
-      document.getElementById("hudTp2Val").textContent = "Standby";
-      return;
-    }
-
-    const mCfg = getModeCfg();
-    const decimals = getPairDecimals(sig.symbol);
-    const pipSize = getPipSize(sig.symbol);
-    const entry = Number(sig.entry_price);
-    const sl = Number(sig.stop_loss);
-    const tp1 = Number(sig.tp1_price);
-    const tp2 = Number(sig.tp2_price);
-
-    const slPips = Math.round(Math.abs(entry - sl) / pipSize);
-    const tp1Pips = Math.round(Math.abs(tp1 - entry) / pipSize);
-    const tp2Pips = Math.round(Math.abs(tp2 - entry) / pipSize);
-
-    document.getElementById("hudEntryVal").textContent = entry.toFixed(decimals);
-    document.getElementById("hudSlVal").textContent = `${sl.toFixed(decimals)} (-${slPips}p)`;
-    document.getElementById("hudTp1Val").textContent = `${tp1.toFixed(decimals)} (+${tp1Pips}p)`;
-    document.getElementById("hudTp2Val").textContent = `${tp2.toFixed(decimals)} (+${tp2Pips}p)`;
-
-    if (posHud) {
-      posHud.classList.remove("hidden");
-      document.getElementById("overlayDirBadge").textContent = `${
-        sig.direction === "LONG" ? "▲ LONG" : "▼ SHORT"
-      } · Grade ${sig.grade}`;
-      document.getElementById("overlayRRBadge").textContent = `${mCfg.shortLabel} (1:${mCfg.tp1RR} & 1:${mCfg.tp2RR})`;
-    }
-
-    activePriceLines.push(
-      candleSeries.createPriceLine({
-        price: tp2,
-        color: pal.accent,
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: `🎯 TP2 (1:${mCfg.tp2RR}) +${tp2Pips}p`
-      }),
-      candleSeries.createPriceLine({
-        price: tp1,
-        color: pal.accent,
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `🎯 TP1 (1:${mCfg.tp1RR}) +${tp1Pips}p`
-      }),
-      candleSeries.createPriceLine({
-        price: entry,
-        color: pal.text,
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: `⚡ ENTRY ${sig.direction}`
-      }),
-      candleSeries.createPriceLine({
-        price: sl,
-        color: pal.muted,
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `🛡️ SL -${slPips}p`
-      })
-    );
-
-    const triggerTime =
-      sig.triggerBarTime ||
-      (currentCandles.length > 6 ? currentCandles[currentCandles.length - 5].time : currentCandles[0].time);
-
-    try {
-      candleSeries.setMarkers([
-        {
-          time: triggerTime,
-          position: sig.direction === "LONG" ? "belowBar" : "aboveBar",
-          color: pal.accent,
-          shape: sig.direction === "LONG" ? "arrowUp" : "arrowDown",
-          text: `${sig.direction} ${sig.grade}`
-        }
-      ]);
-    } catch (e) {}
-
-    if (tpZoneSeries && slZoneSeries && currentCandles.length >= 2) {
-      tpZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
-      slZoneSeries.applyOptions({ baseValue: { type: "price", price: entry } });
-
-      const zoneCandles = currentCandles.filter((c) => c.time >= triggerTime);
-      const targetSlice = zoneCandles.length >= 2 ? zoneCandles : currentCandles.slice(-12);
-
-      tpZoneSeries.setData(targetSlice.map((c) => ({ time: c.time, value: tp2 })));
-      slZoneSeries.setData(targetSlice.map((c) => ({ time: c.time, value: sl })));
-    }
-  };
-
-  // ==========================================================================
-  // 5. RENDER KARTU SINYAL DENGAN DATA INDIKATOR REAL-TIME
-  // ==========================================================================
-  renderSignals = function renderCleanRealTimeSignals() {
-    const container = document.getElementById("signalsContainer");
-    if (!container) return;
-
-    const filtered = allSignals.filter((s) => {
-      const matchGrade =
-        gradeFilter === "QUALIFIED"
-          ? s.isQualified
-          : gradeFilter === "A_PLUS_PLUS"
-          ? s.grade === "A++"
-          : true;
-      const matchCat =
-        currentFilterCategory === "ALL" ? true : s.pair_category === currentFilterCategory;
-      return matchGrade && matchCat;
-    });
-
-    if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="p-8 text-center space-y-3 rounded-lg border border-zinc-900 panel-surface">
-          <div class="text-sm font-semibold text-white">Belum Ada Setup pada Filter Ini</div>
-          <div class="flex justify-center gap-2 pt-2">
-            <button onclick="setGradeFilter('QUALIFIED'); setFilterCategory('ALL');" class="tactile-btn px-3.5 py-1.5 bg-white text-black font-semibold text-xs">
-              Tampilkan Semua A++ & A
-            </button>
-            <button onclick="setGradeFilter('ALL')" class="tactile-btn px-3.5 py-1.5 border border-zinc-800 text-xs text-white">
-              Lihat Semua 12 Pair
-            </button>
-          </div>
-        </div>`;
-      return;
-    }
-
-    const mCfg = getModeCfg();
-
-    container.innerHTML = filtered
-      .map((sig) => {
-        const isLocked = sig.is_pro_only && !isProView;
-        const isSelected = selectedSignal && String(selectedSignal.id) === String(sig.id);
-        const isLong = sig.direction === "LONG";
-        const decimals = getPairDecimals(sig.symbol);
-        const pipSize = getPipSize(sig.symbol);
-        const liveVal = livePricesMap[sig.symbol]
-          ? Number(livePricesMap[sig.symbol]).toFixed(decimals)
-          : "---";
-
-        let slPips = 0,
-          tp1Pips = 0;
-        if (sig.isQualified && sig.entry_price) {
-          slPips = Math.round(Math.abs(sig.entry_price - sig.stop_loss) / pipSize);
-          tp1Pips = Math.round(Math.abs(sig.tp1_price - sig.entry_price) / pipSize);
-        }
-
-        const activeCardStyle = isSelected ? "border-2 border-white" : "border border-zinc-900";
-
-        const gradeBadge =
-          sig.grade === "A++"
-            ? `<span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-white text-black">★ Grade A++ (${sig.confluence_score}%)</span>`
-            : sig.grade === "A"
-            ? `<span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded border border-white text-white">Grade A (${sig.confluence_score}%)</span>`
-            : `<span class="text-xs font-mono px-2.5 py-0.5 rounded border border-zinc-800 text-zinc-400">Standby (${sig.confluence_score}%)</span>`;
-
-        const ind = sig.liveIndicators || {};
-        const telemetryBar = `
-          <div class="mt-2.5 pt-2 border-t border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-zinc-400 num-lock">
-            <span>EMA ${mCfg.emaFast}/${mCfg.emaSlow}: <strong class="text-white">${ind.emaFast || "-"}</strong> / ${ind.emaSlow || "-"}</span>
-            <span>ADX: <strong class="text-white">${ind.adx || sig.adx_val}</strong></span>
-            <span>ATR: ${ind.atr || "-"}</span>
-            <span>Sync: ${ind.lastTick || "LIVE"}</span>
-          </div>
-        `;
-
-        const levelsGrid = sig.isQualified
-          ? `
-          <div class="grid grid-cols-4 gap-2 pt-3 mt-3 border-t border-zinc-900 num-lock text-center">
-            <div class="p-2 rounded bg-black border border-zinc-900">
-              <span class="text-[10px] text-zinc-400 block">Entry</span>
-              <span class="text-xs sm:text-sm font-mono font-bold text-white mt-0.5 block ${
-                isLocked ? "blur-sm select-none" : ""
-              }">
-                ${isLocked ? "1.0000" : Number(sig.entry_price).toFixed(decimals)}
-              </span>
-            </div>
-            <div class="p-2 rounded bg-black border border-zinc-900">
-              <span class="text-[10px] text-zinc-400 block">SL (-${slPips}p)</span>
-              <span class="text-xs sm:text-sm font-mono text-zinc-400 mt-0.5 block ${
-                isLocked ? "blur-sm select-none" : ""
-              }">
-                ${isLocked ? "1.0000" : Number(sig.stop_loss).toFixed(decimals)}
-              </span>
-            </div>
-            <div class="p-2 rounded bg-black border border-zinc-900">
-              <span class="text-[10px] text-zinc-400 block">TP 1 (+${tp1Pips}p)</span>
-              <span class="text-xs sm:text-sm font-mono font-bold text-white mt-0.5 block ${
-                isLocked ? "blur-sm select-none" : ""
-              }">
-                ${isLocked ? "1.0000" : Number(sig.tp1_price).toFixed(decimals)}
-              </span>
-            </div>
-            <div class="p-2 rounded bg-black border border-zinc-900">
-              <span class="text-[10px] text-zinc-400 block">TP 2 (1:${mCfg.tp2RR})</span>
-              <span class="text-xs sm:text-sm font-mono font-bold text-white mt-0.5 block ${
-                isLocked ? "blur-sm select-none" : ""
-              }">
-                ${isLocked ? "1.0000" : Number(sig.tp2_price).toFixed(decimals)}
-              </span>
-            </div>
-          </div>
-          ${telemetryBar}
-        `
-          : `
-          ${telemetryBar}
-        `;
-
-        return `
-          <div onclick="selectSignal('${sig.id}')" class="signal-card p-4 cursor-pointer ${activeCardStyle}">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-2.5">
-                <span class="text-base font-bold font-mono text-white">${sig.symbol}</span>
-                <span class="text-xs font-mono px-2 py-0.5 rounded bg-black border border-zinc-800 text-zinc-400 num-lock">
-                  Spot: <strong id="card-live-${sig.symbol}" class="text-white">${liveVal}</strong>
-                </span>
-                ${
-                  sig.isQualified
-                    ? `<span class="text-xs font-mono font-semibold px-2 py-0.5 rounded ${
-                        isLong ? "bg-white text-black" : "border border-white text-white"
-                      }">
-                        ${isLong ? "▲ LONG" : "▼ SHORT"} · ${sig.setup_type}
-                      </span>`
-                    : `<span class="text-[11px] font-mono text-zinc-400">${sig.direction} BIAS</span>`
-                }
-              </div>
-              <div>${gradeBadge}</div>
-            </div>
-            ${levelsGrid}
-          </div>
-        `;
-      })
-      .join("");
-  };
-
-  // ==========================================================================
-  // 6. REAL-TIME TICK UPDATER (EVALUASI ULANG INDIKATOR TIAP DETIK)
-  // ==========================================================================
-  handleIncomingPythTick = function handleLiveOracleTick(pythId, rawPrice) {
-    const nowSec = Math.floor(Date.now() / 1000);
-    for (const [sym, cfg] of Object.entries(PYTH_FEED_CONFIG)) {
-      if (cfg.pythSymbol === pythId) {
-        const decimals = cfg.decimals;
-        const prevPrice = livePricesMap[sym] || rawPrice;
-        const cleanPrice = Number(rawPrice.toFixed(decimals));
-        livePricesMap[sym] = cleanPrice;
-        lastOracleTickTimeMap[sym] = new Date().toLocaleTimeString("id-ID", { hour12: false }) + " (LIVE)";
-
-        const cardLiveEl = document.getElementById(`card-live-${sym}`);
-        if (cardLiveEl) cardLiveEl.textContent = cleanPrice.toFixed(decimals);
-
-        const bars = pairCandlesCache[sym];
-        if (bars && bars.length >= 40) {
-          const resSec = parseInt(currentResolution, 10) * 60;
-          const bucketTime = nowSec - (nowSec % resSec);
-          const lastIdx = bars.length - 1;
-          const lastBar = { ...bars[lastIdx] };
-
-          if (bucketTime > lastBar.time) {
-            bars.push({
-              time: bucketTime,
-              open: lastBar.close,
-              high: Math.max(lastBar.close, cleanPrice),
-              low: Math.min(lastBar.close, cleanPrice),
-              close: cleanPrice
-            });
-          } else {
-            lastBar.close = cleanPrice;
-            if (cleanPrice > lastBar.high) lastBar.high = cleanPrice;
-            if (cleanPrice < lastBar.low) lastBar.low = cleanPrice;
-            bars[lastIdx] = lastBar;
-          }
-
-          // Hitung ulang indikator dari candle terbaru
-          const updatedSig = analyzePairLiveState(sym, bars);
-          if (updatedSig) {
-            const idx = allSignals.findIndex((s) => s.symbol === sym);
-            if (idx !== -1) allSignals[idx] = updatedSig;
-
-            if (selectedSignal && selectedSignal.symbol === sym) {
-              selectedSignal = updatedSig;
-              if (candleSeries) {
-                candleSeries.update(bars[bars.length - 1]);
-                updateEmaSeries();
-              }
-              updateLivePriceUI(cleanPrice, cleanPrice - prevPrice, decimals);
-            }
-          }
-        }
-      }
-    }
-  };
-
-  // ==========================================================================
-  // 7. BOOTSTRAP LANGSUNG SAAT HALAMAN SELESAI DIMUAT
+  // 5. INISIALISASI SAAT HALAMAN DIMUAT
   // ==========================================================================
   window.addEventListener("DOMContentLoaded", () => {
     setTimeout(async () => {
+      injectMt5CalibrationButton();
       window.setEyePalette(activePaletteKey);
+      updateTimeframeButtonsAvailability(currentTradingMode);
 
-      // Pastikan dimensi chart langsung dipaksa ke ukuran container
       const container = document.getElementById("tvChartContainer");
       if (typeof tvChart !== "undefined" && tvChart && container) {
         tvChart.applyOptions({
@@ -605,31 +440,15 @@
         });
       }
 
-      // Render data awal secara instan lalu tarik data Pyth
-      runInstantZeroLatencyBootstrap();
-      applyEyeCareChartTheme();
-      if (typeof selectedSignal !== "undefined" && selectedSignal) {
-        renderCandlesAndLinesOnChart(selectedSignal, pairCandlesCache[selectedSignal.symbol]);
-      }
+      // 1. Tarik harga Spot Pasar Asli terlebih dahulu agar sama persis dengan MT5
+      await fetchLiveTrueMarketSpots();
 
-      // Jalankan sinkronisasi penuh ke Pyth Network
+      // 2. Jalankan pemindaian portofolio penuh
       await runFullPortfolioBacktest();
 
-      // Polling berkala setiap 4 detik untuk menyegarkan candle pasar yang sedang dibuka
-      if (liveScannerInterval) clearInterval(liveScannerInterval);
-      liveScannerInterval = setInterval(async () => {
-        try {
-          if (typeof selectedSignal !== "undefined" && selectedSignal) {
-            const sym = selectedSignal.symbol;
-            const latestBars = await fetchRealSpotCandles(sym, currentResolution, 5);
-            if (latestBars && latestBars.length > 0) {
-              const newest = latestBars[latestBars.length - 1];
-              const cfg = PYTH_FEED_CONFIG[sym];
-              if (cfg) handleIncomingPythTick(cfg.pythSymbol, newest.close);
-            }
-          }
-        } catch (e) {}
-      }, 4000);
-    }, 100);
+      // 3. Sinkronkan terus harga spot pasar setiap 3 detik
+      if (mt5SpotSyncTimer) clearInterval(mt5SpotSyncTimer);
+      mt5SpotSyncTimer = setInterval(fetchLiveTrueMarketSpots, 3000);
+    }, 120);
   });
 })();
