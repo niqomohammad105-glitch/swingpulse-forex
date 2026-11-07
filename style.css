@@ -1,0 +1,190 @@
+/**
+ * SWINGPULSE CUSTOM STYLESHEET (style.css)
+ * Strict 3-Color Anti-Glare Monochrome System (Zero Glassmorphism)
+ * 1. Pitch Black / Matte Carbon (--c-bg / --c-surface)
+ * 2. Soft Anti-Glare Platinum (--c-text / --c-accent)
+ * 3. Muted Zinc Slate (--c-muted / --c-border)
+ */
+
+:root,
+body[data-palette="mono"] {
+  --c-bg: #000000;
+  --c-surface: #0a0a0c;
+  --c-surface-hover: #111115;
+  --c-border: #18181b;
+  --c-text: #e4e4e7;
+  --c-muted: #71717a;
+  --c-accent: #e4e4e7;
+  --c-accent-fg: #000000;
+}
+
+body[data-palette="sage"] {
+  --c-bg: #07090b;
+  --c-surface: #0e1318;
+  --c-surface-hover: #141b22;
+  --c-border: #1b242e;
+  --c-text: #d8e0e8;
+  --c-muted: #64748b;
+  --c-accent: #2dd4bf;
+  --c-accent-fg: #041513;
+}
+
+body[data-palette="amber"] {
+  --c-bg: #080706;
+  --c-surface: #12100e;
+  --c-surface-hover: #1a1714;
+  --c-border: #26211c;
+  --c-text: #e7e2dd;
+  --c-muted: #78716c;
+  --c-accent: #f59e0b;
+  --c-accent-fg: #140c02;
+}
+
+/* Base Body & Custom Crosshair Precision Cursor */
+body {
+  background-color: var(--c-bg) !important;
+  color: var(--c-text) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  cursor: default;
+}
+
+/* Override Warna Bawaan agar Patuh Aturan 3-Warna Anti-Silau */
+.bg-black {
+  background-color: var(--c-bg) !important;
+}
+
+.panel-surface,
+.sp-header {
+  background-color: var(--c-surface) !important;
+  border-color: var(--c-border) !important;
+}
+
+.bg-white {
+  background-color: var(--c-accent) !important;
+  color: var(--c-accent-fg) !important;
+}
+
+.text-white {
+  color: var(--c-text) !important;
+}
+
+.text-black {
+  color: var(--c-accent-fg) !important;
+}
+
+.text-zinc-300,
+.text-zinc-400,
+.text-zinc-500 {
+  color: var(--c-muted) !important;
+}
+
+.border-zinc-900,
+.border-zinc-800,
+.border-zinc-700 {
+  border-color: var(--c-border) !important;
+}
+
+.border-white {
+  border-color: var(--c-accent) !important;
+}
+
+.divide-zinc-900 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--c-border) !important;
+}
+
+/* Komponen Panel & Kartu Metrik */
+.sp-panel {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+}
+
+.sp-chart-box {
+  border-color: var(--c-border);
+  cursor: crosshair;
+}
+
+.sp-metric-card {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  transition: border-color 0.15s ease;
+}
+
+.sp-metric-card:hover {
+  border-color: var(--c-muted);
+}
+
+/* Input Form Monokrom */
+.sp-input {
+  width: 100%;
+  background-color: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--c-text);
+  transition: border-color 0.15s ease;
+}
+
+.sp-input:focus {
+  outline: none;
+  border-color: var(--c-accent);
+}
+
+/* Kartu Sinyal Ergonomis */
+.signal-card {
+  background-color: var(--c-surface) !important;
+  border-radius: 8px;
+  transition: border-color 0.14s ease, background-color 0.14s ease, transform 0.1s ease;
+}
+
+.signal-card:hover {
+  background-color: var(--c-surface-hover) !important;
+  border-color: var(--c-muted) !important;
+}
+
+.signal-card.is-selected {
+  border: 1.5px solid var(--c-accent) !important;
+  background-color: var(--c-surface-hover) !important;
+}
+
+/* Tombol Interaktif */
+.tactile-btn {
+  border-radius: 6px;
+  transition: background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease, transform 0.08s ease;
+  cursor: pointer;
+}
+
+.tactile-btn:active {
+  transform: translateY(1px);
+}
+
+/* Kunci Lebar Angka agar Tidak Bergetar saat Live Tick */
+.num-lock {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar Minimalis */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--c-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--c-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-muted);
+}
