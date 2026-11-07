@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwingPulse — Eye-Care Quantitative Forex Terminal</title>
+  <title>SwingPulse — Institutional Quantitative Forex Terminal</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -25,110 +25,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    /* ======================================================================
-       STRICT 3-COLOR EYE-CARE PALETTE SYSTEM (ZERO GLARE / NO #FFFFFF)
-       1. Base Carbon (--c-bg / --c-surface)
-       2. Soft Alabaster & Slate (--c-text / --c-muted)
-       3. Calm Accent (--c-accent)
-       ====================================================================== */
-    :root, body[data-palette="sage"] {
-      --c-bg: #0b0e11;
-      --c-surface: #12171d;
-      --c-surface-hover: #171e26;
-      --c-border: #1e2631;
-      --c-text: #d8e0e8;
-      --c-muted: #64748b;
-      --c-accent: #2dd4bf;
-      --c-accent-fg: #071917;
-    }
-
-    body[data-palette="graphite"] {
-      --c-bg: #0c0c0e;
-      --c-surface: #141418;
-      --c-surface-hover: #1c1c22;
-      --c-border: #24242c;
-      --c-text: #d4d4d8;
-      --c-muted: #71717a;
-      --c-accent: #a1a1aa;
-      --c-accent-fg: #09090b;
-    }
-
-    body[data-palette="amber"] {
-      --c-bg: #0e0c0a;
-      --c-surface: #171411;
-      --c-surface-hover: #211c18;
-      --c-border: #29231e;
-      --c-text: #e7e2dd;
-      --c-muted: #78716c;
-      --c-accent: #f59e0b;
-      --c-accent-fg: #140c02;
-    }
-
-    body {
-      background-color: var(--c-bg) !important;
-      color: var(--c-text) !important;
-      overflow-x: hidden;
-      line-height: 1.55;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Redam seluruh warna putih/hitam ekstrem bawaan app.js menjadi 3 warna lembut */
-    .bg-black { background-color: var(--c-bg) !important; }
-    .bg-zinc-950, .panel-surface { background-color: var(--c-surface) !important; }
-    .bg-white {
-      background-color: var(--c-accent) !important;
-      color: var(--c-accent-fg) !important;
-    }
-    .text-white { color: var(--c-text) !important; }
-    .text-black { color: var(--c-accent-fg) !important; }
-    .text-zinc-300, .text-zinc-400, .text-zinc-500 { color: var(--c-muted) !important; }
-    .border-zinc-900, .border-zinc-800, .border-zinc-700 { border-color: var(--c-border) !important; }
-    .border-white { border-color: var(--c-accent) !important; }
-    .divide-zinc-900 > :not([hidden]) ~ :not([hidden]) { border-color: var(--c-border) !important; }
-
-    .num-lock { font-variant-numeric: tabular-nums; }
-    
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--c-bg); }
-    ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--c-muted); }
-    
-    .signal-card {
-      background-color: var(--c-surface) !important;
-      border-radius: 8px;
-      transition: border-color 0.15s ease, background-color 0.15s ease;
-    }
-    .signal-card:hover {
-      background-color: var(--c-surface-hover) !important;
-    }
-    .tactile-btn {
-      border-radius: 6px;
-      transition: all 0.15s ease;
-    }
-    .tactile-btn:active {
-      transform: translateY(1px);
-    }
-  </style>
+  <!-- Custom External Stylesheet (UI/UX Anti-Glare 3-Color System) -->
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body data-palette="sage" class="min-h-screen antialiased">
+<body data-palette="mono" class="min-h-screen antialiased">
 
-  <!-- TOP NAVBAR (TENANG & RAPI) -->
-  <header class="border-b border-zinc-900 panel-surface sticky top-0 z-40">
+  <!-- TOP NAVBAR -->
+  <header class="sp-header sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
       
       <div class="flex items-center gap-6">
@@ -138,12 +41,12 @@
           </div>
           <div>
             <span class="font-bold tracking-tight text-base text-white block leading-none">SwingPulse</span>
-            <span class="text-[11px] text-zinc-400 font-mono block mt-1">Quant Screener</span>
+            <span class="text-[11px] text-zinc-400 font-mono block mt-1">QUANT TERMINAL v7.0</span>
           </div>
         </div>
 
-        <!-- Menu Navigasi Utama -->
-        <nav class="hidden md:flex items-center gap-1.5 text-xs font-medium">
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-1 text-xs font-medium">
           <button onclick="switchMainTab('screener')" id="nav-screener" class="tactile-btn px-3.5 py-1.5 bg-white text-black font-semibold">
             Screener
           </button>
@@ -163,13 +66,11 @@
         </nav>
       </div>
 
-      <!-- Kontrol Kanan + Sakelar 3-Warna Ramah Mata -->
+      <!-- Right Controls & 3-Color Theme Switcher -->
       <div class="flex items-center gap-2.5">
-        
-        <!-- Pilihan 3 Palet (Masing-Masing Maksimal 3 Warna) -->
-        <div class="hidden lg:flex items-center gap-1 p-1 rounded-md border border-zinc-800 bg-black text-[11px]" title="Pilih Palet 3-Warna Ramah Mata">
-          <button onclick="setEyePalette('sage')" id="pal-sage" class="px-2 py-1 rounded bg-white text-black font-semibold transition">Sage</button>
-          <button onclick="setEyePalette('graphite')" id="pal-graphite" class="px-2 py-1 rounded text-zinc-400 hover:text-white transition">Graphite</button>
+        <div class="hidden lg:flex items-center gap-1 p-1 rounded-md border border-zinc-800 bg-black text-[11px] font-mono" title="Pilih Palet 3-Warna Anti-Silau">
+          <button onclick="setEyePalette('mono')" id="pal-mono" class="px-2 py-1 rounded bg-white text-black font-semibold transition">Mono</button>
+          <button onclick="setEyePalette('sage')" id="pal-sage" class="px-2 py-1 rounded text-zinc-400 hover:text-white transition">Sage</button>
           <button onclick="setEyePalette('amber')" id="pal-amber" class="px-2 py-1 rounded text-zinc-400 hover:text-white transition">Amber</button>
         </div>
 
@@ -179,7 +80,7 @@
 
         <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono border border-zinc-800 bg-black text-zinc-400">
           <span id="wsStatusDot" class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-          <span id="wsStatusText" class="hidden xl:inline num-lock text-[11px]">LIVE</span>
+          <span id="wsStatusText" class="hidden xl:inline num-lock text-[11px]">LIVE SYNC</span>
         </div>
 
         <button onclick="toggleProMode()" id="tierToggleBtn" class="tactile-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-white bg-white text-black">
@@ -202,7 +103,7 @@
       </div>
     </div>
 
-    <!-- Navigasi Mobile -->
+    <!-- Mobile Navigation -->
     <div class="flex md:hidden border-t border-zinc-900 panel-surface px-3 py-2 justify-around text-xs font-medium overflow-x-auto">
       <button onclick="switchMainTab('screener')" id="mnav-screener" class="py-1 px-2 text-white font-semibold">Screener</button>
       <button onclick="switchMainTab('backtest')" id="mnav-backtest" class="py-1 px-2 text-zinc-400">Audit 250-Bar</button>
@@ -217,10 +118,10 @@
   <!-- ======================================================================= -->
   <main id="view-screener" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
     
-    <!-- Baris Kontrol Mode Trading & Ringkasan Status -->
-    <div class="p-4 rounded-lg border border-zinc-900 panel-surface flex flex-wrap items-center justify-between gap-4">
+    <!-- Baris Kontrol Mode Strategi & Sesi Pasar -->
+    <div class="sp-panel p-4 flex flex-wrap items-center justify-between gap-4">
       <div class="flex flex-wrap items-center gap-3">
-        <span class="text-xs font-medium text-zinc-400">Gaya Trading:</span>
+        <span class="text-xs font-medium text-zinc-400">Mode Strategi:</span>
         <div class="flex flex-wrap gap-1.5 p-1 rounded-md border border-zinc-800 bg-black text-xs font-medium">
           <button onclick="switchTradingMode('SCALPING')" id="modeBtn-SCALPING" class="tactile-btn px-3.5 py-1.5 bg-white text-black font-semibold">
             ⚡ Scalping (M5/M15)
@@ -234,7 +135,8 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-4 text-xs font-mono num-lock text-zinc-400">
+      <div class="flex flex-wrap items-center gap-4 text-xs font-mono num-lock text-zinc-400">
+        <span id="killzoneBadge" class="px-2 py-0.5 rounded border border-zinc-800 bg-black text-white">SESSION: ACTIVE</span>
         <span id="modeRuleSummary" class="hidden xl:inline">EMA 20/50 · SL 1.0x ATR · TP 1.6R & 2.5R</span>
         <span id="activeGradeSummary" class="text-white font-semibold">Memindai...</span>
         <span id="tickCounterBadge">Ticks: <strong class="text-white">0</strong></span>
@@ -243,42 +145,42 @@
 
     <!-- 4 Kartu Metrik Utama -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 num-lock">
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span id="metricWinRateTitle" class="text-xs text-zinc-400 block">Win Rate (250 Candle)</span>
         <span id="metricWinRate" class="text-xl font-bold font-mono text-white mt-1.5 block">--%</span>
         <span id="metricSampleSize" class="text-[11px] text-zinc-400 block mt-1">Titik Impas: 38.0%</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block">Profit Factor Bersih</span>
         <span id="metricProfitFactor" class="text-xl font-bold font-mono text-white mt-1.5 block">--</span>
         <span id="textSpreadNote" class="text-[11px] text-zinc-400 block mt-1">Termasuk potongan spread</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block">Sinyal Aktif Terverifikasi</span>
         <span id="metricActiveCount" class="text-xl font-bold font-mono text-white mt-1.5 block">-- / 12 Pair</span>
         <span id="metricModeFreqNote" class="text-[11px] text-zinc-400 block mt-1">Hanya Grade A++ & A</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface cursor-pointer hover:border-white transition" onclick="openTenYearOverlayDirectly()">
+      <div class="sp-metric-card cursor-pointer hover:border-white transition" onclick="openTenYearOverlayDirectly()">
         <span id="metric10YTitle" class="text-xs text-zinc-400 block">Data Backtest 10 Tahun →</span>
         <span id="metricTenYearCagr" class="text-xl font-bold font-mono text-white mt-1.5 block">Buka Grafik</span>
         <span id="metric10YTradesCount" class="text-[11px] text-zinc-400 underline block mt-1">Perbandingan 3 kurva</span>
       </div>
     </div>
 
-    <!-- Proporsi Seimbang 50:50 (6 Kolom Kiri Sinyal : 6 Kolom Kanan Grafik Lebar) -->
+    <!-- Layout Seimbang 50:50 (6 Kolom Kiri Daftar Sinyal : 6 Kolom Kanan Grafik Sticky) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       
       <!-- KOLOM KIRI (6 KOLOM): FILTER & DAFTAR SINYAL -->
       <div class="lg:col-span-6 space-y-4">
         
-        <div class="p-4 rounded-lg border border-zinc-900 panel-surface space-y-3.5">
+        <div class="sp-panel p-4 space-y-3.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 id="screenerModeHeader" class="text-sm font-semibold text-white">
                 Sinyal Terverifikasi (Grade A++ & A)
               </h2>
               <p id="screenerModeSub" class="text-xs text-zinc-400 mt-0.5">
-                Pilih pair untuk menampilkan visualisasi Entry, SL, dan TP di grafik samping.
+                Pilih kartu pair untuk menampilkan garis Entry, SL, dan TP pada grafik.
               </p>
             </div>
 
@@ -306,24 +208,24 @@
             <div class="flex items-center gap-1.5 text-xs">
               <span class="text-zinc-400">TF:</span>
               <div class="flex gap-1 p-0.5 rounded-md border border-zinc-800 bg-black font-mono text-[11px]">
-                <button onclick="changeScanTimeframe('5')" id="scanTf-5" class="tactile-btn px-2 py-0.5 bg-white text-black font-bold">M5</button>
-                <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="tactile-btn px-2 py-0.5 text-zinc-400 hover:text-white">M15</button>
-                <button onclick="changeScanTimeframe('60')" id="scanTf-60" class="tactile-btn px-2 py-0.5 text-zinc-400 hover:text-white">H1</button>
-                <button onclick="changeScanTimeframe('240')" id="scanTf-240" class="tactile-btn px-2 py-0.5 text-zinc-400 hover:text-white">H4</button>
+                <button onclick="changeScanTimeframe('5')" id="scanTf-5" class="tactile-btn px-2.5 py-0.5 bg-white text-black font-bold">M5</button>
+                <button onclick="changeScanTimeframe('15')" id="scanTf-15" class="tactile-btn px-2.5 py-0.5 text-zinc-400 hover:text-white">M15</button>
+                <button onclick="changeScanTimeframe('60')" id="scanTf-60" class="tactile-btn px-2.5 py-0.5 text-zinc-400 hover:text-white">H1</button>
+                <button onclick="changeScanTimeframe('240')" id="scanTf-240" class="tactile-btn px-2.5 py-0.5 text-zinc-400 hover:text-white">H4</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Wadah Kartu Sinyal -->
+        <!-- Daftar Kartu Sinyal -->
         <div id="signalsContainer" class="space-y-3"></div>
       </div>
 
-      <!-- KOLOM KANAN (6 KOLOM): GRAFIK LEBAR, KALKULATOR LOT & AUDIT -->
+      <!-- KOLOM KANAN (6 KOLOM): GRAFIK STICKY, KALKULATOR LOT & AUDIT 5-GERBANG -->
       <div class="lg:col-span-6 lg:sticky lg:top-20 space-y-5">
         
-        <!-- Kartu Grafik TradingView -->
-        <div class="p-5 rounded-lg border border-zinc-800 panel-surface space-y-4">
+        <!-- Modul Grafik TradingView -->
+        <div class="sp-panel sp-chart-box p-5 space-y-4">
           
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -331,7 +233,9 @@
                 <span id="chartTitle" class="text-lg font-bold font-mono text-white">XAUUSD · M5</span>
                 <span id="chartGradeBadge" class="text-xs font-mono px-2.5 py-0.5 rounded bg-white text-black font-semibold">★ GRADE A++</span>
               </div>
-              <span id="priceChangeBadge" class="text-xs font-mono text-zinc-400 block mt-0.5">Live Pyth Spot Feed</span>
+              <div class="flex items-center gap-2 mt-1">
+                <span id="priceChangeBadge" class="text-xs font-mono text-zinc-400">Live Spot Feed</span>
+              </div>
             </div>
 
             <div class="text-right font-mono num-lock">
@@ -342,7 +246,7 @@
             </div>
           </div>
 
-          <!-- Bar Level Entry, SL, TP1, TP2 yang Jelas & Terbaca -->
+          <!-- Bar Parameter Level Entry, SL, TP1, TP2 -->
           <div id="chartSlTpQuickBar" class="grid grid-cols-4 gap-2 p-3 rounded-md border border-zinc-800 bg-black font-mono num-lock text-center">
             <div>
               <span class="text-[11px] text-zinc-400 block">Entry</span>
@@ -367,13 +271,13 @@
             <span class="text-[10px] border border-black px-1.5 py-0.5 rounded">REALTIME HIT</span>
           </div>
 
-          <!-- Area Kanvas Grafik (Tinggi 380px & Lebar Lega) -->
+          <!-- Area Kanvas Grafik (380px) -->
           <div class="relative w-full h-[380px] rounded-md bg-black border border-zinc-800 overflow-hidden">
             <div id="tvChartContainer" style="width: 100%; height: 380px;"></div>
             <div id="officialTvWidgetContainer" class="hidden" style="width: 100%; height: 380px;"></div>
 
-            <!-- Label Kecil di Pojok Grafik (Tidak Menutupi Candlestick) -->
-            <div id="onChartPositionHud" class="pointer-events-none absolute top-2.5 left-2.5 z-10 bg-black/85 border border-zinc-800 px-2.5 py-1 rounded font-mono text-[11px] flex items-center gap-2 num-lock">
+            <!-- Badge Ringkas di Sudut Kiri Atas Kanvas -->
+            <div id="onChartPositionHud" class="pointer-events-none absolute top-2.5 left-2.5 z-10 bg-black/90 border border-zinc-800 px-2.5 py-1 rounded font-mono text-[11px] flex items-center gap-2 num-lock">
               <span id="overlayDirBadge" class="text-white font-semibold">▲ LONG</span>
               <span class="text-zinc-500">·</span>
               <span id="overlayRRBadge" class="text-zinc-400">SCALPING</span>
@@ -414,8 +318,8 @@
           </div>
         </div>
 
-        <!-- Kalkulator Lot Prop Firm -->
-        <div class="p-5 rounded-lg border border-zinc-900 panel-surface space-y-4">
+        <!-- Kalkulator Lot & Risiko Prop Firm -->
+        <div class="sp-panel p-5 space-y-4">
           <div class="flex items-center justify-between">
             <span class="text-sm font-semibold text-white">Kalkulator Lot & Risiko Prop Firm</span>
             <div class="flex gap-1.5 font-mono text-xs num-lock">
@@ -427,11 +331,11 @@
           <div class="grid grid-cols-2 gap-3 text-xs">
             <div>
               <label class="text-zinc-400 block mb-1.5">Saldo Akun ($)</label>
-              <input type="number" id="balanceInput" value="2500" oninput="updateRiskCalc()" class="num-lock w-full rounded-md bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none focus:border-white" />
+              <input type="number" id="balanceInput" value="2500" oninput="updateRiskCalc()" class="sp-input num-lock" />
             </div>
             <div>
               <label class="text-zinc-400 block mb-1.5">Risiko per Trade (%)</label>
-              <input type="number" id="riskInput" step="0.1" value="0.5" oninput="updateRiskCalc()" class="num-lock w-full rounded-md bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none focus:border-white" />
+              <input type="number" id="riskInput" step="0.1" value="0.5" oninput="updateRiskCalc()" class="sp-input num-lock" />
             </div>
           </div>
 
@@ -451,8 +355,8 @@
           </button>
         </div>
 
-        <!-- Ringkasan 5-Gerbang Indikator -->
-        <div class="p-5 rounded-lg border border-zinc-900 panel-surface space-y-3">
+        <!-- Ringkasan Validasi 5-Gerbang -->
+        <div class="sp-panel p-5 space-y-3">
           <div class="flex items-center justify-between border-b border-zinc-800 pb-2.5">
             <span class="text-sm font-semibold text-white">Validasi 5-Gerbang Indikator</span>
             <span id="detailSymbolBadge" class="text-xs font-mono text-zinc-400 num-lock">-</span>
@@ -492,25 +396,25 @@
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
-      <div class="p-5 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block font-sans">Total Transaksi</span>
         <span id="btTotalTrades" class="text-2xl font-bold text-white mt-1 block">0</span>
       </div>
-      <div class="p-5 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block font-sans">Win Rate Aktual</span>
         <span id="btWinRate" class="text-2xl font-bold text-white mt-1 block">0.0%</span>
       </div>
-      <div class="p-5 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block font-sans">Akumulasi R Bersih</span>
         <span id="btNetR" class="text-2xl font-bold text-white mt-1 block">+0.0R</span>
       </div>
-      <div class="p-5 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block font-sans">Estimasi Return (Risiko 0.5%)</span>
         <span id="btEstReturn" class="text-2xl font-bold text-white mt-1 block">+0.0%</span>
       </div>
     </div>
 
-    <div class="rounded-lg border border-zinc-900 panel-surface overflow-x-auto">
+    <div class="sp-panel overflow-x-auto">
       <div class="p-4 border-b border-zinc-900 flex items-center justify-between text-xs">
         <span class="font-semibold text-white">Rincian Performa per Pasangan Mata Uang (250 Candle)</span>
         <span id="btRuleNote" class="font-mono text-zinc-400">Termasuk potongan spread</span>
@@ -576,39 +480,39 @@
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 font-mono">
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span id="tyCard1Title" class="text-xs text-zinc-400 block font-sans">Total Trade (10Thn)</span>
         <span id="tyTotalTrades" class="text-lg font-bold text-white mt-1 block">--</span>
         <span id="tyTradesPerYear" class="text-[11px] text-zinc-400 block mt-0.5">-- / Tahun</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span id="tyCard2Title" class="text-xs text-zinc-400 block font-sans">Win Rate Jujur</span>
         <span id="tyWinRate" class="text-lg font-bold text-white mt-1 block">--%</span>
         <span id="tyBreakevenNote" class="text-[11px] text-zinc-400 block mt-0.5">Impas: 36.0%</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span id="tyCard3Title" class="text-xs text-zinc-400 block font-sans">Profit Factor</span>
         <span id="tyProfitFactor" class="text-lg font-bold text-white mt-1 block">--</span>
         <span id="tyExpectancy" class="text-[11px] text-zinc-400 block mt-0.5">Exp: --R</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span id="tyCard4Title" class="text-xs text-zinc-400 block font-sans">Profit Scalping</span>
         <span id="tyNetR" class="text-lg font-bold text-white mt-1 block">--R</span>
         <span id="tyFinalBalance" class="text-[11px] text-zinc-400 block mt-0.5">$2,500 → $--</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span id="tyCard5Title" class="text-xs text-zinc-400 block font-sans">Profit Swing</span>
         <span id="tyMaxDD" class="text-lg font-bold text-white mt-1 block">--R</span>
         <span id="tyMaxDDPct" class="text-[11px] text-zinc-400 block mt-0.5">--% DD</span>
       </div>
-      <div class="p-4 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span id="tyCard6Title" class="text-xs text-zinc-400 block font-sans">Profit Position</span>
         <span id="tyMaxLosingStreak" class="text-lg font-bold text-white mt-1 block">--</span>
         <span id="tyMaxWinStreak" class="text-[11px] text-zinc-400 block mt-0.5">Win Streak: --</span>
       </div>
     </div>
 
-    <div class="p-5 rounded-lg border border-zinc-800 panel-surface space-y-4">
+    <div class="sp-panel p-5 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
           <span id="tyChartHeaderTitle" class="text-sm font-semibold text-white">Kurva Pertumbuhan Ekuitas 10 Tahun (2016 – 2026)</span>
@@ -648,7 +552,7 @@
       </div>
     </div>
 
-    <div class="rounded-lg border border-zinc-900 panel-surface overflow-x-auto">
+    <div class="sp-panel overflow-x-auto">
       <div class="p-4 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
         <span class="font-semibold text-white">Matriks Perbandingan 3 Mode Strategi (2016 – 2026)</span>
         <span class="text-zinc-400">Klik baris untuk fokus ke kurva tunggal</span>
@@ -671,7 +575,7 @@
       </table>
     </div>
 
-    <div class="rounded-lg border border-zinc-900 panel-surface overflow-x-auto">
+    <div class="sp-panel overflow-x-auto">
       <div class="p-4 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-2 text-xs">
         <span id="tyMatrixTitle" class="font-semibold text-white">Rincian Performa Tahun demi Tahun (2016 – 2026)</span>
         <span id="tyMatrixParamNote" class="text-zinc-400">Risiko 0.5% per transaksi</span>
@@ -682,7 +586,7 @@
       </table>
     </div>
 
-    <div class="rounded-lg border border-zinc-900 panel-surface overflow-x-auto">
+    <div class="sp-panel overflow-x-auto">
       <div class="p-4 border-b border-zinc-900 flex items-center justify-between text-xs">
         <span class="font-semibold text-white">Sampel Log 25 Transaksi Historis Terakhir</span>
         <span class="text-zinc-400">Dieksekusi bar-demi-bar</span>
@@ -721,16 +625,16 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
-      <div class="p-5 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block font-sans">Total Profit/Loss Terealisasi</span>
         <div id="journalTotalPnl" class="text-2xl font-bold text-white mt-1">+$0.00</div>
       </div>
-      <div class="p-5 rounded-lg border border-zinc-900 panel-surface">
+      <div class="sp-metric-card">
         <span class="text-xs text-zinc-400 block font-sans">Win Rate Jurnal Pribadi</span>
         <div id="journalWinRate" class="text-2xl font-bold text-white mt-1">0%</div>
         <span id="journalWinLossCount" class="text-xs text-zinc-400 block mt-1">0 Won · 0 Lost</span>
       </div>
-      <div class="p-5 rounded-lg border border-zinc-900 panel-surface space-y-2">
+      <div class="sp-metric-card space-y-2">
         <div class="flex justify-between text-xs">
           <span class="text-zinc-400 font-sans">Eksposur Risiko Terbuka</span>
           <span id="drawdownUsedText" class="text-white">0.0% / 5.0%</span>
@@ -741,7 +645,7 @@
       </div>
     </div>
 
-    <div class="rounded-lg border border-zinc-900 panel-surface">
+    <div class="sp-panel">
       <div class="p-4 border-b border-zinc-900 flex items-center justify-between text-xs">
         <span class="font-semibold text-white">Daftar Posisi Tercatat</span>
         <span class="text-zinc-400">Tandai hasil akhir transaksi</span>
@@ -767,7 +671,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 num-lock">
-      <div class="p-6 rounded-lg border border-zinc-900 panel-surface flex flex-col justify-between space-y-6">
+      <div class="sp-panel p-6 flex flex-col justify-between space-y-6">
         <div class="space-y-4">
           <div>
             <span class="text-xs text-zinc-400">Paket Dasar</span>
@@ -787,7 +691,7 @@
         </button>
       </div>
 
-      <div class="p-6 rounded-lg border-2 border-white panel-surface flex flex-col justify-between space-y-6 relative">
+      <div class="sp-panel p-6 border-2 border-white flex flex-col justify-between space-y-6 relative">
         <span class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded bg-white text-black text-[10px] font-mono font-bold">
           REKOMENDASI
         </span>
@@ -810,7 +714,7 @@
         </button>
       </div>
 
-      <div class="p-6 rounded-lg border border-zinc-900 panel-surface flex flex-col justify-between space-y-6">
+      <div class="sp-panel p-6 flex flex-col justify-between space-y-6">
         <div class="space-y-4">
           <div>
             <span class="text-xs text-zinc-400">Paket 3 Bulan</span>
@@ -834,7 +738,7 @@
 
   <!-- MODAL CHECKOUT -->
   <div id="checkoutModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
-    <div class="w-full max-w-md rounded-lg border border-zinc-800 panel-surface p-6 space-y-5">
+    <div class="w-full max-w-md sp-panel p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-zinc-900 pb-3">
         <div>
           <h3 id="checkoutPlanTitle" class="text-sm font-bold text-white">Pro Sniper</h3>
@@ -872,11 +776,11 @@
       <div id="payContentCard" class="hidden space-y-3 text-xs">
         <div>
           <label class="text-zinc-400 block mb-1">Nomor Kartu</label>
-          <input type="text" placeholder="4242 •••• •••• 4242" class="w-full rounded-md bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none" />
+          <input type="text" placeholder="4242 •••• •••• 4242" class="sp-input" />
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <input type="text" placeholder="MM/YY" class="w-full rounded-md bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none" />
-          <input type="text" placeholder="CVC" class="w-full rounded-md bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none" />
+          <input type="text" placeholder="MM/YY" class="sp-input" />
+          <input type="text" placeholder="CVC" class="sp-input" />
         </div>
       </div>
 
@@ -888,7 +792,7 @@
 
   <!-- MODAL AUTH -->
   <div id="authModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
-    <div class="w-full max-w-md rounded-lg border border-zinc-800 panel-surface p-6 space-y-5">
+    <div class="w-full max-w-md sp-panel p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-zinc-900 pb-3">
         <h3 id="authModalTitle" class="text-sm font-bold text-white">Autentikasi Akun</h3>
         <button onclick="closeAuthModal()" class="text-zinc-400 hover:text-white">✕</button>
@@ -904,15 +808,15 @@
       <form onsubmit="handleAuthSubmit(event)" class="space-y-3.5 text-xs">
         <div id="fullNameField" class="hidden">
           <label class="text-zinc-400 block mb-1">Username Trader</label>
-          <input type="text" id="authFullName" placeholder="Nama tampilan" class="w-full rounded-md bg-black border border-zinc-800 px-3 py-2 text-white focus:outline-none" />
+          <input type="text" id="authFullName" placeholder="Nama tampilan" class="sp-input" />
         </div>
         <div>
           <label class="text-zinc-400 block mb-1">Alamat Email</label>
-          <input type="email" id="authEmail" required placeholder="trader@domain.com" class="w-full rounded-md bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none" />
+          <input type="email" id="authEmail" required placeholder="trader@domain.com" class="sp-input" />
         </div>
         <div>
           <label class="text-zinc-400 block mb-1">Password</label>
-          <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full rounded-md bg-black border border-zinc-800 px-3 py-2 font-mono text-white focus:outline-none" />
+          <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="sp-input" />
         </div>
         <div id="registerTierField" class="hidden pt-1">
           <label class="text-zinc-400 block mb-1.5">Pilih Paket Awal</label>
@@ -939,8 +843,11 @@
     ✓ TERSALIN KE CLIPBOARD
   </div>
 
-  <!-- CORE ENGINE (TETAP UTUH) & EYE-CARE UI/UX MODULE (app2.js) -->
-  <script src="app.js" defer></script>
-  <script src="app2.js" defer></script>
+  <!-- 5 MODULAR JAVASCRIPT FILES -->
+  <script src="sp-core.js" defer></script>
+  <script src="sp-market.js" defer></script>
+  <script src="sp-chart.js" defer></script>
+  <script src="sp-ui.js" defer></script>
+  <script src="sp-plugins.js" defer></script>
 </body>
 </html>
